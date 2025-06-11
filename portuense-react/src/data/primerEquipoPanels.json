@@ -1,0 +1,16 @@
+[
+  {
+    "title": "Masculino",
+    "categoria": "SEN",
+    "equipo": "M",
+    "text": "Jugadores del Primer Equipo",
+    "visibleTo": ["admin", "coordinador"]
+  },
+  {
+    "title": "Femenino",
+    "categoria": "SEN",
+    "equipo": "F",
+    "text": "Jugadoras del Primer Equipo",
+    "visibleTo": ["admin", "coordinador"]
+  }
+]

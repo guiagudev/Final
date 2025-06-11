@@ -1,0 +1,86 @@
+[
+  {
+    "title": "Prebenjamín Masculino",
+    "categoria": "PREBEN",
+    "equipo": "M",
+    "text": "Jugadores Prebenjamín Masculino",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Prebenjamín Femenino",
+    "categoria": "PREBEN",
+    "equipo": "F",
+    "text": "Jugadoras Prebenjamín Femenino",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Benjamín Masculino",
+    "categoria": "BEN",
+    "equipo": "M",
+    "text": "Jugadores Benjamín Masculino",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Benjamín Femenino",
+    "categoria": "BEN",
+    "equipo": "F",
+    "text": "Jugadoras Benjamín Femenino",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Alevín Masculino",
+    "categoria": "ALE",
+    "equipo": "M",
+    "text": "Jugadores Alevín Masculino",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Alevín Femenino",
+    "categoria": "ALE",
+    "equipo": "F",
+    "text": "Jugadoras Alevín Femenino",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Infantil Masculino",
+    "categoria": "INF",
+    "equipo": "M",
+    "text": "Jugadores Infantil Masculino",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Infantil Femenino",
+    "categoria": "INF",
+    "equipo": "F",
+    "text": "Jugadoras Infantil Femenino",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Cadete Masculino",
+    "categoria": "CAD",
+    "equipo": "M",
+    "text": "Jugadores Cadete Masculino",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Cadete Femenino",
+    "categoria": "CAD",
+    "equipo": "F",
+    "text": "Jugadoras Cadete Femenino",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Juvenil Masculino",
+    "categoria": "JUV",
+    "equipo": "M",
+    "text": "Jugadores Juvenil Masculino",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Juvenil Femenino",
+    "categoria": "JUV",
+    "equipo": "F",
+    "text": "Jugadoras Juvenil Femenino",
+    "visibleTo": ["admin", "entrenador"]
+  }
+]

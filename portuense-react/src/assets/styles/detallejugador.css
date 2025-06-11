@@ -1,0 +1,261 @@
+@font-face {
+  font-family: "Jugadores"; /* Nombre de la tipografía */
+  src: url("../fonts/Neuropol.otf");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Placeholder";
+  src: url("../fonts/Roboto/static/Roboto-Light.ttf");
+}
+
+body {
+  background-color: #1d1c1c; /* Color de fondo oscuro */
+  font-family: "Arial", sans-serif; /* Fuente base */
+  color: white; /* Color de texto blanco */
+}
+
+h2,
+p {
+  color: white; /* Color blanco para el texto */
+}
+
+h2 {
+  font-family: "Jugadores"; /* Usar la tipografía personalizada para los títulos */
+  font-size: 2.5rem;
+}
+
+h4 {
+  color: #ff3333; /* Título de las carpetas en color rojo */
+}
+
+.container {
+  padding: 30px;
+}
+
+#jugadorImagen {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid #ff3333; /* Borde rojo alrededor de la imagen */
+}
+
+#jugadorTitle {
+  font-family: "Jugadores"; /* Título con la tipografía personalizada */
+  font-size: 2rem;
+  color: #ff3333;
+}
+
+.btn {
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.btn-primary {
+  background-color: #ec0c0c;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #ff3333; /* Rojo más intenso en hover */
+}
+
+.btn-secondary {
+  background-color: #343a40;
+  color: white;
+  border: none;
+}
+
+.btn-secondary:hover {
+  background-color: #495057; /* Gris más claro al pasar el ratón */
+}
+
+.list-group-item {
+  background-color: #343a40;
+  color: white;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  padding: 15px;
+  transition: border-color 0.3s ease;
+}
+
+.list-group-item:hover {
+  border: 2px solid #ff3333;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+#carpetasModal .modal-content,
+#pdfsModal .modal-content {
+  background-color: #2d2c2c; /* Fondo oscuro para los modales */
+  color: #ff3333; /* Texto rojo */
+}
+
+.modal-header {
+  background-color: #ec0c0c;
+  color: white;
+}
+
+.modal-body {
+  background-color: #2d2c2c;
+}
+
+#nuevaCarpetaNombre {
+  background-color: #2d2c2c;
+  border: 2px solid #343a40;
+  color: white;
+}
+
+#nuevaCarpetaNombre:focus {
+  border-color: #ff3333;
+  box-shadow: 0 0 5px #ff3333;
+}
+
+#subirPDFBtn {
+  background-color: #ec0c0c;
+  border: none;
+}
+
+#subirPDFBtn:hover {
+  background-color: #ff3333; /* Rojo más intenso en hover */
+}
+
+#pdfList {
+  color: white;
+}
+
+#pdfPreview {
+  border: 1px solid #ff3333; /* Borde rojo en la vista previa del PDF */
+}
+
+#pdfPreview iframe {
+  border: none;
+}
+
+#logout {
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  position: absolute;
+  top: 10px;
+  left: 700px;
+}
+
+#logout:hover {
+  background-color: #ff3333;
+  transform: scale(1.35);
+}
+
+#logout:focus,
+#logout:active {
+  background-color: #ff3333;
+  transform: scale(1.35);
+  transition: transform 0.3s ease;
+}
+
+#logout img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#filtro {
+  background-image: url("../images/magnifying-glass.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: none;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  left: 200px;
+}
+
+#filtro:hover {
+  background-image: url("../images/magnifying-glass-white.png");
+  transform: scale(1.15);
+}
+#crearCarpetaBtn {
+  background-image: url("../images/");
+}
+#volverBtn {
+  padding: 0; /* Elimina espacios internos */
+  width: 40px; /* Ajusta al tamaño de la imagen */
+  height: 40px;
+  border: none;
+  background: none; /* Elimina fondo */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  position: absolute; /* Esto lo coloca en una posición específica */
+  top: 10px; /* Ajusta la distancia desde la parte superior de la página */
+  left: 700px;
+}
+#volverBtn img {
+  width: 1px; /* Tamaño exacto de la imagen */
+  height: 1px;
+  display: block;
+  align-items: center; /* Evita espacios extra alrededor */
+  margin-left: 7px;
+  size: 80%;
+}
+#volverBtn:focus,
+#volverBtn:active {
+  background-color: #ff3333; /* Cambia el fondo a negro */
+  transform: scale(1.35);
+  transition: transform 0.3s ease, background-image 0.3s ease;
+}
+#volverBtn:hover {
+  content: url("../images/logout-white.png");
+  transform: scale(0.75);
+}
+#volverBtn:focus img,
+#volverBtn:active img {
+  content: url("../images/logout-white.png"); /* Cambia la imagen */
+  filter: brightness(0) invert(1);
+  transform: scale(0.75);
+  transition: transform 0.3s ease, background-image 0.3s ease;
+}
+#carpetasBtn {
+  background-image: url(../images/folder-red.png);
+  background-repeat: no-repeat;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  width: 50px;
+  height: 50px;
+}
+#carpetasBtn:active,
+#carpetasBtn:focus {
+  background-image: url("../images/folder-white-open.png");
+  background-size: contain; /* Mantiene el tamaño correcto de la imagen */
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: scale(1.05); /* Escala el enlace */
+  transition: transform 0.15s ease, background-image 0.15s ease;
+}
+#carpetasBtn:hover {
+  background-image: url("../images/folder-white-open.png");
+  transform: scale(1.05);
+  transition: transform 0.15s ease, background-image 0.15s ease;
+}
+#idEliminar {
+    background-image: url(../images/red-trashcan.png); /* Ruta del icono en assets */
+    background-size: contain;  /* Ajusta el tamaño del icono */
+    background-repeat: no-repeat; /* Evita que se repita el icono */
+    background-position: center; /* Centra el icono dentro del botón */
+    color: transparent; /* Hacemos el texto invisible para que solo se vea el icono */
+    width: 30px; /* Ajusta el tamaño del botón */
+    height: 30px; /* Ajusta el tamaño del botón */
+    border: none; /* Elimina el borde */
+    cursor: pointer; /* Cambia el cursor para indicar que es clickeable */
+  }
+  
+  #idEliminar:hover {
+    background-color: #e74c3c; /* Cambia el color de fondo al pasar el mouse */
+  }
+  

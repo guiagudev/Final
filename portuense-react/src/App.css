@@ -1,0 +1,88 @@
+/* app.css – Tema oscuro con detalles en rojo neón */
+
+:root {
+  --bg-color: #0d0d0d;
+  --text-color: #ff1e56;
+  --accent-color: #ff1e56;
+  --card-bg: #1a1a1a;
+  --border-color: #ff1e5670;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--accent-color);
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-shadow: 0 0 5px var(--accent-color);
+}
+
+.card, .modal-content {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.btn-primary {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
+  text-shadow: 0 0 2px #000;
+}
+
+.btn-primary:hover {
+  background-color: #ff003c;
+  border-color: #ff003c;
+  box-shadow: 0 0 10px var(--accent-color);
+}
+
+input, select, textarea {
+  background-color: #111;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 8px var(--accent-color);
+  border-color: var(--accent-color);
+}
+table {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border-collapse: collapse;
+}
+
+thead {
+  background-color: #222; /* encabezado más oscuro */
+}
+
+tr {
+  background-color: #1e1e1e;
+  transition: background-color 0.2s ease;
+}
+
+tr:hover {
+  background-color: #2a2a2a;
+}
+
+td, th {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  color: #d0d0d0; /* gris claro, no blanco chillón */
+}

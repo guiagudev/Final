@@ -1,0 +1,101 @@
+/* Fondo general del calendario */
+.rbc-calendar {
+  background-color: #f9f9f9; /* Puedes oscurecerlo si tu app es dark */
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.05);
+}
+
+/* Día activo y hoy */
+.rbc-today {
+  background-color: #ffeaea !important;
+}
+
+/* Cabecera */
+.rbc-header {
+  background-color: #610b1c;
+  color: #ffffff;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px 0;
+  border: none;
+}
+
+/* Días del mes */
+.rbc-date-cell {
+  padding: 5px;
+  text-align: right;
+  color: #333;
+}
+
+/* Evento */
+.rbc-event {
+  background-color: #ff1e56;
+  border: none;
+  color: #fff;
+  padding: 2px 4px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+}
+
+/* Vista mes - líneas de celdas */
+.rbc-month-view {
+  border: 1px solid #ddd;
+}
+
+.rbc-day-bg {
+  background-color: #f0f0f0;
+  border: 1px solid #e0e0e0;
+}
+
+.rbc-day-slot .rbc-time-slot {
+  border-top: 1px solid #e0e0e0;
+}
+
+.rbc-time-view,
+.rbc-agenda-view {
+  background-color: #fff;
+}
+
+/* Botones de navegación y labels */
+.rbc-toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.rbc-toolbar button {
+  background: #610b1c;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin: 0 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.rbc-toolbar button:disabled {
+  background: #ccc;
+  color: #444;
+  cursor: not-allowed;
+}
+
+.rbc-toolbar button:hover:not(:disabled) {
+  background: #841c2c;
+}
+
+/* Agenda */
+.rbc-agenda-view table {
+  border: 1px solid #ccc;
+  width: 100%;
+}
+.rbc-agenda-view table th,
+.rbc-agenda-view table td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Hover y selección */
+.rbc-event:hover {
+  filter: brightness(1.1);
+}

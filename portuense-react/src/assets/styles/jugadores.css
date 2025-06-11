@@ -1,0 +1,515 @@
+@font-face {
+  font-family: "Jugadores"; /* Nombre de la tipografía */
+  src: url("../fonts/Neuropol.otf");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+    font-family: "Placeholder";
+    src: url("../fonts/Roboto/static/Roboto-Light.ttf")
+}
+@keyframes modalFadeInFromBottom {
+    0% {
+      transform: translateY(100vh); /* Empieza desde abajo fuera de la vista */
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0); /* Llega al lugar original */
+      opacity: 1;
+    }
+  }
+/* Estilos personalizados aquí */
+body {
+  background-color: #1d1c1c; /* Color de fondo */
+  font-family: "Arial", sans-serif; /* Fuente */
+}
+
+h1 {
+  color: #ff3333; /* Color azul para el título */
+  font-size: 2.5rem; /* Tamaño de fuente */
+}
+
+.container {
+  padding: 30px; /* Relleno alrededor del contenido */
+}
+
+.form-control {
+  border-radius: 10px; /* Bordes redondeados */
+  padding: 10px; /* Relleno interno */
+}
+.btn.btn-primary.btn-sm.float-right {
+  border-radius: 10px;
+  background-color: #000000;
+}
+
+.list-group-item {
+  background-color: #343a40; /* Gris oscuro */
+  color: white; /* Color del texto */
+  border-radius: 10px; /* Bordes redondeados */
+  margin-bottom: 10px; /* Espacio entre los elementos */
+  padding: 15px; /* Relleno alrededor del contenido */
+  transition: border-color 0.3s ease; /* Transición suave para el borde */
+}
+
+/* Efecto de hover: cambio de borde */
+.list-group-item:hover {
+  border: 2px solid #ff3333; /* Bordes azules al pasar el ratón */
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); /* Sombra azul suave */
+}
+
+/* Estilo para los enlaces dentro de los elementos de la lista */
+.list-group-item a {
+  color: #ffffff; /* Color del texto del enlace */
+  text-decoration: none; /* Sin subrayado */
+  font-weight: bold; /* Hacer el nombre más destacado */
+}
+
+/* Cambio de color cuando se hace hover sobre el enlace */
+.list-group-item a:hover {
+  color: #ff3333; /* Color azul cuando se pasa el ratón sobre el nombre */
+}
+#logout {
+  padding: 0; /* Elimina espacios internos */
+  width: 40px; /* Ajusta al tamaño de la imagen */
+  height: 40px;
+  border: none;
+  background: none; /* Elimina fondo */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  position: absolute; /* Esto lo coloca en una posición específica */
+  top: 10px; /* Ajusta la distancia desde la parte superior de la página */
+  left: 700px;
+}
+#calendar {
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  background-image: url(../images/calendar-red.png);
+  background-repeat: no-repeat;
+  background-size: contain; /* Ajusta el tamaño de la imagen */
+  background-position: center;
+  border: none;
+  position: absolute; /* Esto lo coloca en una posición específica */
+  top: 20px; /* Ajusta la distancia desde la parte superior de la página */
+  left: 35px;
+}
+#calendar:hover {
+  background-color: #fe4343df; /* Asegura que no haya cambios en hover */
+  background-image: url(../images/calendar-white.png);
+  transform: scale(1.35);
+}
+
+#calendar:focus,
+#calendar:active {
+  background-image: url("../images/calendar-white.png"); /* Nueva imagen cuando tiene focus o está activo */
+  background-size: contain; /* Mantiene el tamaño correcto de la imagen */
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: scale(1.35); /* Escala el enlace */
+  transition: transform 0.3s ease, background-image 0.3s ease; /* Transición suave para ambos efectos */
+}
+#titulo {
+  position: relative;
+  top: -65px;
+  left: 150px;
+  font-family: Jugadores;
+}
+#logout img {
+  width: 1px; /* Tamaño exacto de la imagen */
+  height: 1px;
+  display: block;
+  align-items: center; /* Evita espacios extra alrededor */
+  margin-left: 7px;
+  size: 80%;
+}
+.btn.btn-outline-light:hover {
+  color: black;
+  border: 1px;
+}
+#logout:focus,
+#logout:active {
+  background-color: #ff3333; /* Cambia el fondo a negro */
+  transform: scale(1.35);
+  transition: transform 0.3s ease, background-image 0.3s ease;
+}
+#logout:hover {
+    content: url("../images/logout-white.png");
+    transform: scale(0.75);
+}
+#logout:focus img,
+#logout:active img {
+  content: url("../images/logout-white.png"); /* Cambia la imagen */
+  filter: brightness(0) invert(1);
+  transform: scale(0.75);
+  transition: transform 0.3s ease, background-image 0.3s ease;
+}
+
+/* Para que el botón de acción se vea bien dentro de la lista */
+.list-group-item .btn {
+  border-radius: 5px; /* Bordes redondeados para los botones */
+}
+
+/* Estilo para el botón de crear jugador */
+
+.d-flex.h1 {
+  color: #ff3333;
+}
+#openModalBtn:hover {
+  background-color: #ff3333;
+}
+/* Estilo para el filtro (el botón de búsqueda) */
+/* Estilo para el filtro (el botón de búsqueda) */
+/* Estilo base para el filtro (el botón de búsqueda) */
+#filtro {
+    background-image: url(../images/magnifying-glass.png);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    position: absolute;
+    left: 200px;  /* Posición inicial */
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease; /* Animación suave para el movimiento del botón */
+  }
+
+  #filtro:hover {
+    background-image: url("../images/magnifying-glass-white.png");
+    transform: scale(1.15);
+  }
+  
+  #filtrosModal {
+    color: #ad1616; /* Texto negro para todo el modal */
+    font-family: "Placeholder";
+}
+
+#filtrosModal .modal-dialog {
+    height: auto;
+    max-height: 200px;
+}
+
+#filtrosModal .modal-header {
+    display: flex;
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center; /* Alinea verticalmente */
+    text-align: center; /* Asegura que el texto también esté centrado */
+    background-color: #ec0c0c;
+    font-family: "Jugadores";
+    color:#000000
+  }
+  
+#filtrosModal .modal-content {
+    background-color: #2d2c2c;
+}
+#filtrosModalLabel {
+    align-items: center;
+}
+
+#panelFiltros {
+    background-color: #2d2c2c; /* Fondo oscuro de la tarjeta */
+    color: #ff3333; /* Texto rojo dentro de la tarjeta */
+    padding: 15px;
+    border-radius: 6px;
+}
+
+#filtrosModal .form-control {
+    background-color: #2d2c2c; /* Fondo oscuro para los inputs */
+    border: 2px solid #030303; /* Borde rojo */
+    color: #ff3333; /* Texto rojo dentro del input */
+}
+
+#filtrosModal .form-control::placeholder {
+    color: #ff3333; /* Placeholder rojo */
+
+    #jugadoresList {
+    position:absolute;
+    top: 250px;
+    left: 7px;
+  }}
+#filtrosModal .card.card-body {
+    color:#2d2c2c;
+}
+#filtrosModal .form-control:focus {
+    border-color: #ff0000; /* Borde naranja al seleccionar */
+    box-shadow: 0 0 5px #ff0000;
+  }
+
+  #editJugadorModal .modal-content {
+    background-color: #2d2c2c; /* Fondo oscuro del modal */
+    color: #ff3333; /* Texto rojo */
+    padding: 20px;
+    border-radius: 6px;
+}
+
+#editJugadorModal input,
+#editJugadorModal select {
+    background-color: #2d2c2c; /* Fondo oscuro para los inputs */
+    border: 2px solid #030303; /* Borde negro */
+    color: #ff3333; /* Texto rojo */
+    padding: 10px;
+    width: 100%;
+    border-radius: 4px;
+}
+
+#editJugadorModal input::placeholder {
+    color: #ff3333; /* Placeholder rojo */
+}
+
+#editJugadorModal input:focus,
+#editJugadorModal select:focus {
+    border-color: #ff0000; /* Borde rojo al enfocar */
+    box-shadow: 0 0 5px #ff0000;
+}
+
+#editJugadorModal button {
+    background-color: #ff3333; /* Botón rojo */
+    color: #2d2c2c; /* Texto oscuro */
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#editJugadorModal button:hover {
+    background-color: #ff0000; /* Rojo más intenso al pasar el mouse */
+}
+
+#editJugadorModal .close {
+    color: #ff3333; /* Rojo */
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#editJugadorModal .close:hover {
+    color: #ff0000; /* Rojo más intenso */
+}
+#contenidoCrearModal {
+  background-color: #2d2c2c; /* Fondo oscuro del modal */
+  color: #ff3333; /* Texto rojo */
+  padding: 20px;
+  border-radius: 6px;
+}
+
+#createJugadorModal .modal-content {
+  background-color: #2d2c2c; /* Fondo oscuro del modal */
+  color: #ff3333; /* Texto rojo */
+  padding: 20px;
+  border-radius: 6px;
+}
+
+#createJugadorModal input,
+#createJugadorModal select,
+#createJugadorModal a {
+  background-color: #2d2c2c; /* Fondo oscuro para los inputs */
+  border: 2px solid #030303; /* Borde negro */
+  color: #ff3333; /* Texto rojo */
+  padding: 10px;
+  width: 100%;
+  border-radius: 4px;
+}
+
+#createJugadorModal input::placeholder {
+  color: #ff3333; /* Placeholder rojo */
+}
+
+#createJugadorModal input:focus,
+#createJugadorModal select:focus {
+  border-color: #ff0000; /* Borde rojo al enfocar */
+  box-shadow: 0 0 5px #ff0000;
+}
+
+#createJugadorModal button {
+  background-color: #ff3333; /* Botón rojo */
+  color: #2d2c2c; /* Texto oscuro */
+  border: none;
+  padding: 10px;
+  width: 100%;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#createJugadorModal button:hover {
+  background-color: #ff0000; /* Rojo más intenso al pasar el mouse */
+}
+
+#createJugadorModal .close {
+  color: #ff3333; /* Rojo */
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#createJugadorModal .close:hover {
+  color: #ff0000; /* Rojo más intenso */
+}
+
+#createJugadorModal a {
+  color: #ff3333; /* Rojo */
+  text-decoration: none;
+  font-weight: bold;
+  display: inline-block;
+  margin-top: 10px;
+  text-align: center;
+}
+
+#createJugadorModal a:hover {
+  color: #ff0000; /* Rojo más intenso al pasar el mouse */
+}
+
+#contenidoCrearModal {
+  background-color: #2d2c2c; /* Fondo oscuro del modal */
+  color: #ff3333; /* Texto rojo */
+  padding: 20px;
+  border-radius: 6px;
+}
+
+
+  
+  /* Estilo para cada elemento de la lista */
+  .nav-item {
+    margin-right: 20px; /* Espacio entre los elementos */
+  }
+  
+  /* Estilo para los enlaces */
+  .nav-link {
+    display: block; /* Asegura que los enlaces ocupen toda el área del enlace */
+    padding: 10px 15px; /* Espaciado dentro del enlace */
+    text-decoration: none; /* Quitar subrayado */
+    color: #ff3333; /* Color de texto predeterminado */
+    font-weight: bold; /* Negrita para los enlaces */
+    border-radius: 5px; /* Bordes redondeados */
+    transition: background-color 0.3s ease; /* Transición suave para los cambios de color */
+  }
+  
+  /* Estilo para el enlace activo */
+  .nav-link {
+    background-color: #ff3333; /* Color de fondo para el enlace activo */
+    color:black; /* Color del texto del enlace activo */
+    border-color: #000000; /* Color de borde para el enlace activo */
+  }
+  
+  /* Estilo cuando el usuario pasa el mouse sobre los enlaces */
+  .nav-link:hover {
+    background-color: #f1eded; /* Color de fondo al pasar el ratón */
+    color: #333; /* Color de texto al pasar el ratón */
+    border:none;
+  }
+  
+  /* Opcional: Estilo para el enlace activo al hacer clic */
+  
+  .nav-item {
+    background-color: none;
+    color:red;
+    border: none;
+    font-family: "Placeholder";
+  }
+  
+  .nav-item:hover {
+    color: #ec0c0c;
+    border: none;
+  }
+  .nav-item{
+    border-radius: 2px;
+    border: 0.5px;
+    box-shadow: #ad1616;
+    color:rgba(255, 0, 0, 0.5)
+  }
+  .nav-link.active {
+    background-color: #ff3333; /* Color de fondo para el enlace activo */
+    color: white; /* Cambiar color de texto a blanco cuando esté activo */
+    border-color: #000000; /* Color de borde para el enlace activo */
+  }
+
+  #editar {
+    background-image: url("../images/edit-red.png");
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    position: absolute;
+    width:20px;
+    height: 20px;
+    position:absolute;
+    right: 70px;
+    top: 20px;
+  }
+
+  #editar:active, #editar:focus {
+    background-image: url("../images/edit-white.png");
+    background-size: contain; /* Mantiene el tamaño correcto de la imagen */
+    background-position: center;
+    background-repeat: no-repeat;
+    transform: scale(1.35); /* Escala el enlace */
+    transition: transform 0.3s ease, background-image 0.3s ease;
+  }
+  #editar:hover{
+    background-image: url("../images/edit-white.png");
+  }
+  #borrar {
+    background-image: url("../images/red-trashcan.png");
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    position: absolute;
+    width:20px;
+    height: 20px;
+    position:absolute;
+    right: 30px;
+    top: 18px;
+  }
+  #borrar:active, #borrar:focus {
+    background-image: url("../images/white-trashcan.png");
+    background-size: contain; /* Mantiene el tamaño correcto de la imagen */
+    background-position: center;
+    background-repeat: no-repeat;
+    transform: scale(1.35); /* Escala el enlace */
+    transition: transform 0.3s ease, background-image 0.3s ease;
+  }
+  #borrar:hover{
+    background-image: url("../images/white-trashcan.png");
+  }
+  #openModalBtn {
+    width: 30px; /* Establecer el ancho del botón */
+    height: 30px; /* Establecer la altura del botón para que sea un círculo */
+    border-radius: 50%; /* Hacer el botón redondo */
+    background-color: #fe2727; /* Color de fondo del botón */
+    color: white; /* Color del texto */
+    border: none; /* Quitar el borde */
+    background-image: url(../images/plus-white.png);
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex; /* Usar flexbox para centrar el texto */
+    justify-content: center; /* Centrar el contenido horizontalmente */
+    align-items: center; /* Centrar el contenido verticalmente */
+    cursor: pointer; /* Cambiar el cursor al pasar el ratón */
+    transition: background-color 0.3s ease; /* Transición suave para el color de fondo */
+    position:absolute;
+    left: 100px;
+    top: 20px;
+
+  }
+  #openModalBtn:active, #openModalBtn:focus {
+    background-color: white;
+    background-image: url(../images/plus-red.png);
+    transform: scale(1.15);
+    transition: transform 0.3s ease, background-image 0.3s ease;
+  }
+  #openModalBtn:hover {
+    background-color: white;
+    background-image: url(../images/plus-red.png);
+    transform: scale(1.15);
+    transition: transform 0.3s ease, background-image 0.3s ease;
+  }

@@ -1,0 +1,44 @@
+[
+  {
+    "title": "Primer Equipo",
+    "categoria": "SEN",
+    "text": "Jugadores del Primer Equipo",
+    "visibleTo": ["admin", "coordinador"]
+  },
+  {
+    "title": "Academia",
+    "categoria": "PREBEN",
+    "text": "Jugadores Prebenjamín",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Academia",
+    "categoria": "BEN",
+    "text": "Jugadores Benjamín",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Academia",
+    "categoria": "ALE",
+    "text": "Jugadores Alevín",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Academia",
+    "categoria": "INF",
+    "text": "Jugadores Infantil",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Academia",
+    "categoria": "CAD",
+    "text": "Jugadores Cadete",
+    "visibleTo": ["admin", "entrenador"]
+  },
+  {
+    "title": "Academia",
+    "categoria": "JUV",
+    "text": "Jugadores Juvenil",
+    "visibleTo": ["admin", "entrenador"]
+  }
+]
