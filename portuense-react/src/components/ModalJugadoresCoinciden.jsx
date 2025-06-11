@@ -18,7 +18,7 @@ export default function ModalJugadoresCoinciden({ show, onHide, clubId, filtros 
     });
 
     setLoading(true);
-    fetch(`http://portuense-manager:8000/api/jugadores-rivales/?${params.toString()}`, {
+    fetch(`http://portuense-manager.ddns.net:8000/api/jugadores-rivales/?${params.toString()}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => res.json())

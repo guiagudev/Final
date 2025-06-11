@@ -20,13 +20,13 @@ export default function ClubDetalle() {
   const token = sessionStorage.getItem("accessToken");
 
   useEffect(() => {
-    fetch(`http://portuense-manager:8000/api/clubes-rivales/${id}/`, {
+    fetch(`http://portuense-manager.ddns.net:8000/api/clubes-rivales/${id}/`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
       .then(setClub);
 
-    fetch(`http://portuense-manager:8000/api/comentarios-club-rival/?club=${id}`, {
+    fetch(`http://portuense-manager.ddns.net:8000/api/comentarios-club-rival/?club=${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -40,7 +40,7 @@ export default function ClubDetalle() {
       club: id,
     };
 
-    const res = await fetch("http://portuense-manager:8000/api/comentarios-club-rival/", {
+    const res = await fetch("http://portuense-manager.ddns.net:8000/api/comentarios-club-rival/", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -62,7 +62,7 @@ export default function ClubDetalle() {
 
     try {
       const res = await fetch(
-        `http://portuense-manager:8000/api/comentarios-club-rival/${comentarioId}/`,
+        `http://portuense-manager.ddns.net:8000/api/comentarios-club-rival/${comentarioId}/`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },

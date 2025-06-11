@@ -19,7 +19,7 @@ export default function UserManager({ show, onClose }) {
   const fetchUsuarios = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://portuense-manager:8000/api/usuarios/", {
+      const res = await fetch("http://portuense-manager.ddns.net:8000/api/usuarios/", {
         headers: {
           Authorization: `Bearer ${getToken()}`,
         },
@@ -76,7 +76,7 @@ export default function UserManager({ show, onClose }) {
 
   const handleUpdate = async (user) => {
     const res = await fetch(
-      `http://portuense-manager:8000/api/actualizar-usuario/${user.id}/`,
+      `http://portuense-manager.ddns.net:8000/api/actualizar-usuario/${user.id}/`,
       {
         method: "PUT",
         headers: {
@@ -104,7 +104,7 @@ export default function UserManager({ show, onClose }) {
     if (!window.confirm("¿Estás seguro de que quieres eliminar este usuario?"))
       return;
 
-    const res = await fetch(`http://portuense-manager:8000/api/usuarios/${userId}/`, {
+    const res = await fetch(`http://portuense-manager.ddns.net:8000/api/usuarios/${userId}/`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${getToken()}`,

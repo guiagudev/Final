@@ -20,7 +20,7 @@ export default function ExcelGrid() {
   useEffect(() => {
     if (categoria && equipo) {
       setLoading(true);
-      fetch(`http://portuense-manager:8000/api/excel/?categoria=${categoria}&equipo=${equipo}`, {
+      fetch(`http://portuense-manager.ddns.net:8000/api/excel/?categoria=${categoria}&equipo=${equipo}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -63,8 +63,8 @@ export default function ExcelGrid() {
 
         const res = await fetch(
           id
-            ? `http://portuense-manager:8000/api/excel/${id}/`
-            : `http://portuense-manager:8000/api/excel/`,
+            ? `http://portuense-manager.ddns.net:8000/api/excel/${id}/`
+            : `http://portuense-manager.ddns.net:8000/api/excel/`,
           {
             method: id ? "PUT" : "POST",
             headers: {

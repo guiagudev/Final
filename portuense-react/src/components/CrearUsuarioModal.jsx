@@ -58,7 +58,7 @@ export default function CrearUsuarioModal({ show, onClose }) {
     });
     const token = sessionStorage.getItem("accessToken");
     const res = await fetch(
-      "http://portuense-manager:8000/api/crear-usuario/",
+      "http://portuense-manager.ddns.net:8000/api/crear-usuario/",
       {
         method: "POST",
         headers: {

@@ -16,7 +16,7 @@ export default function JugadoresPorCategoria() {
     const fetchJugadores = async () => {
       try {
         const res = await fetch(
-          `http://portuense-manager:8000/api/jugadores?categoria=${categoria}&equipo=${equipo}`,
+          `http://portuense-manager.ddns.net:8000/api/jugadores?categoria=${categoria}&equipo=${equipo}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

@@ -6,7 +6,7 @@ export const eliminarJugador = async (id, onDeleted) => {
     const confirmed = window.confirm("¿Seguro que quieres eliminar este jugador?");
     if(!confirmed) return;
 
-    const response = await fetch(`http://portuense-manager:8000/api/jugadores/${id}/`, {
+    const response = await fetch(`http://portuense-manager.ddns.net:8000/api/jugadores/${id}/`, {
         method: 'DELETE',
         headers: {
             Authorization: `Bearer ${getToken()}`,

@@ -17,7 +17,7 @@ export const UserProvider = ({ children }) => {
       }
 
       try {
-        const response = await fetch('http://portuense-manager:8000/api/me/', {
+        const response = await fetch('http://portuense-manager.ddns.net:8000/api/me/', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
