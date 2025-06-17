@@ -12,19 +12,19 @@ services:
       - DEBUG=1
       - DJANGO_SECRET_KEY=dev-secret
       - DJANGO_ALLOWED_HOSTS=*
-    command: >
-      sh -c "python manage.py makemigrations &&
-             python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
+      - POSTGRES_DB=portuense_db
+      - POSTGRES_USER=portuense_user
+      - POSTGRES_PASSWORD=portuense_pass
     depends_on:
-      - frontend  # Opcional, útil si el backend espera assets o API del frontend
+      - db
+    entrypoint: sh /app/entry.sh
 
   frontend:
     build:
       context: ./portuense-react
     volumes:
       - ./portuense-react:/app
-      - /app/node_modules  # Previene conflictos con host
+      - /app/node_modules
     ports:
       - "5173:5173"
     environment:
@@ -32,3 +32,18 @@ services:
     command: npm run dev
     stdin_open: true
     tty: true
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      - POSTGRES_DB=portuense_db
+      - POSTGRES_USER=portuense_user
+      - POSTGRES_PASSWORD=portuense_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:

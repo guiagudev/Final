@@ -3,14 +3,15 @@ FROM python:3.11-slim
 # Set work directory
 WORKDIR /app
 
-# Install dependencies
+# Instalar netcat (la versión correcta en Debian slim)
+RUN apt-get update && apt-get install -y netcat-openbsd && apt-get clean
+
+# Instalar dependencias Python
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Copy the rest of the app
+# Copiar la app
 COPY . .
 
-# Expose port
+# Exponer puerto
 EXPOSE 8000
-
-# CMD lo dejamos vacío, el comando se define en docker-compose
