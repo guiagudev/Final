@@ -34,15 +34,22 @@ export default function Calendario() {
   // 🧭 Control de vista y fecha
   const [vistaActual, setVistaActual] = useState("month");
   const [fechaActual, setFechaActual] = useState(new Date());
+
+  // 🔐 Permisos desde sesión
+  const permisos = JSON.parse(sessionStorage.getItem("userPermisos") || "[]");
   const vistas = JSON.parse(sessionStorage.getItem("userVistas") || "[]");
   const puedeVerCalendario = vistas.includes("calendario");
 
   const navigate = useNavigate();
   const token = sessionStorage.getItem("accessToken");
   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-  
 
-  // 🧲 Obtener eventos del backend
+  const userTienePermiso = (categoria, equipo) =>
+    permisos.some(
+      (perm) => perm.categoria === categoria && perm.equipo === equipo
+    );
+
+  // 🧲 Obtener eventos del backend con filtro por permisos
   const fetchEventos = useCallback(() => {
     fetch(`${import.meta.env.VITE_API_URL}/eventos/`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -50,32 +57,40 @@ export default function Calendario() {
       .then((res) => res.json())
       .then((data) => {
         if (!Array.isArray(data)) return;
-        const eventosFormateados = data.map((ev) => ({
-          id: ev.id,
-          title:
-            ev.categoria === "Partido"
-              ? `⚽ ${ev.equipo1} vs ${ev.equipo2}`
-              : ev.categoria === "Entrenamiento"
-              ? `🏋️ Entrenamiento (${ev.equipo1})`
-              : `📋 ${ev.descripcion}`,
-          start: new Date(ev.fecha),
-          end: new Date(new Date(ev.fecha).getTime() + 2 * 60 * 60 * 1000),
-          tipo: ev.categoria,
-          equipo1: ev.equipo1,
-          equipo2: ev.equipo2,
-        }));
-        setEventos(eventosFormateados);
+
+        const eventosFiltrados = data
+          .filter((ev) => {
+            if (ev.categoria_equipo && ev.equipo_genero) {
+              return userTienePermiso(ev.categoria_equipo, ev.equipo_genero);
+            }
+            return true; // permite reuniones u otros sin categoría/equipo
+          })
+          .map((ev) => ({
+            id: ev.id,
+            title:
+              ev.categoria === "Partido"
+                ? `⚽ ${ev.equipo1} vs ${ev.equipo2}`
+                : ev.categoria === "Entrenamiento"
+                ? `🏋️ Entrenamiento (${ev.equipo1})`
+                : `📋 ${ev.descripcion}`,
+            start: new Date(ev.fecha),
+            end: new Date(new Date(ev.fecha).getTime() + 2 * 60 * 60 * 1000),
+            tipo: ev.categoria,
+            equipo1: ev.equipo1,
+            equipo2: ev.equipo2,
+          }));
+
+        setEventos(eventosFiltrados);
       });
-  }, [token]);
+  }, [token, permisos]);
 
   useEffect(() => {
-  if (!puedeVerCalendario) {
-    navigate("/");
-  } else {
-    fetchEventos();
-  }
-}, [puedeVerCalendario, navigate, fetchEventos]);
-
+    if (!puedeVerCalendario) {
+      navigate("/");
+    } else {
+      fetchEventos();
+    }
+  }, [puedeVerCalendario, navigate, fetchEventos]);
 
   // 📆 Textos del calendario en español
   const calendarMessages = useMemo(
@@ -155,23 +170,25 @@ export default function Calendario() {
             setEventoSeleccionado(event);
             setMostrarDetalles(true);
           }}
-          // ✅ Control de navegación y vista
           date={fechaActual}
           onNavigate={setFechaActual}
           view={vistaActual}
           onView={setVistaActual}
         />
 
-        <Button
-          variant="success"
-          className="mt-3"
-          onClick={() => {
-            setNuevoTipo("Entrenamiento");
-            setShowModal(true);
-          }}
-        >
-          + Crear nuevo evento
-        </Button>
+        {/* ✅ Solo si el usuario tiene permisos para crear algo */}
+        {permisos.length > 0 && (
+          <Button
+            variant="success"
+            className="mt-3"
+            onClick={() => {
+              setNuevoTipo("Entrenamiento");
+              setShowModal(true);
+            }}
+          >
+            + Crear nuevo evento
+          </Button>
+        )}
 
         <CrearEventoModal
           show={showModal}
@@ -201,21 +218,14 @@ export default function Calendario() {
             setMostrarEditar(true);
           }}
           onEliminar={async () => {
-            const confirm = window.confirm(
-              "¿Estás seguro de eliminar este evento?"
-            );
+            const confirm = window.confirm("¿Estás seguro de eliminar este evento?");
             if (!confirm) return;
 
             try {
-              await fetch(
-                `${import.meta.env.VITE_API_URL}/eventos/${
-                  eventoSeleccionado.id
-                }/`,
-                {
-                  method: "DELETE",
-                  headers: { Authorization: `Bearer ${token}` },
-                }
-              );
+              await fetch(`${import.meta.env.VITE_API_URL}/eventos/${eventoSeleccionado.id}/`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+              });
               setMostrarDetalles(false);
               fetchEventos();
             } catch (err) {
