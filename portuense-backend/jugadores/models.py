@@ -162,7 +162,9 @@ class Evento(models.Model):
                 f"({self.categoria_equipo or ''} {self.equipo_genero or ''})"
             )
         elif self.categoria == 'Entrenamiento':
-            return f"{self.fecha.strftime('%Y-%m-%d')} - Entrenamiento ({self.equipo1})"
+            return (f"{self.fecha.strftime('%Y-%m-%d')} - Entrenamiento ({self.equipo1})"
+                    f"{self.equipo1} vs {self.equipo2 or 'TBD'} "
+                f"({self.categoria_equipo or ''} {self.equipo_genero or ''})")
         else:
             return f"{self.fecha.strftime('%Y-%m-%d')} - Reunión ({self.descripcion[:30]}...)"
                                                      

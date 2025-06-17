@@ -7,13 +7,14 @@ export default function EditarEventoModal({ show, onClose, evento }) {
   const [localizacion, setLocalizacion] = useState('');
   const [fechaInput, setFechaInput] = useState('');
   const [tipo, setTipo] = useState('Entrenamiento');
+  const [categoriaEquipo, setCategoriaEquipo] = useState('');
+  const [equipoGenero, setEquipoGenero] = useState('');
 
   const token = sessionStorage.getItem('accessToken');
 
   useEffect(() => {
     const fetchEvento = async () => {
       if (!evento?.id || !show) return;
-
       if (!token) {
         alert('No hay token. Por favor, inicia sesión.');
         return;
@@ -26,9 +27,7 @@ export default function EditarEventoModal({ show, onClose, evento }) {
           },
         });
 
-        if (!res.ok) {
-          throw new Error('No se pudo obtener el evento');
-        }
+        if (!res.ok) throw new Error('No se pudo obtener el evento');
 
         const data = await res.json();
 
@@ -36,8 +35,10 @@ export default function EditarEventoModal({ show, onClose, evento }) {
         setEquipo2(data.equipo2 || '');
         setLocalizacion(data.localizacion || '');
         setTipo(data.categoria || 'Entrenamiento');
+        setCategoriaEquipo(data.categoria_equipo || '');
+        setEquipoGenero(data.equipo_genero || '');
 
-        const date = new Date(data.start);
+        const date = new Date(data.fecha);
         const iso = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
           .toISOString()
           .slice(0, 16);
@@ -64,6 +65,8 @@ export default function EditarEventoModal({ show, onClose, evento }) {
       equipo1: evento.equipo1 || 'Portuense F.C.',
       equipo2: tipo === 'Partido' ? equipo2 : '',
       localizacion,
+      categoria_equipo: (tipo === 'Partido' || tipo === 'Entrenamiento') ? categoriaEquipo : null,
+      equipo_genero: (tipo === 'Partido' || tipo === 'Entrenamiento') ? equipoGenero : null,
     };
 
     try {
@@ -123,6 +126,7 @@ export default function EditarEventoModal({ show, onClose, evento }) {
             <Form.Select value={tipo} onChange={(e) => setTipo(e.target.value)}>
               <option value="Entrenamiento">Entrenamiento</option>
               <option value="Partido">Partido</option>
+              <option value="Reunion">Reunión</option>
             </Form.Select>
           </Form.Group>
 
@@ -153,6 +157,39 @@ export default function EditarEventoModal({ show, onClose, evento }) {
                 onChange={(e) => setEquipo2(e.target.value)}
               />
             </Form.Group>
+          )}
+
+          {(tipo === 'Partido' || tipo === 'Entrenamiento') && (
+            <>
+              <Form.Group className="mt-3">
+                <Form.Label>Categoría</Form.Label>
+                <Form.Select
+                  value={categoriaEquipo}
+                  onChange={(e) => setCategoriaEquipo(e.target.value)}
+                >
+                  <option value="">Selecciona una categoría</option>
+                  <option value="PREBEN">Prebenjamín</option>
+                  <option value="BEN">Benjamín</option>
+                  <option value="ALE">Alevín</option>
+                  <option value="INF">Infantil</option>
+                  <option value="CAD">Cadete</option>
+                  <option value="JUV">Juvenil</option>
+                  <option value="SEN">Sénior</option>
+                </Form.Select>
+              </Form.Group>
+
+              <Form.Group className="mt-3">
+                <Form.Label>Equipo (Género)</Form.Label>
+                <Form.Select
+                  value={equipoGenero}
+                  onChange={(e) => setEquipoGenero(e.target.value)}
+                >
+                  <option value="">Selecciona el género</option>
+                  <option value="M">Masculino</option>
+                  <option value="F">Femenino</option>
+                </Form.Select>
+              </Form.Group>
+            </>
           )}
 
           <Form.Group className="mt-3">

@@ -9,6 +9,8 @@ export default function DetallesEventoModal({ show, evento, onClose, onEliminar 
   const [descripcion, setDescripcion] = useState('');
   const [localizacion, setLocalizacion] = useState('');
   const [equipo2, setEquipo2] = useState('');
+  const [categoriaEquipo, setCategoriaEquipo] = useState('');
+  const [equipoGenero, setEquipoGenero] = useState('');
 
   const token = sessionStorage.getItem('accessToken');
 
@@ -18,6 +20,8 @@ export default function DetallesEventoModal({ show, evento, onClose, onEliminar 
       setDescripcion(evento.descripcion || evento.title || '');
       setLocalizacion(evento.localizacion || '');
       setEquipo2(evento.equipo2 || '');
+      setCategoriaEquipo(evento.categoria_equipo || '');
+      setEquipoGenero(evento.equipo_genero || '');
 
       const date = new Date(evento.start);
       const iso = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
@@ -35,6 +39,8 @@ export default function DetallesEventoModal({ show, evento, onClose, onEliminar 
       equipo1: evento.equipo1 || 'Portuense F.C.',
       equipo2: tipo === 'Partido' ? equipo2 : '',
       localizacion,
+      categoria_equipo: (tipo === 'Partido' || tipo === 'Entrenamiento') ? categoriaEquipo : null,
+      equipo_genero: (tipo === 'Partido' || tipo === 'Entrenamiento') ? equipoGenero : null,
     };
 
     try {
@@ -49,7 +55,7 @@ export default function DetallesEventoModal({ show, evento, onClose, onEliminar 
 
       if (res.ok) {
         setModoEdicion(false);
-        onClose(true); // cerrar y actualizar lista
+        onClose(true);
       } else {
         alert('Error al guardar los cambios');
       }
@@ -74,6 +80,7 @@ export default function DetallesEventoModal({ show, evento, onClose, onEliminar 
               <Form.Select value={tipo} onChange={(e) => setTipo(e.target.value)}>
                 <option value="Entrenamiento">Entrenamiento</option>
                 <option value="Partido">Partido</option>
+                <option value="Reunion">Reunión</option>
               </Form.Select>
             </Form.Group>
 
@@ -106,6 +113,39 @@ export default function DetallesEventoModal({ show, evento, onClose, onEliminar 
               </Form.Group>
             )}
 
+            {(tipo === 'Partido' || tipo === 'Entrenamiento') && (
+              <>
+                <Form.Group className="mb-2">
+                  <Form.Label>Categoría</Form.Label>
+                  <Form.Select
+                    value={categoriaEquipo}
+                    onChange={(e) => setCategoriaEquipo(e.target.value)}
+                  >
+                    <option value="">Selecciona una categoría</option>
+                    <option value="PREBEN">Prebenjamín</option>
+                    <option value="BEN">Benjamín</option>
+                    <option value="ALE">Alevín</option>
+                    <option value="INF">Infantil</option>
+                    <option value="CAD">Cadete</option>
+                    <option value="JUV">Juvenil</option>
+                    <option value="SEN">Sénior</option>
+                  </Form.Select>
+                </Form.Group>
+
+                <Form.Group className="mb-2">
+                  <Form.Label>Equipo (Género)</Form.Label>
+                  <Form.Select
+                    value={equipoGenero}
+                    onChange={(e) => setEquipoGenero(e.target.value)}
+                  >
+                    <option value="">Selecciona el género</option>
+                    <option value="M">Masculino</option>
+                    <option value="F">Femenino</option>
+                  </Form.Select>
+                </Form.Group>
+              </>
+            )}
+
             <Form.Group className="mb-2">
               <Form.Label>Ubicación</Form.Label>
               <Form.Control
@@ -120,9 +160,19 @@ export default function DetallesEventoModal({ show, evento, onClose, onEliminar 
             <p><strong>Tipo:</strong> {tipo}</p>
             <p><strong>Fecha:</strong> {new Date(evento.start).toLocaleString()}</p>
             <p><strong>Descripción:</strong> {descripcion}</p>
+
             {tipo === 'Partido' && equipo2 && (
               <p><strong>Equipo contrario:</strong> {equipo2}</p>
             )}
+
+            {(tipo === 'Partido' || tipo === 'Entrenamiento') && categoriaEquipo && (
+              <p><strong>Categoría:</strong> {categoriaEquipo}</p>
+            )}
+
+            {(tipo === 'Partido' || tipo === 'Entrenamiento') && equipoGenero && (
+              <p><strong>Equipo:</strong> {equipoGenero === 'M' ? 'Masculino' : 'Femenino'}</p>
+            )}
+
             {localizacion && (
               <p><strong>Ubicación:</strong> {localizacion}</p>
             )}
