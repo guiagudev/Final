@@ -5,6 +5,8 @@ import { useAuth } from "../hooks/useAuth";
 import AppHeader from "../components/AppHeader";
 import React from "react";
 import ModalCarpetasPDFs from "../components/ModalCarpetasPDFs";
+import { useConfirm } from "../hooks/useConfirm";
+
 
 export default function DetalleJugador() {
   const { id } = useParams();
@@ -15,6 +17,7 @@ export default function DetalleJugador() {
   const [showModal, setShowModal] = useState(false);
   const { isInGroup } = useAuth();
   const [hoveredComentarioId, setHoveredComentarioId] = useState(null);
+  const { confirm, ConfirmUI } = useConfirm();
 
   useEffect(() => {
     const token = sessionStorage.getItem("accessToken");
@@ -51,27 +54,39 @@ export default function DetalleJugador() {
   }`;
   const esAdmin = isInGroup("admin");
   const esPrimerEquipo = jugador.categoria === "SEN";
-  const eliminarComentario = (comentarioId) => {
-    const token = sessionStorage.getItem("accessToken");
-    if (window.confirm("¿Seguro que quieres eliminar este comentario?")) {
-      fetch(`${import.meta.env.VITE_API_URL}/comentarios-jugador/${comentarioId}/`, {
+  const eliminarComentario = async (comentarioId) => {
+  const token = sessionStorage.getItem("accessToken");
+
+  const confirmed = await confirm({
+    title: "¿Eliminar comentario?",
+    message: "¿Seguro que quieres eliminar este comentario?",
+  });
+
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/comentarios-jugador/${comentarioId}/`,
+      {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
-        .then((res) => {
-          if (res.ok) {
-            setComentarios((prev) =>
-              prev.filter((comentario) => comentario.id !== comentarioId)
-            );
-          } else {
-            alert("Error al eliminar el comentario.");
-          }
-        })
-        .catch(() => alert("Error al conectar con el servidor."));
+      }
+    );
+
+    if (res.ok) {
+      setComentarios((prev) =>
+        prev.filter((comentario) => comentario.id !== comentarioId)
+      );
+    } else {
+      alert("Error al eliminar el comentario.");
     }
-  };
+  } catch {
+    alert("Error al conectar con el servidor.");
+  }
+};
+
 
   return (
     <>
@@ -219,6 +234,8 @@ export default function DetalleJugador() {
         onHide={() => setShowModal(false)}
         jugadorId={jugador.id}
       />
+      {ConfirmUI}
+
     </>
   );
 }

@@ -15,19 +15,21 @@ import {
 } from "react-bootstrap";
 import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
+import { useConfirm } from "../../hooks/useConfirm"; // 👈 asegúrate que el hook esté bien
 
 const token = sessionStorage.getItem("accessToken");
 const userPermisos = JSON.parse(sessionStorage.getItem("userPermisos") || "[]");
 
 export default function JugadoresDelClub() {
   const { clubId } = useParams();
+  const navigate = useNavigate();
+
   const [jugadores, setJugadores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
   const tieneMasculino = userPermisos.some((p) => p.categoria === "SEN" && p.equipo === "M");
   const tieneFemenino = userPermisos.some((p) => p.categoria === "SEN" && p.equipo === "F");
-
   const [generoActivo, setGeneroActivo] = useState(tieneMasculino ? "M" : "F");
 
   const [formData, setFormData] = useState({
@@ -40,7 +42,7 @@ export default function JugadoresDelClub() {
     equipo: tieneMasculino ? "M" : "F",
   });
 
-  const navigate = useNavigate();
+  const { confirm, ConfirmUI } = useConfirm(); // 👈 usar confirm dialog
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/?club=${clubId}`, {
@@ -96,8 +98,12 @@ export default function JugadoresDelClub() {
   };
 
   const eliminarJugador = async (id) => {
-    const confirm = window.confirm("¿Seguro que deseas eliminar este jugador?");
-    if (!confirm) return;
+    const confirmed = await confirm({
+      title: "Eliminar jugador",
+      message: "¿Seguro que deseas eliminar este jugador?",
+    });
+
+    if (!confirmed) return;
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/${id}/`, {
@@ -189,6 +195,9 @@ export default function JugadoresDelClub() {
 
         <Outlet />
       </Container>
+
+      {/* Confirm UI global */}
+      {ConfirmUI}
 
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>

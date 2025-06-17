@@ -5,7 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import CrearUsuarioModal from "../components/CrearUsuarioModal";
 import "../assets/styles/UserManager.css";
 import PermisosModal from "../components/PermisosModal";
-
+import { useConfirm } from "../hooks/useConfirm";
 import React from "react";
 
 const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
@@ -19,6 +19,7 @@ export default function UserManager({ show, onClose }) {
   const [showCrearModal, setShowCrearModal] = useState(false);
   const [showPermisosModal, setShowPermisosModal] = useState(false);
   const [usuarioActivo, setUsuarioActivo] = useState(null);
+  const { confirm, ConfirmUI } = useConfirm();
 
   const isAdmin = user?.groups?.includes("admin");
 
@@ -73,26 +74,31 @@ export default function UserManager({ show, onClose }) {
   };
 
   const handleDelete = async (userId) => {
-    if (!window.confirm("¿Estás seguro de que quieres eliminar este usuario?"))
-      return;
+  const confirmed = await confirm({
+    title: "¿Eliminar usuario?",
+    message: "¿Estás seguro de que quieres eliminar este usuario?",
+  });
 
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/usuarios/${userId}/`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      }
-    );
+  if (!confirmed) return;
 
-    if (res.ok) {
-      alert("Usuario eliminado");
-      fetchUsuarios();
-    } else {
-      alert("Error al eliminar usuario");
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL}/usuarios/${userId}/`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
     }
-  };
+  );
+
+  if (res.ok) {
+    alert("Usuario eliminado");
+    fetchUsuarios();
+  } else {
+    alert("Error al eliminar usuario");
+  }
+};
+
 
   const toggleVista = (user, vista) => {
     const vistas = user.vistas || [];
@@ -234,7 +240,11 @@ export default function UserManager({ show, onClose }) {
             setUsuarios([...usuarios]);
           }}
         />
+        
       )}
+      {ConfirmUI}
+
     </Modal>
+    
   );
 }

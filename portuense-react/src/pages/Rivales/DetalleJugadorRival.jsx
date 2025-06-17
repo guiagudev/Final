@@ -9,6 +9,7 @@ import {
   Form,
 } from "react-bootstrap";
 import BackButton from "../../components/BackButton";
+import { useConfirm } from "../../hooks/useConfirm";
 
 export default function DetalleJugadorRival() {
   const { jugadorId } = useParams();
@@ -18,11 +19,8 @@ export default function DetalleJugadorRival() {
   const [loading, setLoading] = useState(true);
   const [hoveredComentarioId, setHoveredComentarioId] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
-    titulo: "",
-    contenido: "",
-  });
-
+  const [formData, setFormData] = useState({ titulo: "", contenido: "" });
+  const { confirm, ConfirmUI } = useConfirm();
   const token = sessionStorage.getItem("accessToken");
 
   useEffect(() => {
@@ -42,31 +40,39 @@ export default function DetalleJugadorRival() {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then((data) => setComentarios(data))
+      .then(setComentarios)
       .catch((err) => console.error("Error al obtener comentarios:", err));
   }, [jugadorId, token]);
 
-  const eliminarComentario = (comentarioId) => {
-    if (window.confirm("¿Eliminar este comentario?")) {
-      fetch(`${import.meta.env.VITE_API_URL}/comentarios-rivales/${comentarioId}/`, {
+  const eliminarComentario = async (comentarioId) => {
+    const confirmed = await confirm({
+      title: "¿Eliminar comentario?",
+      message: "¿Estás seguro de que deseas eliminar este comentario?",
+    });
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/comentarios-rivales/${comentarioId}/`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => {
-          if (res.ok) {
-            setComentarios((prev) =>
-              prev.filter((c) => c.id !== comentarioId)
-            );
-          } else {
-            alert("No se pudo eliminar.");
-          }
-        })
-        .catch(() => alert("Error de red al eliminar."));
+      });
+
+      if (res.ok) {
+        setComentarios((prev) => prev.filter((c) => c.id !== comentarioId));
+      } else {
+        alert("No se pudo eliminar.");
+      }
+    } catch {
+      alert("Error de red al eliminar.");
     }
   };
 
   const eliminarJugador = async () => {
-    if (!window.confirm("¿Estás seguro de que deseas eliminar este jugador rival?")) return;
+    const confirmed = await confirm({
+      title: "¿Eliminar jugador?",
+      message: "¿Estás seguro de que deseas eliminar este jugador rival?",
+    });
+    if (!confirmed) return;
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/${jugadorId}/`, {
@@ -78,7 +84,7 @@ export default function DetalleJugadorRival() {
 
       if (res.ok) {
         alert("Jugador eliminado correctamente.");
-        navigate(-1); // volver atrás
+        navigate(-1);
       } else {
         alert("No se pudo eliminar el jugador.");
       }
@@ -141,6 +147,7 @@ export default function DetalleJugadorRival() {
   return (
     <Container className="mt-4">
       <BackButton to={-1} />
+
       <Card className="shadow-sm mb-4">
         <Card.Body>
           <div className="d-flex justify-content-between align-items-start">
@@ -150,7 +157,9 @@ export default function DetalleJugadorRival() {
               <p><strong>Posición:</strong> {jugador.posicion}</p>
               <p><strong>Club:</strong> {jugador.club_nombre || "N/D"}</p>
             </div>
-           
+            <Button variant="danger" onClick={eliminarJugador}>
+              Eliminar jugador
+            </Button>
           </div>
         </Card.Body>
       </Card>
@@ -201,7 +210,6 @@ export default function DetalleJugadorRival() {
         ))
       )}
 
-      {/* Modal para nuevo comentario */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Nuevo Comentario</Modal.Title>
@@ -239,6 +247,8 @@ export default function DetalleJugadorRival() {
           </Form>
         </Modal.Body>
       </Modal>
+
+      {ConfirmUI}
     </Container>
   );
 }

@@ -5,6 +5,7 @@ import JugadorForm from "./jugadores/JugadorForm";
 import { eliminarJugador } from "./jugadores/EliminarJugadorBtn";
 import { getToken } from "../utils/auth";
 import React from "react";
+import { useConfirm } from "../hooks/useConfirm";
 
 const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
 const equipos = ["M", "F"];
@@ -16,6 +17,7 @@ export default function Jugadores() {
   const [editingJugador, setEditingJugador] = useState(null);
   const [user, setUser] = useState({});
   const navigate = useNavigate();
+  const { confirm, ConfirmUI } = useConfirm();
 
   const fetchJugadores = useCallback(async () => {
     try {
@@ -53,8 +55,9 @@ export default function Jugadores() {
   };
 
   const handleDelete = async (id) => {
-    await eliminarJugador(id, fetchJugadores);
-  };
+  await eliminarJugador(id, fetchJugadores, confirm);
+};
+
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -194,5 +197,8 @@ export default function Jugadores() {
         }}
       />
     </Container>
+    
   );
+  {ConfirmUI}
+
 }

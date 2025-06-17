@@ -14,17 +14,27 @@ import {
 } from "react-bootstrap";
 import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
+import { useConfirm } from "../../hooks/useConfirm";
 
 export default function ClubesRivales() {
   const [clubes, setClubes] = useState([]);
   const [conteos, setConteos] = useState({});
-  const [filtros, setFiltros] = useState({ edad_min: "", edad_max: "", posicion: "" });
+  const [filtros, setFiltros] = useState({
+    edad_min: "",
+    edad_max: "",
+    posicion: "",
+  });
   const [modalClubId, setModalClubId] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [nuevoClub, setNuevoClub] = useState({ nombre: "", ciudad: "", imagen: null });
+  const [nuevoClub, setNuevoClub] = useState({
+    nombre: "",
+    ciudad: "",
+    imagen: null,
+  });
   const [showEditModal, setShowEditModal] = useState(false);
   const [clubEditando, setClubEditando] = useState(null);
+  const { confirm, ConfirmUI } = useConfirm();
 
   const token = sessionStorage.getItem("accessToken");
   const navigate = useNavigate();
@@ -53,7 +63,10 @@ export default function ClubesRivales() {
       });
 
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/?${params.toString()}`,
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_API_URL
+          }/jugadores-rivales/?${params.toString()}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
@@ -67,25 +80,28 @@ export default function ClubesRivales() {
     setCargando(false);
   };
 
-  const eliminarClub = async (id) => {
-    const confirmar = window.confirm("¿Seguro que deseas eliminar este club?");
-    if (!confirmar) return;
+const eliminarClub = async (id) => {
+  const confirmed = await confirm({
+    title: "¿Eliminar club?",
+    message: "¿Seguro que deseas eliminar este club?",
+  });
+  if (!confirmed) return;
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/clubes-rivales/${id}/`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/clubes-rivales/${id}/`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      if (res.ok) {
-        setClubes((prev) => prev.filter((club) => club.id !== id));
-      } else {
-        alert("No se pudo eliminar el club.");
-      }
-    } catch (err) {
-      alert("Error al conectar con el servidor.");
+    if (res.ok) {
+      setClubes((prev) => prev.filter((club) => club.id !== id));
+    } else {
+      alert("No se pudo eliminar el club.");
     }
-  };
+  } catch (err) {
+    alert("Error al conectar con el servidor.");
+  }
+};
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -121,11 +137,14 @@ export default function ClubesRivales() {
     }
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/clubes-rivales/${clubEditando.id}/`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/clubes-rivales/${clubEditando.id}/`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        }
+      );
 
       if (res.ok) {
         setShowEditModal(false);
@@ -153,39 +172,110 @@ export default function ClubesRivales() {
 
         <Form className="mb-4">
           <Row>
-            <Col md={2}><Form.Control name="edad_min" placeholder="Edad mínima" type="number" value={filtros.edad_min} onChange={handleChange} /></Col>
-            <Col md={2}><Form.Control name="edad_max" placeholder="Edad máxima" type="number" value={filtros.edad_max} onChange={handleChange} /></Col>
-            <Col md={3}><Form.Control name="posicion" placeholder="Posición" value={filtros.posicion} onChange={handleChange} /></Col>
-            <Col md={2}><Button onClick={buscar} disabled={cargando}>{cargando ? <Spinner size="sm" animation="border" /> : "Buscar"}</Button></Col>
+            <Col md={2}>
+              <Form.Control
+                name="edad_min"
+                placeholder="Edad mínima"
+                type="number"
+                value={filtros.edad_min}
+                onChange={handleChange}
+              />
+            </Col>
+            <Col md={2}>
+              <Form.Control
+                name="edad_max"
+                placeholder="Edad máxima"
+                type="number"
+                value={filtros.edad_max}
+                onChange={handleChange}
+              />
+            </Col>
+            <Col md={3}>
+              <Form.Control
+                name="posicion"
+                placeholder="Posición"
+                value={filtros.posicion}
+                onChange={handleChange}
+              />
+            </Col>
+            <Col md={2}>
+              <Button onClick={buscar} disabled={cargando}>
+                {cargando ? <Spinner size="sm" animation="border" /> : "Buscar"}
+              </Button>
+            </Col>
           </Row>
         </Form>
 
         <Table striped bordered hover responsive>
           <thead>
-            <tr><th>Escudo</th><th>Nombre</th><th>Ciudad</th><th>Jugadores que coinciden</th><th>Ver todos</th><th>Acciones</th></tr>
+            <tr>
+              <th>Escudo</th>
+              <th>Nombre</th>
+              <th>Ciudad</th>
+              <th>Jugadores que coinciden</th>
+              <th>Ver todos</th>
+              <th>Acciones</th>
+            </tr>
           </thead>
           <tbody>
             {clubes.map((club) => (
               <tr key={club.id}>
-                <td>{club.imagen ? (<Image src={club.imagen} width={50} height={50} rounded />) : (<span>Sin imagen</span>)}</td>
-                <td><Link to={`/clubes-rivales/${club.id}`}>{club.nombre}</Link></td>
+                <td>
+                  {club.imagen ? (
+                    <Image src={club.imagen} width={50} height={50} rounded />
+                  ) : (
+                    <span>Sin imagen</span>
+                  )}
+                </td>
+                <td>
+                  <Link to={`/clubes-rivales/${club.id}`}>{club.nombre}</Link>
+                </td>
                 <td>{club.ciudad}</td>
                 <td>
                   <div className="d-flex align-items-center justify-content-between">
                     <span>{conteos[club.id] || 0}</span>
                     {conteos[club.id] > 0 && (
-                      <Button size="sm" variant="outline-primary" onClick={() => setModalClubId(club.id)} className="ms-2">Mostrar</Button>
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        onClick={() => setModalClubId(club.id)}
+                        className="ms-2"
+                      >
+                        Mostrar
+                      </Button>
                     )}
                   </div>
                 </td>
                 <td>
-                  <Button size="sm" variant="info" onClick={() => navigate(`/clubes-rivales/${club.id}/jugadores`)}>
+                  <Button
+                    size="sm"
+                    variant="info"
+                    onClick={() =>
+                      navigate(`/clubes-rivales/${club.id}/jugadores`)
+                    }
+                  >
                     Ver Jugadores
                   </Button>
                 </td>
                 <td>
-                  <Button size="sm" variant="warning" className="me-2" onClick={() => { setClubEditando(club); setShowEditModal(true); }}>Editar</Button>
-                  <Button size="sm" variant="danger" onClick={() => eliminarClub(club.id)}>Eliminar</Button>
+                  <Button
+                    size="sm"
+                    variant="warning"
+                    className="me-2"
+                    onClick={() => {
+                      setClubEditando(club);
+                      setShowEditModal(true);
+                    }}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={() => eliminarClub(club.id)}
+                  >
+                    Eliminar
+                  </Button>
                 </td>
               </tr>
             ))}
@@ -195,53 +285,104 @@ export default function ClubesRivales() {
 
       {/* Modal de creación */}
       <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)}>
-        <Modal.Header closeButton><Modal.Title>Crear nuevo Club</Modal.Title></Modal.Header>
+        <Modal.Header closeButton>
+          <Modal.Title>Crear nuevo Club</Modal.Title>
+        </Modal.Header>
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>Nombre</Form.Label>
-              <Form.Control type="text" value={nuevoClub.nombre} onChange={(e) => setNuevoClub({ ...nuevoClub, nombre: e.target.value })} />
+              <Form.Control
+                type="text"
+                value={nuevoClub.nombre}
+                onChange={(e) =>
+                  setNuevoClub({ ...nuevoClub, nombre: e.target.value })
+                }
+              />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Ciudad</Form.Label>
-              <Form.Control type="text" value={nuevoClub.ciudad} onChange={(e) => setNuevoClub({ ...nuevoClub, ciudad: e.target.value })} />
+              <Form.Control
+                type="text"
+                value={nuevoClub.ciudad}
+                onChange={(e) =>
+                  setNuevoClub({ ...nuevoClub, ciudad: e.target.value })
+                }
+              />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Escudo</Form.Label>
-              <Form.Control type="file" accept="image/*" onChange={(e) => setNuevoClub({ ...nuevoClub, imagen: e.target.files[0] })} />
+              <Form.Control
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  setNuevoClub({ ...nuevoClub, imagen: e.target.files[0] })
+                }
+              />
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowCreateModal(false)}>Cancelar</Button>
-          <Button variant="primary" onClick={handleCreateClub}>Crear</Button>
+          <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
+            Cancelar
+          </Button>
+          <Button variant="primary" onClick={handleCreateClub}>
+            Crear
+          </Button>
         </Modal.Footer>
       </Modal>
 
       {/* Modal de edición */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
-        <Modal.Header closeButton><Modal.Title>Editar Club</Modal.Title></Modal.Header>
+        <Modal.Header closeButton>
+          <Modal.Title>Editar Club</Modal.Title>
+        </Modal.Header>
         <Modal.Body>
           {clubEditando && (
             <Form>
               <Form.Group className="mb-3">
                 <Form.Label>Nombre</Form.Label>
-                <Form.Control type="text" value={clubEditando.nombre} onChange={(e) => setClubEditando({ ...clubEditando, nombre: e.target.value })} />
+                <Form.Control
+                  type="text"
+                  value={clubEditando.nombre}
+                  onChange={(e) =>
+                    setClubEditando({ ...clubEditando, nombre: e.target.value })
+                  }
+                />
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Ciudad</Form.Label>
-                <Form.Control type="text" value={clubEditando.ciudad} onChange={(e) => setClubEditando({ ...clubEditando, ciudad: e.target.value })} />
+                <Form.Control
+                  type="text"
+                  value={clubEditando.ciudad}
+                  onChange={(e) =>
+                    setClubEditando({ ...clubEditando, ciudad: e.target.value })
+                  }
+                />
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Actualizar escudo</Form.Label>
-                <Form.Control type="file" accept="image/*" onChange={(e) => setClubEditando({ ...clubEditando, imagen: e.target.files[0] })} />
+                <Form.Control
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setClubEditando({
+                      ...clubEditando,
+                      imagen: e.target.files[0],
+                    })
+                  }
+                />
               </Form.Group>
             </Form>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowEditModal(false)}>Cancelar</Button>
-          <Button variant="primary" onClick={handleEditarClub}>Guardar Cambios</Button>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+            Cancelar
+          </Button>
+          <Button variant="primary" onClick={handleEditarClub}>
+            Guardar Cambios
+          </Button>
         </Modal.Footer>
       </Modal>
 
@@ -253,4 +394,6 @@ export default function ClubesRivales() {
       />
     </>
   );
+  {ConfirmUI}
+
 }

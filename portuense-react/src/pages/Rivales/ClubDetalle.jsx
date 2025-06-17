@@ -1,14 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import {
-  Container,
-  Card,
-  Button,
-  Spinner,
-  Modal,
-  Form,
-} from "react-bootstrap";
+import { Container, Card, Button, Spinner, Modal, Form } from "react-bootstrap";
 import BackButton from "../../components/BackButton";
+import { useConfirm } from "../../hooks/useConfirm";
 
 export default function ClubDetalle() {
   const { id } = useParams();
@@ -18,7 +12,7 @@ export default function ClubDetalle() {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ titulo: "", contenido: "" });
   const token = sessionStorage.getItem("accessToken");
-
+  const { confirm, ConfirmUI } = useConfirm();
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/clubes-rivales/${id}/`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -26,9 +20,12 @@ export default function ClubDetalle() {
       .then((res) => res.json())
       .then(setClub);
 
-    fetch(`${import.meta.env.VITE_API_URL}/comentarios-club-rival/?club=${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    fetch(
+      `${import.meta.env.VITE_API_URL}/comentarios-club-rival/?club=${id}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
       .then((res) => res.json())
       .then(setComentarios);
   }, [id, token]);
@@ -40,14 +37,17 @@ export default function ClubDetalle() {
       club: id,
     };
 
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/comentarios-club-rival/`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/comentarios-club-rival/`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
     if (res.ok) {
       const nuevo = await res.json();
@@ -58,11 +58,17 @@ export default function ClubDetalle() {
   };
 
   const eliminarComentario = async (comentarioId) => {
-    if (!window.confirm("¿Eliminar este comentario?")) return;
+    const confirmed = await confirm({
+      title: "¿Eliminar comentario?",
+      message: "¿Estás seguro de que deseas eliminar este comentario?",
+    });
+    if (!confirmed) return;
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/comentarios-club-rival/${comentarioId}/`,
+        `${
+          import.meta.env.VITE_API_URL
+        }/comentarios-club-rival/${comentarioId}/`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -195,4 +201,6 @@ export default function ClubDetalle() {
       </Modal>
     </Container>
   );
+  {ConfirmUI}
+
 }

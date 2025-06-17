@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
+import { useConfirm } from "../hooks/useConfirm";
 import es from "date-fns/locale/es";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
@@ -30,6 +31,7 @@ export default function Calendario() {
   const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
   const [mostrarEditar, setMostrarEditar] = useState(false);
   const [mostrarDetalles, setMostrarDetalles] = useState(false);
+  const { confirm, ConfirmUI } = useConfirm();
 
   // 🧭 Control de vista y fecha
   const [vistaActual, setVistaActual] = useState("month");
@@ -218,14 +220,23 @@ export default function Calendario() {
             setMostrarEditar(true);
           }}
           onEliminar={async () => {
-            const confirm = window.confirm("¿Estás seguro de eliminar este evento?");
-            if (!confirm) return;
+            const confirmed = await confirm({
+              title: "¿Eliminar evento?",
+              message: "¿Estás seguro de que quieres eliminar este evento?",
+            });
+
+            if (!confirmed) return;
 
             try {
-              await fetch(`${import.meta.env.VITE_API_URL}/eventos/${eventoSeleccionado.id}/`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-              });
+              await fetch(
+                `${import.meta.env.VITE_API_URL}/eventos/${
+                  eventoSeleccionado.id
+                }/`,
+                {
+                  method: "DELETE",
+                  headers: { Authorization: `Bearer ${token}` },
+                }
+              );
               setMostrarDetalles(false);
               fetchEventos();
             } catch (err) {
@@ -234,6 +245,8 @@ export default function Calendario() {
           }}
         />
       </div>
+      {ConfirmUI}
+
     </>
   );
 }
