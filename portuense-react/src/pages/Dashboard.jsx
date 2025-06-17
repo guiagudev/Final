@@ -16,7 +16,9 @@ export default function Dashboard() {
   const [permisos, setPermisos] = useState([]);
 
   useEffect(() => {
-    const storedPerms = JSON.parse(sessionStorage.getItem("userPermisos") || "[]");
+    const storedPerms = JSON.parse(
+      sessionStorage.getItem("userPermisos") || "[]"
+    );
     setPermisos(storedPerms);
   }, []);
 
@@ -64,20 +66,22 @@ export default function Dashboard() {
             </Col>
           )}
 
-          <Col md={6} lg={4} className="mb-4">
-            <Card className="h-100">
-              <Card.Body>
-                <Card.Title>Calendario</Card.Title>
-                <Card.Text>Gestiona partidos y entrenamientos</Card.Text>
-                <Button
-                  variant="success"
-                  onClick={() => navigate("/calendario")}
-                >
-                  Ir al Calendario
-                </Button>
-              </Card.Body>
-            </Card>
-          </Col>
+          {permisos.some((p) => p.vista === "calendario") && (
+            <Col md={6} lg={4} className="mb-4">
+              <Card className="h-100">
+                <Card.Body>
+                  <Card.Title>Calendario</Card.Title>
+                  <Card.Text>Gestiona partidos y entrenamientos</Card.Text>
+                  <Button
+                    variant="success"
+                    onClick={() => navigate("/calendario")}
+                  >
+                    Ir al Calendario
+                  </Button>
+                </Card.Body>
+              </Card>
+            </Col>
+          )}
         </Row>
 
         {isInGroup("admin") && (

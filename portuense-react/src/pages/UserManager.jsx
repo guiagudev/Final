@@ -10,7 +10,7 @@ import React from "react";
 
 const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
 const equipos = ["M", "F"];
-const vistasDisponibles = ["direccion_deportiva", "rivales"];
+const vistasDisponibles = ["direccion_deportiva", "rivales","calendario"];
 
 export default function UserManager({ show, onClose }) {
   const { user } = useAuth();
@@ -124,7 +124,7 @@ export default function UserManager({ show, onClose }) {
               </Button>
             </div>
 
-            <Table striped bordered hover responsive>
+            <Table striped bordered hover responsive className="dark-table">
               <thead>
                 <tr>
                   <th>Usuario</th>
