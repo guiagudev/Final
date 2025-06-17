@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import { useConfirm } from "../hooks/useConfirm";
+import { useConfirm } from "../hooks/useConfirm.js";
 
 export default function EditarEventoModal({ show, onClose, evento }) {
   const [descripcion, setDescripcion] = useState("");
