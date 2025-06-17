@@ -26,14 +26,15 @@ def listar_usuarios(request):
     user_data = []
     for user in users:
         permisos = PermisoPersonalizado.objects.filter(user=user).values('categoria', 'equipo')
+        vistas = PermisoVista.objects.filter(user=user).values_list('vista', flat=True)
         user_data.append({
             'id': user.id,
             'username': user.username,
             'grupo': user.groups.first().name if user.groups.exists() else '',
-            'permisos': list(permisos)
+            'permisos': list(permisos),
+            'vistas': list(vistas),
         })
     return Response(user_data)
-
 
 @api_view(['PUT'])
 @permission_classes([IsAdminUser])
@@ -47,6 +48,7 @@ def actualizar_usuario(request, user_id):
     username = data.get('username')
     grupo = data.get('grupo')
     permisos = data.get('permisos', [])
+    vistas = data.get('vistas', [])
     password = data.get('password')
 
     if username:
@@ -67,23 +69,32 @@ def actualizar_usuario(request, user_id):
 
     user.save()
 
+    # Limpiar permisos previos
     PermisoPersonalizado.objects.filter(user=user).delete()
+    PermisoVista.objects.filter(user=user).delete()
+
+    # Guardar nuevos permisos
     for permiso in permisos:
         categoria = permiso.get('categoria')
         equipo = permiso.get('equipo')
         if categoria and equipo:
             PermisoPersonalizado.objects.create(user=user, categoria=categoria, equipo=equipo)
 
+    for vista in vistas:
+        PermisoVista.objects.create(user=user, vista=vista)
+
     return Response({'message': 'Usuario actualizado correctamente'})
 
 
 @api_view(['POST'])
+@permission_classes([IsAdminUser])
 def crear_usuario(request):
     data = request.data
     username = data.get('username')
     password = data.get('password')
     grupo = data.get('grupo')
     permisos = data.get('permisos', [])
+    vistas = data.get('vistas', [])
 
     if not username or not password or not grupo:
         return Response({'error': 'Faltan datos requeridos'}, status=400)
@@ -105,7 +116,11 @@ def crear_usuario(request):
         if categoria and equipo:
             PermisoPersonalizado.objects.create(user=user, categoria=categoria, equipo=equipo)
 
+    for vista in vistas:
+        PermisoVista.objects.create(user=user, vista=vista)
+
     return Response({'message': 'Usuario creado con éxito'}, status=201)
+
 
 
 @api_view(['GET'])
@@ -113,17 +128,16 @@ def crear_usuario(request):
 def me_view(request):
     user = request.user
     permisos = PermisoPersonalizado.objects.filter(user=user)
-    
+    vistas = PermisoVista.objects.filter(user=user).values_list('vista', flat=True)
+
     return Response({
         "username": user.username,
         "is_staff": user.is_staff,
         "is_superuser": user.is_superuser,
         "groups": [group.name for group in user.groups.all()],
         "permisos": list(permisos.values('categoria', 'equipo')),
-        "vistas": list(permisos.exclude(vista=None).values_list('vista', flat=True))  # 👈
+        "vistas": list(vistas),
     })
-
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

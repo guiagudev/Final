@@ -163,16 +163,25 @@ class PermisoPersonalizado(models.Model):
         ('M', 'Masculino'),
         ('F', 'Femenino')
     ]
-
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='permisos')
     categoria = models.CharField(max_length=10, choices=CATEGORIAS)
     equipo = models.CharField(max_length=1, choices=EQUIPOS)
-    vista = models.CharField(max_length=50, blank=True, null=True)  # 👈 nueva
+
     class Meta:
         unique_together = ('user', 'categoria', 'equipo')
 
     def __str__(self):
-        return f"{self.user.username} → {self.categoria or self.vista }-{self.equipo or ''}"                                                     
+        return f"{self.user.username} → {self.categoria}-{self.equipo}"
+class PermisoVista(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vistas')
+    vista = models.CharField(max_length=50)
+
+    class Meta:
+        unique_together = ('user', 'vista')
+
+    def __str__(self):
+        return f"{self.user.username} → Vista: {self.vista}"
+                                      
 class ExcelPorCategoria(models.Model):
     categoria = models.CharField(
         max_length=20,

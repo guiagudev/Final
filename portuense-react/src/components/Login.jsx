@@ -15,7 +15,7 @@ export default function Login() {
     document.body.style.backgroundColor = '#050505'; // Negro
 
     return () => {
-      document.body.style.backgroundColor = originalColor; // Restaurar color original al salir
+      document.body.style.backgroundColor = originalColor;
     };
   }, []);
 
@@ -44,9 +44,12 @@ export default function Login() {
       if (!meRes.ok) throw new Error('Error al obtener datos del usuario');
 
       const userData = await meRes.json();
+
+      // Guardar en sessionStorage
       sessionStorage.setItem('user', JSON.stringify(userData));
       sessionStorage.setItem('userGroups', JSON.stringify(userData.groups || []));
       sessionStorage.setItem('userPermisos', JSON.stringify(userData.permisos || []));
+      sessionStorage.setItem('userVistas', JSON.stringify(userData.vistas || [])); // 👈 NUEVO
 
       navigate('/dashboard');
     } catch (err) {
