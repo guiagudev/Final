@@ -40,6 +40,11 @@ if group_created:
     print("✅ Grupo 'admin' creado.")
 else:
     print("ℹ️ Grupo 'admin' ya existe.")
+user_group, user_group_created = Group.objects.get_or_create(name='usuario')
+if user_group_created:
+    print("Grupo 'usuario' creado)
+else:
+    print("Grupo 'usuario' ya existe)
 
 # Asignar grupo 'admin' al usuario 'admin'
 if not admin_user.groups.filter(name='admin').exists():

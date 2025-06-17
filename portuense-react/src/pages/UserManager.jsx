@@ -10,7 +10,7 @@ import React from "react";
 
 const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
 const equipos = ["M", "F"];
-const vistasDisponibles = ["direccion_deportiva", "rivales","calendario"];
+const vistasDisponibles = ["direccion-deportiva", "rivales","calendario"];
 
 export default function UserManager({ show, onClose }) {
   const { user } = useAuth();

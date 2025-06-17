@@ -12,13 +12,13 @@ import React from "react";
 
 const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
 const equipos = ["M", "F"];
-const gruposDisponibles = ["admin", "coordinador", "entrenador"];
-const vistasDisponibles = ["direccion_deportiva", "rivales","calendario"];
+const gruposDisponibles = ["admin", "usuario"];
+const vistasDisponibles = ["direccion-deportiva", "rivales", "calendario"];
 
 export default function CrearUsuarioModal({ show, onClose }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [grupo, setGrupo] = useState("entrenador");
+  const [grupo, setGrupo] = useState("usuario");
   const [permisos, setPermisos] = useState([]);
   const [vistas, setVistas] = useState([]);
 
@@ -66,31 +66,45 @@ export default function CrearUsuarioModal({ show, onClose }) {
       const [categoria, equipo] = p.split("-");
       return { categoria, equipo };
     });
-    const token = sessionStorage.getItem("accessToken");
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/crear-usuario/`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          username,
-          password,
-          grupo,
-          permisos: permisosData,
-          vistas,
-        }),
-      }
-    );
 
-    if (res.ok) {
-      setToastMessage(`Usuario "${username}" creado con éxito`);
-      setShowToast(true);
-      onClose(true);
-    } else {
-      alert("Error al crear el usuario");
+    const payload = {
+      username,
+      password,
+      grupo,
+      permisos: permisosData,
+      vistas,
+    };
+
+    console.log("📤 Enviando payload:", payload);
+
+    const token = sessionStorage.getItem("accessToken");
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/crear-usuario/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const result = await res.json();
+      console.log("📥 Respuesta del servidor:", result);
+
+      if (res.ok) {
+        setToastMessage(`Usuario "${username}" creado con éxito`);
+        setShowToast(true);
+        onClose(true);
+      } else {
+        alert("❌ Error al crear usuario (ver consola)");
+      }
+    } catch (error) {
+      console.error("❌ Error de red:", error);
+      alert("❌ Error inesperado al crear usuario");
     }
   };
 
