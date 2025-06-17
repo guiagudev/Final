@@ -93,6 +93,10 @@ export default function Router() {
           path="/direccion-deportiva/primer-equipo/:categoria/:equipo/excel"
           element={<ExcelPorCategoria />}
         />
+        <Route
+          path="/academia/primer-equipo/:categoria/:equipo/excel"
+          element={<ExcelPorCategoria />}
+        />
       </Routes>
     </BrowserRouter>
   );

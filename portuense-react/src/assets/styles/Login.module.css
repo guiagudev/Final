@@ -1,0 +1,85 @@
+@font-face {
+  font-family: "AquireFont";
+  src: url("../fonts/Modern Age.otf");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.wrapper {
+  background-color: #050505;
+  color: #fff;
+  font-family: "AquireFont", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.wrapper::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -100%;
+  width: 200%;
+  height: 20px;
+  background: rgba(255, 51, 51, 0.7);
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(255, 51, 51, 1);
+  animation: neonWave 4s ease-in-out infinite;
+  z-index: 0;
+}
+
+.wrapper::after {
+  content: "";
+  position: absolute;
+  top: 15%;
+  left: -100%;
+  width: 200%;
+  height: 5px;
+  background: rgba(255, 51, 51, 0.7);
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(255, 51, 51, 1);
+  animation: neonWaveTop 3s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes neonWave {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes neonWaveTop {
+  0% {
+    transform: translateX(-100%) translateY(-40%);
+  }
+  50% {
+    transform: translateX(100%) translateY(-40%);
+  }
+  100% {
+    transform: translateX(-100%) translateY(-40%);
+  }
+}
+
+.cardCustom {
+  min-width: 320px;
+  max-width: 400px;
+  width: 100%;
+  padding: 2rem;
+  background-color: rgba(34, 34, 34, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  background-image: url("../images/fondo rcportuense.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  border-radius: 8px;
+  z-index: 2;
+}

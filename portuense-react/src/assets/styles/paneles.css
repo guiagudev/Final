@@ -1,0 +1,27 @@
+.academia-panel-wrapper {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  border-radius: 16px;
+  border: 1px solid #dee2e6;
+  padding: 24px;
+  background-color: #1c1c1c;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: #fff;
+}
+
+.academia-panel-wrapper:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  border-color: #ff4d4d;
+}
+
+.academia-panel-wrapper .panel-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.academia-panel-wrapper .panel-text {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 16px;
+}
