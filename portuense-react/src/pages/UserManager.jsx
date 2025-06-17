@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Modal, Table, Button, Form, Row, Col, Spinner } from "react-bootstrap";
+import { Modal, Table, Button, Form, Spinner } from "react-bootstrap";
 import { getToken } from "../utils/auth";
 import { useAuth } from "../hooks/useAuth";
 import CrearUsuarioModal from "../components/CrearUsuarioModal";
@@ -10,6 +10,7 @@ import React from "react";
 
 const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
 const equipos = ["M", "F"];
+const vistasDisponibles = ["direccion_deportiva", "rivales"];
 
 export default function UserManager({ show, onClose }) {
   const { user } = useAuth();
@@ -44,41 +45,6 @@ export default function UserManager({ show, onClose }) {
     }
   }, [show, isAdmin, fetchUsuarios]);
 
-  const togglePermiso = (cat, eq, user) => {
-    const key = `${cat}-${eq}`;
-    const permisos =
-      user.permisos?.map((p) => `${p.categoria}-${p.equipo}`) || [];
-    const updated = permisos.includes(key)
-      ? permisos.filter((p) => p !== key)
-      : [...permisos, key];
-
-    user.permisos = updated.map((p) => {
-      const [categoria, equipo] = p.split("-");
-      return { categoria, equipo };
-    });
-
-    setUsuarios([...usuarios]);
-  };
-
-  const toggleAllPermisos = (user) => {
-    const allKeys = categorias.flatMap((cat) =>
-      equipos.map((eq) => `${cat}-${eq}`)
-    );
-    const currentKeys =
-      user.permisos?.map((p) => `${p.categoria}-${p.equipo}`) || [];
-
-    const isAllSelected = allKeys.every((k) => currentKeys.includes(k));
-
-    user.permisos = isAllSelected
-      ? []
-      : allKeys.map((k) => {
-          const [categoria, equipo] = k.split("-");
-          return { categoria, equipo };
-        });
-
-    setUsuarios([...usuarios]);
-  };
-
   const handleUpdate = async (user) => {
     const res = await fetch(
       `${import.meta.env.VITE_API_URL}/actualizar-usuario/${user.id}/`,
@@ -92,6 +58,7 @@ export default function UserManager({ show, onClose }) {
           username: user.username,
           grupo: user.grupo,
           permisos: user.permisos,
+          vistas: user.vistas,
           password: user.password || undefined,
         }),
       }
@@ -127,6 +94,16 @@ export default function UserManager({ show, onClose }) {
     }
   };
 
+  const toggleVista = (user, vista) => {
+    const vistas = user.vistas || [];
+    const updated = vistas.includes(vista)
+      ? vistas.filter((v) => v !== vista)
+      : [...vistas, vista];
+
+    user.vistas = updated;
+    setUsuarios([...usuarios]);
+  };
+
   if (!isAdmin) return null;
 
   return (
@@ -151,8 +128,9 @@ export default function UserManager({ show, onClose }) {
               <thead>
                 <tr>
                   <th>Usuario</th>
-                  <th>Grupo</th> {/* ← Añadido */}
+                  <th>Grupo</th>
                   <th>Permisos</th>
+                  <th>Vistas</th>
                   <th>Contraseña</th>
                   <th>Acciones</th>
                 </tr>
@@ -174,7 +152,6 @@ export default function UserManager({ show, onClose }) {
                         <option value="admin">Admin</option>
                         <option value="coordinador">Coordinador</option>
                         <option value="entrenador">Entrenador</option>
-                        {/* Añade aquí los que tengas en tu sistema */}
                       </Form.Select>
                     </td>
                     <td>
@@ -189,7 +166,18 @@ export default function UserManager({ show, onClose }) {
                         Gestionar permisos
                       </Button>
                     </td>
-
+                    <td>
+                      {vistasDisponibles.map((vista) => (
+                        <Form.Check
+                          key={vista}
+                          type="checkbox"
+                          label={vista.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                          checked={user.vistas?.includes(vista) || false}
+                          onChange={() => toggleVista(user, vista)}
+                          className="small"
+                        />
+                      ))}
+                    </td>
                     <td>
                       <Form.Control
                         type="password"

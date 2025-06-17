@@ -112,15 +112,17 @@ def crear_usuario(request):
 @permission_classes([IsAuthenticated])
 def me_view(request):
     user = request.user
-    permisos = PermisoPersonalizado.objects.filter(user=user).values('categoria', 'equipo')
-
+    permisos = PermisoPersonalizado.objects.filter(user=user)
+    
     return Response({
         "username": user.username,
         "is_staff": user.is_staff,
         "is_superuser": user.is_superuser,
         "groups": [group.name for group in user.groups.all()],
-        "permisos": list(permisos)
+        "permisos": list(permisos.values('categoria', 'equipo')),
+        "vistas": list(permisos.exclude(vista=None).values_list('vista', flat=True))  # 👈
     })
+
 
 
 @api_view(['GET'])

@@ -2,18 +2,18 @@ import { Navbar, Container, Nav, Dropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import React from "react";
-import logo from "../assets/images/fondo rcportuense.png"; // Cambia si es otro tipo de imagen
+import logo from "../assets/images/fondo rcportuense.png";
 
 export default function AppHeader() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
-  const [groups, setGroups] = useState([]);
+  const [vistas, setVistas] = useState([]);
 
   useEffect(() => {
     const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
-    const storedGroups = JSON.parse(sessionStorage.getItem("userGroups") || "[]");
+    const storedVistas = JSON.parse(sessionStorage.getItem("userVistas") || "[]");
     setUsername(storedUser.username || "");
-    setGroups(storedGroups);
+    setVistas(storedVistas);
   }, []);
 
   const handleLogout = () => {
@@ -21,8 +21,7 @@ export default function AppHeader() {
     navigate("/");
   };
 
-  const gruposPermitidos = ["admin", "coordinador"];
-  const puedeVerLinks = groups.some((g) => gruposPermitidos.includes(g));
+  const puedeVer = (clave) => vistas.includes(clave);
 
   return (
     <Navbar
@@ -59,33 +58,33 @@ export default function AppHeader() {
         </Navbar.Brand>
 
         <Nav className="me-auto">
-          {puedeVerLinks && (
-            <>
-              <Nav.Link
-                onClick={() => navigate("/direccion-deportiva")}
-                style={{
-                  color: "white",
-                  fontWeight: "500",
-                  fontSize: "1rem",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "black")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
-              >
-                Dirección Deportiva
-              </Nav.Link>
-              <Nav.Link
-                onClick={() => navigate("/clubes-rivales")}
-                style={{
-                  color: "white",
-                  fontWeight: "500",
-                  fontSize: "1rem",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "black")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
-              >
-                Rivales
-              </Nav.Link>
-            </>
+          {puedeVer("direccion-deportiva") && (
+            <Nav.Link
+              onClick={() => navigate("/direccion-deportiva")}
+              style={{
+                color: "white",
+                fontWeight: "500",
+                fontSize: "1rem",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "black")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
+            >
+              Dirección Deportiva
+            </Nav.Link>
+          )}
+          {puedeVer("rivales") && (
+            <Nav.Link
+              onClick={() => navigate("/clubes-rivales")}
+              style={{
+                color: "white",
+                fontWeight: "500",
+                fontSize: "1rem",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "black")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
+            >
+              Rivales
+            </Nav.Link>
           )}
         </Nav>
 

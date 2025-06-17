@@ -8,18 +8,19 @@ import {
   Toast,
   ToastContainer,
 } from "react-bootstrap";
-// import { getToken } from '../utils/auth';
 import React from "react";
 
 const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
 const equipos = ["M", "F"];
 const gruposDisponibles = ["admin", "coordinador", "entrenador"];
+const vistasDisponibles = ["direccion_deportiva", "rivales"];
 
 export default function CrearUsuarioModal({ show, onClose }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [grupo, setGrupo] = useState("entrenador");
   const [permisos, setPermisos] = useState([]);
+  const [vistas, setVistas] = useState([]);
 
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -40,11 +41,20 @@ export default function CrearUsuarioModal({ show, onClose }) {
     setPermisos(hasAll ? [] : allPermisos);
   };
 
+  const toggleVista = (vista) => {
+    setVistas((prev) =>
+      prev.includes(vista)
+        ? prev.filter((v) => v !== vista)
+        : [...prev, vista]
+    );
+  };
+
   const resetFormulario = () => {
     setUsername("");
     setPassword("");
     setGrupo("entrenador");
     setPermisos([]);
+    setVistas([]);
   };
 
   useEffect(() => {
@@ -57,7 +67,8 @@ export default function CrearUsuarioModal({ show, onClose }) {
       return { categoria, equipo };
     });
     const token = sessionStorage.getItem("accessToken");
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/crear-usuario/`,
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/crear-usuario/`,
       {
         method: "POST",
         headers: {
@@ -69,6 +80,7 @@ export default function CrearUsuarioModal({ show, onClose }) {
           password,
           grupo,
           permisos: permisosData,
+          vistas,
         }),
       }
     );
@@ -160,6 +172,21 @@ export default function CrearUsuarioModal({ show, onClose }) {
                 </Col>
               ))}
             </Row>
+
+            <hr />
+            <h5>Vistas permitidas</h5>
+            {vistasDisponibles.map((vista) => (
+              <Form.Check
+                key={vista}
+                type="checkbox"
+                id={`vista-${vista}`}
+                label={vista
+                  .replace(/_/g, " ")
+                  .replace(/\b\w/g, (l) => l.toUpperCase())}
+                checked={vistas.includes(vista)}
+                onChange={() => toggleVista(vista)}
+              />
+            ))}
           </Form>
         </Modal.Body>
         <Modal.Footer>

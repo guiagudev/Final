@@ -167,12 +167,12 @@ class PermisoPersonalizado(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='permisos')
     categoria = models.CharField(max_length=10, choices=CATEGORIAS)
     equipo = models.CharField(max_length=1, choices=EQUIPOS)
-
+    vista = models.CharField(max_length=50, blank=True, null=True)  # 👈 nueva
     class Meta:
         unique_together = ('user', 'categoria', 'equipo')
 
     def __str__(self):
-        return f"{self.user.username} → {self.categoria}-{self.equipo}"                                                     
+        return f"{self.user.username} → {self.categoria or self.vista }-{self.equipo or ''}"                                                     
 class ExcelPorCategoria(models.Model):
     categoria = models.CharField(
         max_length=20,
