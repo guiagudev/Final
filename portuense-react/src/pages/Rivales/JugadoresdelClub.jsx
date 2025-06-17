@@ -11,18 +11,24 @@ import {
   Form,
   Tabs,
   Tab,
+  Alert,
 } from "react-bootstrap";
 import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
 
 const token = sessionStorage.getItem("accessToken");
+const userPermisos = JSON.parse(sessionStorage.getItem("userPermisos") || "[]");
 
 export default function JugadoresDelClub() {
   const { clubId } = useParams();
   const [jugadores, setJugadores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [generoActivo, setGeneroActivo] = useState("M");
+
+  const tieneMasculino = userPermisos.some((p) => p.categoria === "SEN" && p.equipo === "M");
+  const tieneFemenino = userPermisos.some((p) => p.categoria === "SEN" && p.equipo === "F");
+
+  const [generoActivo, setGeneroActivo] = useState(tieneMasculino ? "M" : "F");
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -31,7 +37,7 @@ export default function JugadoresDelClub() {
     edad: "",
     imagen: null,
     observaciones: "",
-    equipo: "M", // ← nuevo campo
+    equipo: tieneMasculino ? "M" : "F",
   });
 
   const navigate = useNavigate();
@@ -52,7 +58,7 @@ export default function JugadoresDelClub() {
     const formPayload = new FormData();
     formPayload.append("club", clubId);
     formPayload.append("nombre", formData.nombre);
-    formPayload.append("equipo", formData.equipo); // ← nuevo campo
+    formPayload.append("equipo", formData.equipo);
     if (formData.dorsal) formPayload.append("dorsal", formData.dorsal);
     if (formData.posicion) formPayload.append("posicion", formData.posicion);
     if (formData.edad) formPayload.append("edad", formData.edad);
@@ -62,7 +68,9 @@ export default function JugadoresDelClub() {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formPayload,
       });
 
@@ -77,7 +85,7 @@ export default function JugadoresDelClub() {
           edad: "",
           imagen: null,
           observaciones: "",
-          equipo: "M",
+          equipo: generoActivo,
         });
       } else {
         alert("Error al crear jugador");
@@ -94,7 +102,9 @@ export default function JugadoresDelClub() {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/${id}/`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (res.ok) {
@@ -121,45 +131,60 @@ export default function JugadoresDelClub() {
           </Button>
         </div>
 
-        <Tabs activeKey={generoActivo} onSelect={(k) => setGeneroActivo(k)} className="mb-3">
-          <Tab eventKey="M" title="Masculino" />
-          <Tab eventKey="F" title="Femenino" />
-        </Tabs>
+        {(tieneMasculino || tieneFemenino) ? (
+          <>
+            <Tabs
+              activeKey={generoActivo}
+              onSelect={(k) => {
+                setGeneroActivo(k);
+                setFormData((prev) => ({ ...prev, equipo: k }));
+              }}
+              className="mb-3"
+            >
+              {tieneMasculino && <Tab eventKey="M" title="Masculino" />}
+              {tieneFemenino && <Tab eventKey="F" title="Femenino" />}
+            </Tabs>
 
-        {loading ? (
-          <Spinner animation="border" />
+            {loading ? (
+              <Spinner animation="border" />
+            ) : (
+              <Row>
+                {jugadoresFiltrados.map((jugador) => (
+                  <Col md={4} key={jugador.id} className="mb-4">
+                    <Card>
+                      <Card.Body>
+                        <Card.Title>{jugador.nombre}</Card.Title>
+                        <Card.Text>
+                          <strong>Posición:</strong> {jugador.posicion} <br />
+                          <strong>Edad:</strong> {jugador.edad}
+                        </Card.Text>
+                        <div className="d-flex justify-content-between">
+                          <Button
+                            variant="info"
+                            size="sm"
+                            onClick={() => navigate(`${jugador.id}`)}
+                          >
+                            Ver Detalle
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => eliminarJugador(jugador.id)}
+                          >
+                            Eliminar
+                          </Button>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            )}
+          </>
         ) : (
-          <Row>
-            {jugadoresFiltrados.map((jugador) => (
-              <Col md={4} key={jugador.id} className="mb-4">
-                <Card>
-                  <Card.Body>
-                    <Card.Title>{jugador.nombre}</Card.Title>
-                    <Card.Text>
-                      <strong>Posición:</strong> {jugador.posicion} <br />
-                      <strong>Edad:</strong> {jugador.edad}
-                    </Card.Text>
-                    <div className="d-flex justify-content-between">
-                      <Button
-                        variant="info"
-                        size="sm"
-                        onClick={() => navigate(`${jugador.id}`)}
-                      >
-                        Ver Detalle
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => eliminarJugador(jugador.id)}
-                      >
-                        Eliminar
-                      </Button>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
-          </Row>
+          <Alert variant="warning">
+            No tienes permisos para ver jugadores rivales en esta categoría.
+          </Alert>
         )}
 
         <Outlet />
@@ -234,9 +259,7 @@ export default function JugadoresDelClub() {
                 as="textarea"
                 rows={3}
                 value={formData.observaciones}
-                onChange={(e) =>
-                  setFormData({ ...formData, observaciones: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
               />
             </Form.Group>
 
