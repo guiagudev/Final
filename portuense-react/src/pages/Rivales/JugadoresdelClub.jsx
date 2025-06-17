@@ -9,6 +9,8 @@ import {
   Col,
   Modal,
   Form,
+  Tabs,
+  Tab,
 } from "react-bootstrap";
 import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
@@ -20,6 +22,8 @@ export default function JugadoresDelClub() {
   const [jugadores, setJugadores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [generoActivo, setGeneroActivo] = useState("M");
+
   const [formData, setFormData] = useState({
     nombre: "",
     dorsal: "",
@@ -27,6 +31,7 @@ export default function JugadoresDelClub() {
     edad: "",
     imagen: null,
     observaciones: "",
+    equipo: "M", // ← nuevo campo
   });
 
   const navigate = useNavigate();
@@ -47,6 +52,7 @@ export default function JugadoresDelClub() {
     const formPayload = new FormData();
     formPayload.append("club", clubId);
     formPayload.append("nombre", formData.nombre);
+    formPayload.append("equipo", formData.equipo); // ← nuevo campo
     if (formData.dorsal) formPayload.append("dorsal", formData.dorsal);
     if (formData.posicion) formPayload.append("posicion", formData.posicion);
     if (formData.edad) formPayload.append("edad", formData.edad);
@@ -56,9 +62,7 @@ export default function JugadoresDelClub() {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formPayload,
       });
 
@@ -73,6 +77,7 @@ export default function JugadoresDelClub() {
           edad: "",
           imagen: null,
           observaciones: "",
+          equipo: "M",
         });
       } else {
         alert("Error al crear jugador");
@@ -89,9 +94,7 @@ export default function JugadoresDelClub() {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/${id}/`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (res.ok) {
@@ -103,6 +106,8 @@ export default function JugadoresDelClub() {
       alert("Error al conectar con el servidor.");
     }
   };
+
+  const jugadoresFiltrados = jugadores.filter((j) => j.equipo === generoActivo);
 
   return (
     <>
@@ -116,11 +121,16 @@ export default function JugadoresDelClub() {
           </Button>
         </div>
 
+        <Tabs activeKey={generoActivo} onSelect={(k) => setGeneroActivo(k)} className="mb-3">
+          <Tab eventKey="M" title="Masculino" />
+          <Tab eventKey="F" title="Femenino" />
+        </Tabs>
+
         {loading ? (
           <Spinner animation="border" />
         ) : (
           <Row>
-            {jugadores.map((jugador) => (
+            {jugadoresFiltrados.map((jugador) => (
               <Col md={4} key={jugador.id} className="mb-4">
                 <Card>
                   <Card.Body>
@@ -169,6 +179,17 @@ export default function JugadoresDelClub() {
                 onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                 required
               />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Género</Form.Label>
+              <Form.Select
+                value={formData.equipo}
+                onChange={(e) => setFormData({ ...formData, equipo: e.target.value })}
+              >
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+              </Form.Select>
             </Form.Group>
 
             <Form.Group className="mb-3">
