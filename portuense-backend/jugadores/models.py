@@ -139,15 +139,32 @@ class Evento(models.Model):
     equipo1 = models.CharField(max_length=45, default='Racing Club Portuense')
     equipo2 = models.CharField(max_length=45, blank=True, null=True)  # Solo para partidos
     localizacion = models.CharField(max_length=100, blank=True, null=True)
+    categoria_equipo = models.CharField(
+        max_length=20,
+        choices=Jugador.OPCIONES_CATEGORIA,
+        blank=True,
+        null=True,
+        help_text="Categoría del equipo para partidos (e.g., Infantil)"
+    )
+    equipo_genero = models.CharField(
+        max_length=1,
+        choices=Jugador.OPCIONES_EQUIPO,
+        blank=True,
+        null=True,
+        help_text="Masculino o Femenino"
+    )
 
     def __str__(self):
         if self.categoria == 'Partido':
-            return f"{self.fecha.strftime('%Y-%m-%d')} - Partido: {self.equipo1} vs {self.equipo2 or 'TBD'}"
+            return (
+                f"{self.fecha.strftime('%Y-%m-%d')} - Partido: "
+                f"{self.equipo1} vs {self.equipo2 or 'TBD'} "
+                f"({self.categoria_equipo or ''} {self.equipo_genero or ''})"
+            )
         elif self.categoria == 'Entrenamiento':
             return f"{self.fecha.strftime('%Y-%m-%d')} - Entrenamiento ({self.equipo1})"
         else:
             return f"{self.fecha.strftime('%Y-%m-%d')} - Reunión ({self.descripcion[:30]}...)"
-
                                                      
 class PermisoPersonalizado(models.Model):
     CATEGORIAS = [
