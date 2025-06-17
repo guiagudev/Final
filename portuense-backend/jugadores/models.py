@@ -212,6 +212,7 @@ class ClubRival(models.Model):
 class JugadorRival(models.Model):
     club = models.ForeignKey(ClubRival, related_name='jugadores', on_delete=models.CASCADE)
     nombre = models.CharField(max_length=100)
+    equipo = models.CharField(max_length=1, choices=Jugador.OPCIONES_EQUIPO, default='M')
     dorsal = models.PositiveIntegerField(blank=True, null=True)
     posicion = models.CharField(max_length=50, blank=True)
     edad = models.PositiveIntegerField(blank=True, null=True)

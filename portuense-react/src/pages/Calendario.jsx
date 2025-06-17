@@ -34,11 +34,13 @@ export default function Calendario() {
   // 🧭 Control de vista y fecha
   const [vistaActual, setVistaActual] = useState("month");
   const [fechaActual, setFechaActual] = useState(new Date());
+  const vistas = JSON.parse(sessionStorage.getItem("userVistas") || "[]");
+  const puedeVerCalendario = vistas.includes("calendario");
 
   const navigate = useNavigate();
   const token = sessionStorage.getItem("accessToken");
   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-  const isAdmin = user.groups?.includes("admin");
+  
 
   // 🧲 Obtener eventos del backend
   const fetchEventos = useCallback(() => {
@@ -67,12 +69,13 @@ export default function Calendario() {
   }, [token]);
 
   useEffect(() => {
-    if (!isAdmin) {
-      navigate("/");
-    } else {
-      fetchEventos();
-    }
-  }, [isAdmin, navigate, token, fetchEventos]);
+  if (!puedeVerCalendario) {
+    navigate("/");
+  } else {
+    fetchEventos();
+  }
+}, [puedeVerCalendario, navigate, fetchEventos]);
+
 
   // 📆 Textos del calendario en español
   const calendarMessages = useMemo(
@@ -198,14 +201,21 @@ export default function Calendario() {
             setMostrarEditar(true);
           }}
           onEliminar={async () => {
-            const confirm = window.confirm("¿Estás seguro de eliminar este evento?");
+            const confirm = window.confirm(
+              "¿Estás seguro de eliminar este evento?"
+            );
             if (!confirm) return;
 
             try {
-              await fetch(`${import.meta.env.VITE_API_URL}/eventos/${eventoSeleccionado.id}/`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-              });
+              await fetch(
+                `${import.meta.env.VITE_API_URL}/eventos/${
+                  eventoSeleccionado.id
+                }/`,
+                {
+                  method: "DELETE",
+                  headers: { Authorization: `Bearer ${token}` },
+                }
+              );
               setMostrarDetalles(false);
               fetchEventos();
             } catch (err) {

@@ -105,7 +105,7 @@ export default function UserManager({ show, onClose }) {
   };
 
   if (!isAdmin) return null;
-
+//TODO, hacer los permisos más legibles
   return (
     <Modal show={show} onHide={onClose} size="xl" backdrop="static" fullscreen>
       <Modal.Header closeButton>
