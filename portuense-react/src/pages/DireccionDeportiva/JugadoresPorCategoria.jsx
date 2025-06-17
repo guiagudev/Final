@@ -4,6 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import { Container, ListGroup, Spinner, Alert } from "react-bootstrap";
 import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
+import ModalCarpetasPDFs from "../../components/ModalCarpetasPDFs";
 
 export default function JugadoresPorCategoria() {
   const { categoria, equipo } = useParams();
@@ -11,12 +12,16 @@ export default function JugadoresPorCategoria() {
   const [jugadores, setJugadores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [jugadorSeleccionado, setJugadorSeleccionado] = useState(null);
 
   useEffect(() => {
     const fetchJugadores = async () => {
       try {
         const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/jugadores?categoria=${categoria}&equipo=${equipo}`,
+          `${
+            import.meta.env.VITE_API_URL
+          }/jugadores?categoria=${categoria}&equipo=${equipo}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -44,9 +49,9 @@ export default function JugadoresPorCategoria() {
       <Container className="mt-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h4>
-            Jugadores de <strong>{categoria}</strong> - <strong>{equipo}</strong>
+            Jugadores de <strong>{categoria}</strong> -{" "}
+            <strong>{equipo}</strong>
           </h4>
-          
         </div>
 
         {loading ? (
@@ -58,15 +63,37 @@ export default function JugadoresPorCategoria() {
         ) : (
           <ListGroup>
             {jugadores.map((jugador) => (
-              <ListGroup.Item key={jugador.id}>
-                <Link to={`/jugadores/${jugador.id}`}>
+              <ListGroup.Item
+                key={jugador.id}
+                className="d-flex justify-content-between align-items-center"
+              >
+                <span>
                   {jugador.nombre} {jugador.apellidos}
-                </Link>
+                </span>
+                <button
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={() => {
+                    setJugadorSeleccionado(jugador.id);
+                    setShowModal(true);
+                  }}
+                >
+                  Ver PDFs
+                </button>
               </ListGroup.Item>
             ))}
           </ListGroup>
         )}
       </Container>
+      {jugadorSeleccionado && (
+        <ModalCarpetasPDFs
+          show={showModal}
+          onHide={() => {
+            setShowModal(false);
+            setJugadorSeleccionado(null);
+          }}
+          jugadorId={jugadorSeleccionado}
+        />
+      )}
     </>
   );
 }

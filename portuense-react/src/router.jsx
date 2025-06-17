@@ -24,6 +24,7 @@ import JugadoresDelClub from "./pages/Rivales/JugadoresdelClub";
 import DetalleJugadorRival from "./pages/Rivales/DetalleJugadorRival";
 import ClubDetalle from "./pages/Rivales/ClubDetalle";
 import ExcelPorCategoria from "./pages/DireccionDeportiva/ExcelPorCategoria";
+import JugadorDocumentos from "./pages/DireccionDeportiva/JugadorDocumentos";
 export default function Router() {
   return (
     <BrowserRouter>
@@ -87,9 +88,11 @@ export default function Router() {
           element={<ExcelPorCategoria />}
         />
         <Route
-          path="/academia/primer-equipo/:categoria/:equipo/excel"
+          path="/direccion-deportiva/academia/:categoria/:equipo/excel"
           element={<ExcelPorCategoria />}
         />
+        <Route path="/jugadores/:id/documentos" element={<JugadorDocumentos />} />
+
       </Routes>
     </BrowserRouter>
   );
