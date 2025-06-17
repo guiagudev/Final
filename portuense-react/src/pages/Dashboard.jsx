@@ -14,12 +14,14 @@ export default function Dashboard() {
   const [showUserManager, setShowUserManager] = useState(false);
 
   const [permisos, setPermisos] = useState([]);
-
+  const [vistas, setVistas] = useState([]);
   useEffect(() => {
     const storedPerms = JSON.parse(
       sessionStorage.getItem("userPermisos") || "[]"
     );
+    const storedVistas = JSON.parse(sessionStorage.getItem("userVistas") || "[]");
     setPermisos(storedPerms);
+    setVistas(storedVistas);
   }, []);
 
   const tienePermisoSen = permisos.some((p) => p.categoria === "SEN");
@@ -66,7 +68,7 @@ export default function Dashboard() {
             </Col>
           )}
 
-          {permisos.some((p) => p.vista === "calendario") && (
+          {vistas.includes("calendario") && (
             <Col md={6} lg={4} className="mb-4">
               <Card className="h-100">
                 <Card.Body>
