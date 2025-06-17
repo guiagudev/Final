@@ -75,8 +75,8 @@ export default function JugadorForm({
 
     const response = await fetch(
       mode === "editar"
-        ? `http://portuense-manager.ddns.net:8000/api/jugadores/${initialData.id}/`
-        : "http://portuense-manager.ddns.net:8000/api/jugadores/",
+        ? `${import.meta.env.VITE_API_URL}/jugadores/${initialData.id}/`
+        : `${import.meta.env.VITE_API_URL}/jugadores/`,
       {
         method: mode === "editar" ? "PUT" : "POST",
         headers: {

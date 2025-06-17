@@ -1,14 +1,14 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
-from .models import *
-from .serializers import *
-from django.contrib.auth import authenticate, login
-from rest_framework import filters
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
+from django.contrib.auth.models import User, Group
 from django.shortcuts import get_object_or_404
 from datetime import date
+
+from .models import *
+from .serializers import *
 
 
 @api_view(['GET'])
@@ -35,45 +35,6 @@ def listar_usuarios(request):
     return Response(user_data)
 
 
-
-@api_view(['PUT'])
-@permission_classes([IsAdminUser])
-def actualizar_usuario(request, pk):
-    try:
-        user = User.objects.get(pk=pk)
-    except User.DoesNotExist:
-        return Response({'error': 'Usuario no encontrado'}, status=404)
-
-    data = request.data
-    username = data.get('username')
-    password = data.get('password')
-    grupo = data.get('grupo')
-    permisos = data.get('permisos', [])
-
-    if username:
-        user.username = username
-    if password:
-        user.set_password(password)
-    if grupo:
-        user.groups.clear()
-        try:
-            group = Group.objects.get(name=grupo)
-            user.groups.add(group)
-        except Group.DoesNotExist:
-            return Response({'error': 'Grupo no válido'}, status=400)
-
-    user.save()
-
-    # Reemplazar permisos
-    PermisoPersonalizado.objects.filter(user=user).delete()
-    for permiso in permisos:
-        categoria = permiso.get('categoria')
-        equipo = permiso.get('equipo')
-        if categoria and equipo:
-            PermisoPersonalizado.objects.create(user=user, categoria=categoria, equipo=equipo)
-
-    return Response({'message': 'Usuario actualizado con éxito'})
-
 @api_view(['PUT'])
 @permission_classes([IsAdminUser])
 def actualizar_usuario(request, user_id):
@@ -95,7 +56,6 @@ def actualizar_usuario(request, user_id):
         user.set_password(password)
 
     if grupo:
-        # Limpiar grupos anteriores y asignar el nuevo
         user.groups.clear()
         try:
             group = Group.objects.get(name=grupo)
@@ -103,23 +63,21 @@ def actualizar_usuario(request, user_id):
         except Group.DoesNotExist:
             return Response({'error': 'Grupo no válido'}, status=400)
 
+        user.is_staff = grupo == "admin"
+
     user.save()
 
-    # Eliminar permisos antiguos
     PermisoPersonalizado.objects.filter(user=user).delete()
-
-    # Crear los nuevos
     for permiso in permisos:
         categoria = permiso.get('categoria')
         equipo = permiso.get('equipo')
         if categoria and equipo:
-            PermisoPersonalizado.objects.create(
-                user=user, categoria=categoria, equipo=equipo)
+            PermisoPersonalizado.objects.create(user=user, categoria=categoria, equipo=equipo)
 
     return Response({'message': 'Usuario actualizado correctamente'})
 
+
 @api_view(['POST'])
-# @permission_classes([IsAdminUser])
 def crear_usuario(request):
     data = request.data
     username = data.get('username')
@@ -130,17 +88,17 @@ def crear_usuario(request):
     if not username or not password or not grupo:
         return Response({'error': 'Faltan datos requeridos'}, status=400)
 
-    # Crear usuario
     user = User.objects.create_user(username=username, password=password)
 
-    # Asignar grupo
     try:
         group = Group.objects.get(name=grupo)
         user.groups.add(group)
     except Group.DoesNotExist:
         return Response({'error': 'Grupo no válido'}, status=400)
 
-    # Asignar permisos personalizados
+    user.is_staff = grupo == "admin"
+    user.save()
+
     for permiso in permisos:
         categoria = permiso.get('categoria')
         equipo = permiso.get('equipo')
@@ -148,19 +106,23 @@ def crear_usuario(request):
             PermisoPersonalizado.objects.create(user=user, categoria=categoria, equipo=equipo)
 
     return Response({'message': 'Usuario creado con éxito'}, status=201)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me_view(request):
     user = request.user
     permisos = PermisoPersonalizado.objects.filter(user=user).values('categoria', 'equipo')
-    
+
     return Response({
         "username": user.username,
         "is_staff": user.is_staff,
         "is_superuser": user.is_superuser,
         "groups": [group.name for group in user.groups.all()],
-        "permisos": list(permisos)  # 👈 añade los permisos personalizados aquí
+        "permisos": list(permisos)
     })
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def panels_view(request):
@@ -168,12 +130,12 @@ def panels_view(request):
         {
             "title": "Primer Equipo pepe",
             "text": "Jugadores del equipo masculino.",
-            "query": { "equipo": "M", "categoria": "SEN" },
+            "query": {"equipo": "M", "categoria": "SEN"},
             "visibleTo": ["admin", "coordinador"]
         },
-        ...
-
     ])
+
+
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def panel_list_create_view(request):
@@ -183,7 +145,6 @@ def panel_list_create_view(request):
         return Response(serializer.data)
 
     if request.method == 'POST':
-        # Solo permitir a admins crear
         if not request.user.groups.filter(name='admin').exists():
             return Response({'detail': 'No autorizado'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -192,24 +153,23 @@ def panel_list_create_view(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
-        
+
+
 class JugadorViewSet(viewsets.ModelViewSet):
     queryset = Jugador.objects.all()
     serializer_class = JugadorSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = JugadorFilter
     permission_classes = [IsAuthenticated]
-    
-    # Método para obtener las opciones para poblar dropdowns
+
     @action(detail=False, methods=['get'])
     def opciones(self, request):
-        """
-        Devuelve las opciones de categoría y subcategorías para poblar dropdowns
-        """
         return Response({
             "categorias": Jugador.OPCIONES_CATEGORIA,
             "subcategorias": Jugador.OPCIONES_SUBCATEGORIA,
@@ -217,20 +177,14 @@ class JugadorViewSet(viewsets.ModelViewSet):
         })
 
     def get_queryset(self):
-        """
-        Filtra los jugadores en base a los parámetros 'equipo', 'categoria' y 'subcategoria'
-        """
         queryset = super().get_queryset()
+        equipo = self.request.query_params.get('equipo')
+        categoria = self.request.query_params.get('categoria')
+        subcategoria = self.request.query_params.get('subcategoria')
+        nombre = self.request.query_params.get('nombre')
+        edad_min = self.request.query_params.get('edad_min')
+        edad_max = self.request.query_params.get('edad_max')
 
-    # Obtener los parámetros de consulta
-        equipo = self.request.query_params.get('equipo', None)
-        categoria = self.request.query_params.get('categoria', None)
-        subcategoria = self.request.query_params.get('subcategoria', None)
-        nombre = self.request.query_params.get('nombre', None)
-        edad_min = self.request.query_params.get('edad_min',None)
-        edad_max = self.request.query_params.get('edad_max',None)
-
-    # Aplicar filtros si los parámetros están presentes
         if equipo:
             queryset = queryset.filter(equipo=equipo)
         if categoria:
@@ -247,11 +201,12 @@ class JugadorViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_update(self, serializer):
-        """
-        Sobrescribe el método perform_update para agregar validación o depuración antes de guardar
-        """
-        jugador = serializer.save()  # Guarda el objeto actualizado
-        print(f"Jugador {jugador.id} actualizado con éxito")  # Aquí podemos hacer una depuración
+        jugador = serializer.save()
+        print(f"Jugador {jugador.id} actualizado con éxito")
+
+
+# Aquí irían los demás viewsets como ComentarioJugadorViewSet, EventoViewSet, etc.
+# Puedes pedir que los complete si quieres incluir todos los detalles faltantes.
 
 class ComentarioJugadorViewSet(viewsets.ModelViewSet):
     queryset = ComentarioJugador.objects.all().order_by('-fecha_creacion')

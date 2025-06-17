@@ -48,7 +48,7 @@ export default function CrearEventoModal({ show, onClose, fecha, tipo: tipoInici
       evento.equipo2 = equipo2;
     }
 
-    const res = await fetch("http://portuense-manager.ddns.net:8000/api/eventos/", {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/eventos/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

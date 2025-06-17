@@ -1,0 +1,4 @@
+.user-table tbody tr {
+  height: 64px; /* o el valor que prefieras */
+  vertical-align: middle;
+}

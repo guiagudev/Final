@@ -38,7 +38,7 @@ export default function DetallesEventoModal({ show, evento, onClose, onEliminar 
     };
 
     try {
-      const res = await fetch(`http://portuense-manager.ddns.net:8000/api/eventos/${evento.id}/`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/eventos/${evento.id}/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

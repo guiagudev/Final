@@ -23,7 +23,7 @@ export default function ExcelPorCategoria() {
     setLoading(true);
     try {
       const res = await fetch(
-        `http://portuense-manager.ddns.net:8000/api/excels-categoria/?categoria=${categoria}&equipo=${equipo}`,
+        `${import.meta.env.VITE_API_URL}/excels-categoria/?categoria=${categoria}&equipo=${equipo}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -48,8 +48,8 @@ export default function ExcelPorCategoria() {
 
     const method = excel ? "PUT" : "POST";
     const url = excel
-      ? `http://portuense-manager.ddns.net:8000/api/excels-categoria/${excel.id}/`
-      : "http://portuense-manager.ddns.net:8000/api/excels-categoria/";
+      ? `${import.meta.env.VITE_API_URL}/excels-categoria/${excel.id}/`
+      : `${import.meta.env.VITE_API_URL}/excels-categoria/`;
 
     try {
       const res = await fetch(url, {

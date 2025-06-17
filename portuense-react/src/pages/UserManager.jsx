@@ -3,6 +3,9 @@ import { Modal, Table, Button, Form, Row, Col, Spinner } from "react-bootstrap";
 import { getToken } from "../utils/auth";
 import { useAuth } from "../hooks/useAuth";
 import CrearUsuarioModal from "../components/CrearUsuarioModal";
+import "../assets/styles/UserManager.css";
+import PermisosModal from "../components/PermisosModal";
+
 import React from "react";
 
 const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
@@ -13,13 +16,15 @@ export default function UserManager({ show, onClose }) {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showCrearModal, setShowCrearModal] = useState(false);
+  const [showPermisosModal, setShowPermisosModal] = useState(false);
+  const [usuarioActivo, setUsuarioActivo] = useState(null);
 
   const isAdmin = user?.groups?.includes("admin");
 
   const fetchUsuarios = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://portuense-manager.ddns.net:8000/api/usuarios/", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/`, {
         headers: {
           Authorization: `Bearer ${getToken()}`,
         },
@@ -76,7 +81,7 @@ export default function UserManager({ show, onClose }) {
 
   const handleUpdate = async (user) => {
     const res = await fetch(
-      `http://portuense-manager.ddns.net:8000/api/actualizar-usuario/${user.id}/`,
+      `${import.meta.env.VITE_API_URL}/actualizar-usuario/${user.id}/`,
       {
         method: "PUT",
         headers: {
@@ -104,12 +109,15 @@ export default function UserManager({ show, onClose }) {
     if (!window.confirm("¿Estás seguro de que quieres eliminar este usuario?"))
       return;
 
-    const res = await fetch(`http://portuense-manager.ddns.net:8000/api/usuarios/${userId}/`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-      },
-    });
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/usuarios/${userId}/`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      }
+    );
 
     if (res.ok) {
       alert("Usuario eliminado");
@@ -170,43 +178,18 @@ export default function UserManager({ show, onClose }) {
                       </Form.Select>
                     </td>
                     <td>
-                      <div className="text-end mb-2">
-                        <Button
-                          size="sm"
-                          variant="outline-secondary"
-                          onClick={() => toggleAllPermisos(user)}
-                        >
-                          {user.permisos?.length ===
-                          categorias.length * equipos.length
-                            ? "Desmarcar todos"
-                            : "Seleccionar todos"}
-                        </Button>
-                      </div>
-                      <Row>
-                        {categorias.map((cat) => (
-                          <Col key={cat} md={6}>
-                            <strong>{cat}</strong>
-                            {equipos.map((eq) => {
-                              const key = `${cat}-${eq}`;
-                              const checked =
-                                user.permisos?.some(
-                                  (p) => p.categoria === cat && p.equipo === eq
-                                ) || false;
-
-                              return (
-                                <Form.Check
-                                  key={key}
-                                  type="checkbox"
-                                  label={eq}
-                                  checked={checked}
-                                  onChange={() => togglePermiso(cat, eq, user)}
-                                />
-                              );
-                            })}
-                          </Col>
-                        ))}
-                      </Row>
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        onClick={() => {
+                          setUsuarioActivo(user);
+                          setShowPermisosModal(true);
+                        }}
+                      >
+                        Gestionar permisos
+                      </Button>
                     </td>
+
                     <td>
                       <Form.Control
                         type="password"
@@ -253,6 +236,17 @@ export default function UserManager({ show, onClose }) {
           if (shouldReload) fetchUsuarios();
         }}
       />
+      {usuarioActivo && (
+        <PermisosModal
+          show={showPermisosModal}
+          user={usuarioActivo}
+          onClose={() => setShowPermisosModal(false)}
+          onPermisosUpdate={(newPermisos) => {
+            usuarioActivo.permisos = newPermisos;
+            setUsuarios([...usuarios]);
+          }}
+        />
+      )}
     </Modal>
   );
 }

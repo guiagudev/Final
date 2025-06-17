@@ -20,7 +20,7 @@ export default function DetalleJugador() {
     const token = sessionStorage.getItem("accessToken");
 
     // Obtener jugador
-    fetch(`http://portuense-manager.ddns.net:8000/api/jugadores/${id}/`, {
+    fetch(`${import.meta.env.VITE_API_URL}/jugadores/${id}/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -33,7 +33,7 @@ export default function DetalleJugador() {
       .catch(() => setLoading(false));
 
     // Obtener comentarios
-    fetch(`http://portuense-manager.ddns.net:8000/api/comentarios-jugador/jugador/${id}/`, {
+    fetch(`${import.meta.env.VITE_API_URL}/comentarios-jugador/jugador/${id}/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -54,7 +54,7 @@ export default function DetalleJugador() {
   const eliminarComentario = (comentarioId) => {
     const token = sessionStorage.getItem("accessToken");
     if (window.confirm("¿Seguro que quieres eliminar este comentario?")) {
-      fetch(`http://portuense-manager.ddns.net:8000/api/comentarios-jugador/${comentarioId}/`, {
+      fetch(`${import.meta.env.VITE_API_URL}/comentarios-jugador/${comentarioId}/`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

@@ -26,7 +26,7 @@ export default function NuevoComentario() {
     };
 
     try {
-      const res = await fetch(`http://portuense-manager.ddns.net:8000/api/comentarios-jugador/jugador/${id}/`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/comentarios-jugador/jugador/${id}/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

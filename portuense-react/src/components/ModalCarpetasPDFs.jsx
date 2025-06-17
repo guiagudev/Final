@@ -18,7 +18,7 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
   const inputRefs = useRef({});
 
   const fetchCarpetas = () => {
-    fetch(`http://portuense-manager.ddns.net:8000/api/carpetas/?jugador_id=${jugadorId}`, {
+    fetch(`${import.meta.env.VITE_API_URL}/carpetas/?jugador_id=${jugadorId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -26,7 +26,7 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
   };
 
   const fetchPDFs = (carpetaId) => {
-    fetch(`http://portuense-manager.ddns.net:8000/api/pdfs/?carpeta=${carpetaId}`, {
+    fetch(`${import.meta.env.VITE_API_URL}/pdfs/?carpeta=${carpetaId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -37,7 +37,7 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
 
   const crearCarpeta = () => {
     if (!nuevaCarpeta.trim()) return;
-    fetch("http://portuense-manager.ddns.net:8000/api/carpetas/", {
+    fetch(`${import.meta.env.VITE_API_URL}/carpetas/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -60,7 +60,7 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
     formData.append("carpeta", carpetaId);
 
     setSubiendo(true);
-    await fetch("http://portuense-manager.ddns.net:8000/api/pdfs/", {
+    await fetch(`${import.meta.env.VITE_API_URL}/pdfs/`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
       body: formData,

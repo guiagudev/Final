@@ -37,7 +37,7 @@ export default function ClubesRivales() {
   const navigate = useNavigate();
 
   const cargarClubes = () => {
-    fetch("http://portuense-manager.ddns.net:8000/api/clubes-rivales/", {
+    fetch(`${import.meta.env.VITE_API_URL}/clubes-rivales/`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -61,7 +61,7 @@ export default function ClubesRivales() {
 
       try {
         const res = await fetch(
-          `http://portuense-manager.ddns.net:8000/api/jugadores-rivales/?${params.toString()}`,
+          `${import.meta.env.VITE_API_URL}/jugadores-rivales/?${params.toString()}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -83,7 +83,7 @@ export default function ClubesRivales() {
 
     try {
       const res = await fetch(
-        `http://portuense-manager.ddns.net:8000/api/clubes-rivales/${id}/`,
+        `${import.meta.env.VITE_API_URL}/clubes-rivales/${id}/`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -114,7 +114,7 @@ export default function ClubesRivales() {
     }
 
     try {
-      await fetch("http://portuense-manager.ddns.net:8000/api/clubes-rivales/", {
+      await fetch(`${import.meta.env.VITE_API_URL}/clubes-rivales/`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,

@@ -21,7 +21,7 @@ export default function Jugadores() {
     try {
       const queryString = searchParams.toString();
       const response = await fetch(
-        `http://portuense-manager.ddns.net:8000/api/jugadores/?${queryString}`,
+        `${import.meta.env.VITE_API_URL}/jugadores/?${queryString}`,
         {
           headers: {
             Authorization: `Bearer ${getToken()}`,

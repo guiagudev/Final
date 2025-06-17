@@ -27,7 +27,7 @@ export default function DetalleJugadorRival() {
 
   useEffect(() => {
     // Obtener datos del jugador rival
-    fetch(`http://portuense-manager.ddns.net:8000/api/jugadores-rivales/${jugadorId}/`, {
+    fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/${jugadorId}/`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -38,7 +38,7 @@ export default function DetalleJugadorRival() {
       .catch(() => setLoading(false));
 
     // Obtener comentarios del jugador rival
-    fetch(`http://portuense-manager.ddns.net:8000/api/comentarios-rivales/jugador/${jugadorId}/`, {
+    fetch(`${import.meta.env.VITE_API_URL}/comentarios-rivales/jugador/${jugadorId}/`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -48,7 +48,7 @@ export default function DetalleJugadorRival() {
 
   const eliminarComentario = (comentarioId) => {
     if (window.confirm("¿Eliminar este comentario?")) {
-      fetch(`http://portuense-manager.ddns.net:8000/api/comentarios-rivales/${comentarioId}/`, {
+      fetch(`${import.meta.env.VITE_API_URL}/comentarios-rivales/${comentarioId}/`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -69,7 +69,7 @@ export default function DetalleJugadorRival() {
     if (!window.confirm("¿Estás seguro de que deseas eliminar este jugador rival?")) return;
 
     try {
-      const res = await fetch(`http://portuense-manager.ddns.net:8000/api/jugadores-rivales/${jugadorId}/`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/${jugadorId}/`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -103,7 +103,7 @@ export default function DetalleJugadorRival() {
       fecha_creacion: new Date().toISOString().split("T")[0],
     };
 
-    const res = await fetch(`http://portuense-manager.ddns.net:8000/api/comentarios-rivales/`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/comentarios-rivales/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

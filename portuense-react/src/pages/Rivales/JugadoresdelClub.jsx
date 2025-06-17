@@ -32,7 +32,7 @@ export default function JugadoresDelClub() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`http://portuense-manager.ddns.net:8000/api/jugadores-rivales/?club=${clubId}`, {
+    fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/?club=${clubId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -54,7 +54,7 @@ export default function JugadoresDelClub() {
     if (formData.observaciones) formPayload.append("observaciones", formData.observaciones);
 
     try {
-      const res = await fetch("http://portuense-manager.ddns.net:8000/api/jugadores-rivales/", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -87,7 +87,7 @@ export default function JugadoresDelClub() {
     if (!confirm) return;
 
     try {
-      const res = await fetch(`http://portuense-manager.ddns.net:8000/api/jugadores-rivales/${id}/`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/${id}/`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

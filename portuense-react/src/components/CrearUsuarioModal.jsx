@@ -57,8 +57,7 @@ export default function CrearUsuarioModal({ show, onClose }) {
       return { categoria, equipo };
     });
     const token = sessionStorage.getItem("accessToken");
-    const res = await fetch(
-      "http://portuense-manager.ddns.net:8000/api/crear-usuario/",
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/crear-usuario/`,
       {
         method: "POST",
         headers: {
