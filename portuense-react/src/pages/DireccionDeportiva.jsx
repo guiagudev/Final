@@ -22,7 +22,7 @@ export default function DireccionDeportiva() {
     <>
       <AppHeader />
       <Container className="mt-4">
-        <h2 className="mb-4">Panel Dirección Deportiva</h2>
+        <h2 className="mb-4">Dirección Deportiva</h2>
 
         <Row className="mt-4">
           {tienePermisoSen && (
@@ -30,7 +30,7 @@ export default function DireccionDeportiva() {
               <Card className="h-100">
                 <Card.Body>
                   <Card.Title>Primer Equipo</Card.Title>
-                  <Card.Text>Ver carpetas y documentos del Primer Equipo</Card.Text>
+                  <Card.Text>Ver Excel y documentos del Primer Equipo</Card.Text>
                   <Button
                     variant="primary"
                     onClick={() => navigate("/direccion-deportiva/primer-equipo")}
@@ -47,7 +47,7 @@ export default function DireccionDeportiva() {
               <Card className="h-100">
                 <Card.Body>
                   <Card.Title>Academia</Card.Title>
-                  <Card.Text>Ver carpetas y documentos de la Academia</Card.Text>
+                  <Card.Text>Ver Excel y documentos de la Academia</Card.Text>
                   <Button
                     variant="primary"
                     onClick={() => navigate("/direccion-deportiva/academia")}

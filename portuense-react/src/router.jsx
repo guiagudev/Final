@@ -19,7 +19,6 @@ import PrimerEquipoDireccion from "./pages/DireccionDeportiva/PrimerEquipo";
 import AcademiaDireccion from "./pages/DireccionDeportiva/Academia";
 import NuevoComentario from "./pages/NuevoComentario";
 import DocsyExcel from "./pages/DireccionDeportiva/DocsyExcel";
-import ExcelGrid from "./components/ExcelGrid";
 import JugadoresPorCategoria from "./pages/DireccionDeportiva/JugadoresPorCategoria";
 import JugadoresDelClub from "./pages/Rivales/JugadoresdelClub";
 import DetalleJugadorRival from "./pages/Rivales/DetalleJugadorRival";
@@ -68,18 +67,12 @@ export default function Router() {
           path="/direccion-deportiva/primer-equipo/:categoria/:equipo"
           element={<DocsyExcel />}
         />
-        <Route
-          path="/direccion-deportiva/primer-equipo/:categoria/:equipo/excel"
-          element={<ExcelGrid />}
-        />
+        
         <Route
           path="/direccion-deportiva/academia/:categoria/:equipo"
           element={<DocsyExcel />}
         />
-        <Route
-          path="/direccion-deportiva/academia/:categoria/:equipo/excel"
-          element={<ExcelGrid />}
-        />
+       
         <Route
           path="/direccion-deportiva/academia/:categoria/:equipo/jugadores"
           element={<JugadoresPorCategoria />}
