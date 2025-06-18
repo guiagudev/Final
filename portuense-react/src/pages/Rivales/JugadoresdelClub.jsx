@@ -13,9 +13,10 @@ import {
   Tab,
   Alert,
 } from "react-bootstrap";
+import { toast } from "react-toastify";
 import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
-import { useConfirm } from "../../hooks/useConfirm"; // 👈 asegúrate que el hook esté bien
+
 
 const token = sessionStorage.getItem("accessToken");
 const userPermisos = JSON.parse(sessionStorage.getItem("userPermisos") || "[]");
@@ -42,7 +43,6 @@ export default function JugadoresDelClub() {
     equipo: tieneMasculino ? "M" : "F",
   });
 
-  const { confirm, ConfirmUI } = useConfirm(); // 👈 usar confirm dialog
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/?club=${clubId}`, {
@@ -70,9 +70,7 @@ export default function JugadoresDelClub() {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formPayload,
       });
 
@@ -89,11 +87,12 @@ export default function JugadoresDelClub() {
           observaciones: "",
           equipo: generoActivo,
         });
+        toast.success("Jugador creado correctamente");
       } else {
-        alert("Error al crear jugador");
+        toast.error("Error al crear jugador");
       }
     } catch (err) {
-      console.error("Error al crear jugador", err);
+      toast.error("Error al conectar con el servidor");
     }
   };
 
@@ -108,18 +107,17 @@ export default function JugadoresDelClub() {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/${id}/`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (res.ok) {
         setJugadores((prev) => prev.filter((j) => j.id !== id));
+        toast.success("Jugador eliminado");
       } else {
-        alert("No se pudo eliminar el jugador.");
+        toast.error("No se pudo eliminar el jugador.");
       }
     } catch (err) {
-      alert("Error al conectar con el servidor.");
+      toast.error("Error al conectar con el servidor.");
     }
   };
 
@@ -196,8 +194,6 @@ export default function JugadoresDelClub() {
         <Outlet />
       </Container>
 
-      {/* Confirm UI global */}
-      {ConfirmUI}
 
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>

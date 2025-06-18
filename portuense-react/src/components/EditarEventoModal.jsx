@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import { useConfirm } from "../hooks/useConfirm.js";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function EditarEventoModal({ show, onClose, evento }) {
   const [descripcion, setDescripcion] = useState("");
@@ -13,13 +14,11 @@ export default function EditarEventoModal({ show, onClose, evento }) {
 
   const token = sessionStorage.getItem("accessToken");
 
-  const { confirm, ConfirmUI } = useConfirm();
-
   useEffect(() => {
     const fetchEvento = async () => {
       if (!evento?.id || !show) return;
       if (!token) {
-        alert("No hay token. Por favor, inicia sesión.");
+        toast.error("No hay token. Por favor, inicia sesión.");
         return;
       }
 
@@ -51,7 +50,7 @@ export default function EditarEventoModal({ show, onClose, evento }) {
         setFechaInput(iso);
       } catch (err) {
         console.error("Error al cargar evento:", err);
-        alert("No se pudo cargar el evento.");
+        toast.error("No se pudo cargar el evento.");
       }
     };
 
@@ -60,7 +59,7 @@ export default function EditarEventoModal({ show, onClose, evento }) {
 
   const handleUpdate = async () => {
     if (!token) {
-      alert("No hay token de sesión. Por favor, inicia sesión nuevamente.");
+      toast.error("No hay token de sesión. Por favor, inicia sesión nuevamente.");
       return;
     }
 
@@ -91,25 +90,19 @@ export default function EditarEventoModal({ show, onClose, evento }) {
       );
 
       if (res.ok) {
+        toast.success("Evento actualizado correctamente");
         onClose(true);
       } else {
-        console.error("Error al editar evento");
-        alert("No se pudo actualizar el evento.");
+        toast.error("No se pudo actualizar el evento.");
       }
     } catch (err) {
       console.error("Error de red:", err);
-      alert("Error al conectarse con el servidor.");
+      toast.error("Error al conectarse con el servidor.");
     }
   };
 
   const handleDelete = async () => {
-    const confirmed = await confirm({
-      title: "¿Eliminar evento?",
-      message: "¿Estás seguro de que quieres eliminar este evento?",
-    });
-
-    if (!confirmed) return;
-
+    // 💣 Sin confirmaciones
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/eventos/${evento.id}/`,
@@ -122,13 +115,14 @@ export default function EditarEventoModal({ show, onClose, evento }) {
       );
 
       if (res.ok) {
+        toast.success("Evento eliminado");
         onClose(true);
       } else {
-        alert("Error al eliminar el evento");
+        toast.error("Error al eliminar el evento");
       }
     } catch (err) {
       console.error("Error al eliminar evento:", err);
-      alert("Error al conectarse con el servidor.");
+      toast.error("Error al conectarse con el servidor.");
     }
   };
 
@@ -233,9 +227,6 @@ export default function EditarEventoModal({ show, onClose, evento }) {
           </Button>
         </Modal.Footer>
       </Modal>
-
-      {/* Modal de confirmación */}
-      {ConfirmUI}
     </>
   );
 }

@@ -1,81 +1,105 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Outlet } from "react-router-dom";
 import {
-  Card,
-  Spinner,
   Container,
+  Card,
   Button,
+  Spinner,
+  Row,
+  Col,
   Modal,
   Form,
+  Tabs,
+  Tab,
+  Alert,
 } from "react-bootstrap";
+import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
-import { useConfirm } from "../../hooks/useConfirm";
+import { toast } from "react-toastify";
 
-export default function DetalleJugadorRival() {
-  const { jugadorId } = useParams();
+const token = sessionStorage.getItem("accessToken");
+const userPermisos = JSON.parse(sessionStorage.getItem("userPermisos") || "[]");
+
+export default function JugadoresDelClub() {
+  const { clubId } = useParams();
   const navigate = useNavigate();
-  const [jugador, setJugador] = useState(null);
-  const [comentarios, setComentarios] = useState([]);
+
+  const [jugadores, setJugadores] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [hoveredComentarioId, setHoveredComentarioId] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ titulo: "", contenido: "" });
-  const { confirm, ConfirmUI } = useConfirm();
-  const token = sessionStorage.getItem("accessToken");
+
+  const tieneMasculino = userPermisos.some((p) => p.categoria === "SEN" && p.equipo === "M");
+  const tieneFemenino = userPermisos.some((p) => p.categoria === "SEN" && p.equipo === "F");
+  const [generoActivo, setGeneroActivo] = useState(tieneMasculino ? "M" : "F");
+
+  const [formData, setFormData] = useState({
+    nombre: "",
+    dorsal: "",
+    posicion: "",
+    edad: "",
+    imagen: null,
+    observaciones: "",
+    equipo: tieneMasculino ? "M" : "F",
+  });
 
   useEffect(() => {
-    // Obtener datos del jugador rival
-    fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/${jugadorId}/`, {
+    fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/?club=${clubId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
       .then((data) => {
-        setJugador(data);
+        setJugadores(data);
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      });
+  }, [clubId]);
 
-    // Obtener comentarios del jugador rival
-    fetch(`${import.meta.env.VITE_API_URL}/comentarios-rivales/jugador/${jugadorId}/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then(setComentarios)
-      .catch((err) => console.error("Error al obtener comentarios:", err));
-  }, [jugadorId, token]);
-
-  const eliminarComentario = async (comentarioId) => {
-    const confirmed = await confirm({
-      title: "¿Eliminar comentario?",
-      message: "¿Estás seguro de que deseas eliminar este comentario?",
-    });
-    if (!confirmed) return;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formPayload = new FormData();
+    formPayload.append("club", clubId);
+    formPayload.append("nombre", formData.nombre);
+    formPayload.append("equipo", formData.equipo);
+    if (formData.dorsal) formPayload.append("dorsal", formData.dorsal);
+    if (formData.posicion) formPayload.append("posicion", formData.posicion);
+    if (formData.edad) formPayload.append("edad", formData.edad);
+    if (formData.imagen) formPayload.append("imagen", formData.imagen);
+    if (formData.observaciones) formPayload.append("observaciones", formData.observaciones);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/comentarios-rivales/${comentarioId}/`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formPayload,
       });
 
       if (res.ok) {
-        setComentarios((prev) => prev.filter((c) => c.id !== comentarioId));
+        const nuevo = await res.json();
+        setJugadores((prev) => [...prev, nuevo]);
+        setShowModal(false);
+        setFormData({
+          nombre: "",
+          dorsal: "",
+          posicion: "",
+          edad: "",
+          imagen: null,
+          observaciones: "",
+          equipo: generoActivo,
+        });
+        toast.success("Jugador creado correctamente");
       } else {
-        alert("No se pudo eliminar.");
+        toast.error("Error al crear jugador");
       }
-    } catch {
-      alert("Error de red al eliminar.");
+    } catch (err) {
+      console.error("Error al crear jugador", err);
+      toast.error("Error al conectar con el servidor");
     }
   };
 
-  const eliminarJugador = async () => {
-    const confirmed = await confirm({
-      title: "¿Eliminar jugador?",
-      message: "¿Estás seguro de que deseas eliminar este jugador rival?",
-    });
-    if (!confirmed) return;
-
+  const eliminarJugador = async (id) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/${jugadorId}/`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/${id}/`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -83,172 +107,173 @@ export default function DetalleJugadorRival() {
       });
 
       if (res.ok) {
-        alert("Jugador eliminado correctamente.");
-        navigate(-1);
+        setJugadores((prev) => prev.filter((j) => j.id !== id));
+        toast.success("Jugador eliminado");
       } else {
-        alert("No se pudo eliminar el jugador.");
+        toast.error("No se pudo eliminar el jugador.");
       }
-    } catch (error) {
-      alert("Error al conectar con el servidor.");
+    } catch (err) {
+      toast.error("Error al conectar con el servidor.");
     }
   };
 
-  const handleInputChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  const handleSubmitComentario = async (e) => {
-    e.preventDefault();
-    const payload = {
-      ...formData,
-      jugador: jugadorId,
-      fecha_emision: new Date().toISOString().split("T")[0],
-      fecha_creacion: new Date().toISOString().split("T")[0],
-    };
-
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/comentarios-rivales/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (res.ok) {
-      const nuevoComentario = await res.json();
-      setComentarios((prev) => [nuevoComentario, ...prev]);
-      setFormData({ titulo: "", contenido: "" });
-      setShowModal(false);
-    } else {
-      alert("Error al crear el comentario.");
-    }
-  };
-
-  if (loading) {
-    return (
-      <Container className="p-4">
-        <Spinner animation="border" />
-      </Container>
-    );
-  }
-
-  if (!jugador) {
-    return (
-      <Container className="p-4">
-        <p>Jugador no encontrado.</p>
-      </Container>
-    );
-  }
+  const jugadoresFiltrados = jugadores.filter((j) => j.equipo === generoActivo);
 
   return (
-    <Container className="mt-4">
-      <BackButton to={-1} />
+    <>
+      <AppHeader />
+      <Container className="mt-4">
+        <BackButton to="/clubes-rivales" />
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h3 className="mb-0">Jugadores del Club</h3>
+          <Button variant="success" onClick={() => setShowModal(true)}>
+            Añadir Jugador
+          </Button>
+        </div>
 
-      <Card className="shadow-sm mb-4">
-        <Card.Body>
-          <div className="d-flex justify-content-between align-items-start">
-            <div>
-              <h3>{jugador.nombre}</h3>
-              <p><strong>Edad:</strong> {jugador.edad}</p>
-              <p><strong>Posición:</strong> {jugador.posicion}</p>
-              <p><strong>Club:</strong> {jugador.club_nombre || "N/D"}</p>
-            </div>
-            <Button variant="danger" onClick={eliminarJugador}>
-              Eliminar jugador
-            </Button>
-          </div>
-        </Card.Body>
-      </Card>
+        {(tieneMasculino || tieneFemenino) ? (
+          <>
+            <Tabs
+              activeKey={generoActivo}
+              onSelect={(k) => {
+                setGeneroActivo(k);
+                setFormData((prev) => ({ ...prev, equipo: k }));
+              }}
+              className="mb-3"
+            >
+              {tieneMasculino && <Tab eventKey="M" title="Masculino" />}
+              {tieneFemenino && <Tab eventKey="F" title="Femenino" />}
+            </Tabs>
 
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h5 className="mb-0">Comentarios</h5>
-        <Button size="sm" onClick={() => setShowModal(true)}>
-          Añadir Comentario
-        </Button>
-      </div>
-
-      {comentarios.length === 0 ? (
-        <p className="text-muted">No hay comentarios todavía.</p>
-      ) : (
-        comentarios.map((comentario) => (
-          <div
-            key={comentario.id}
-            className="mb-3 p-3 position-relative"
-            style={{
-              backgroundColor: "#f9f9f9",
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-            }}
-            onMouseEnter={() => setHoveredComentarioId(comentario.id)}
-            onMouseLeave={() => setHoveredComentarioId(null)}
-          >
-            <h6 className="mb-1">{comentario.titulo}</h6>
-            <p style={{ whiteSpace: "pre-wrap" }}>{comentario.contenido}</p>
-            <div className="d-flex justify-content-between mt-2">
-              <small className="text-muted">
-                {new Date(comentario.fecha_creacion).toLocaleDateString()}
-              </small>
-              <small>
-                <strong>{comentario.autor?.username || "Anónimo"}</strong>
-              </small>
-            </div>
-            {hoveredComentarioId === comentario.id && (
-              <Button
-                variant="danger"
-                size="sm"
-                style={{ position: "absolute", top: "8px", right: "8px" }}
-                onClick={() => eliminarComentario(comentario.id)}
-              >
-                Eliminar
-              </Button>
+            {loading ? (
+              <Spinner animation="border" />
+            ) : (
+              <Row>
+                {jugadoresFiltrados.map((jugador) => (
+                  <Col md={4} key={jugador.id} className="mb-4">
+                    <Card>
+                      <Card.Body>
+                        <Card.Title>{jugador.nombre}</Card.Title>
+                        <Card.Text>
+                          <strong>Posición:</strong> {jugador.posicion} <br />
+                          <strong>Edad:</strong> {jugador.edad}
+                        </Card.Text>
+                        <div className="d-flex justify-content-between">
+                          <Button
+                            variant="info"
+                            size="sm"
+                            onClick={() => navigate(`${jugador.id}`)}
+                          >
+                            Ver Detalle
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => eliminarJugador(jugador.id)}
+                          >
+                            Eliminar
+                          </Button>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
             )}
-          </div>
-        ))
-      )}
+          </>
+        ) : (
+          <Alert variant="warning">
+            No tienes permisos para ver jugadores rivales en esta categoría.
+          </Alert>
+        )}
 
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Outlet />
+      </Container>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Nuevo Comentario</Modal.Title>
+          <Modal.Title>Nuevo Jugador Rival</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form onSubmit={handleSubmitComentario}>
+          <Form onSubmit={handleSubmit} encType="multipart/form-data">
             <Form.Group className="mb-3">
-              <Form.Label>Título</Form.Label>
+              <Form.Label>Nombre</Form.Label>
               <Form.Control
-                name="titulo"
-                value={formData.titulo}
-                onChange={handleInputChange}
+                type="text"
+                value={formData.nombre}
+                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                 required
               />
             </Form.Group>
+
             <Form.Group className="mb-3">
-              <Form.Label>Contenido</Form.Label>
+              <Form.Label>Género</Form.Label>
+              <Form.Select
+                value={formData.equipo}
+                onChange={(e) => setFormData({ ...formData, equipo: e.target.value })}
+              >
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+              </Form.Select>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Dorsal</Form.Label>
+              <Form.Control
+                type="number"
+                value={formData.dorsal}
+                onChange={(e) => setFormData({ ...formData, dorsal: e.target.value })}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Posición</Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.posicion}
+                onChange={(e) => setFormData({ ...formData, posicion: e.target.value })}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Edad</Form.Label>
+              <Form.Control
+                type="number"
+                value={formData.edad}
+                onChange={(e) => setFormData({ ...formData, edad: e.target.value })}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Imagen</Form.Label>
+              <Form.Control
+                type="file"
+                accept="image/*"
+                onChange={(e) => setFormData({ ...formData, imagen: e.target.files[0] })}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Observaciones</Form.Label>
               <Form.Control
                 as="textarea"
-                rows={4}
-                name="contenido"
-                value={formData.contenido}
-                onChange={handleInputChange}
-                required
+                rows={3}
+                value={formData.observaciones}
+                onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
               />
             </Form.Group>
+
             <div className="d-flex justify-content-end">
-              <Button variant="secondary" onClick={() => setShowModal(false)}>
+              <Button variant="secondary" onClick={() => setShowModal(false)} className="me-2">
                 Cancelar
               </Button>
-              <Button type="submit" className="ms-2" variant="primary">
+              <Button variant="primary" type="submit">
                 Guardar
               </Button>
             </div>
           </Form>
         </Modal.Body>
       </Modal>
-
-      {ConfirmUI}
-    </Container>
+    </>
   );
 }

@@ -14,7 +14,7 @@ import {
 } from "react-bootstrap";
 import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
-import { useConfirm } from "../../hooks/useConfirm";
+import { toast } from "react-toastify";
 
 export default function ClubesRivales() {
   const [clubes, setClubes] = useState([]);
@@ -34,7 +34,6 @@ export default function ClubesRivales() {
   });
   const [showEditModal, setShowEditModal] = useState(false);
   const [clubEditando, setClubEditando] = useState(null);
-  const { confirm, ConfirmUI } = useConfirm();
 
   const token = sessionStorage.getItem("accessToken");
   const navigate = useNavigate();
@@ -45,7 +44,7 @@ export default function ClubesRivales() {
     })
       .then((res) => res.json())
       .then(setClubes)
-      .catch((err) => console.error("Error al cargar clubes:", err));
+      .catch(() => toast.error("Error al cargar clubes."));
   };
 
   useEffect(() => {
@@ -64,15 +63,13 @@ export default function ClubesRivales() {
 
       try {
         const res = await fetch(
-          `${
-            import.meta.env.VITE_API_URL
-          }/jugadores-rivales/?${params.toString()}`,
+          `${import.meta.env.VITE_API_URL}/jugadores-rivales/?${params.toString()}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
         nuevosConteos[club.id] = data.length;
-      } catch (err) {
-        console.error(`Error al contar jugadores del club ${club.nombre}`, err);
+      } catch {
+        toast.error(`Error al contar jugadores del club ${club.nombre}`);
       }
     }
 
@@ -80,28 +77,23 @@ export default function ClubesRivales() {
     setCargando(false);
   };
 
-const eliminarClub = async (id) => {
-  const confirmed = await confirm({
-    title: "¿Eliminar club?",
-    message: "¿Seguro que deseas eliminar este club?",
-  });
-  if (!confirmed) return;
+  const eliminarClub = async (id) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/clubes-rivales/${id}/`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/clubes-rivales/${id}/`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (res.ok) {
-      setClubes((prev) => prev.filter((club) => club.id !== id));
-    } else {
-      alert("No se pudo eliminar el club.");
+      if (res.ok) {
+        setClubes((prev) => prev.filter((club) => club.id !== id));
+        toast.success("Club eliminado.");
+      } else {
+        toast.error("No se pudo eliminar el club.");
+      }
+    } catch {
+      toast.error("Error al conectar con el servidor.");
     }
-  } catch (err) {
-    alert("Error al conectar con el servidor.");
-  }
-};
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -122,9 +114,10 @@ const eliminarClub = async (id) => {
       });
       setShowCreateModal(false);
       setNuevoClub({ nombre: "", ciudad: "", imagen: null });
+      toast.success("Club creado.");
       cargarClubes();
-    } catch (err) {
-      console.error("Error al crear club:", err);
+    } catch {
+      toast.error("Error al crear club.");
     }
   };
 
@@ -147,14 +140,15 @@ const eliminarClub = async (id) => {
       );
 
       if (res.ok) {
+        toast.success("Club actualizado.");
         setShowEditModal(false);
         setClubEditando(null);
         cargarClubes();
       } else {
-        alert("No se pudo editar el club.");
+        toast.error("No se pudo editar el club.");
       }
-    } catch (err) {
-      console.error("Error al editar club:", err);
+    } catch {
+      toast.error("Error al editar club.");
     }
   };
 
@@ -250,9 +244,7 @@ const eliminarClub = async (id) => {
                   <Button
                     size="sm"
                     variant="info"
-                    onClick={() =>
-                      navigate(`/clubes-rivales/${club.id}/jugadores`)
-                    }
+                    onClick={() => navigate(`/clubes-rivales/${club.id}/jugadores`)}
                   >
                     Ver Jugadores
                   </Button>
@@ -394,6 +386,4 @@ const eliminarClub = async (id) => {
       />
     </>
   );
-  {ConfirmUI}
-
 }

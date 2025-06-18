@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
-import { useConfirm } from "../hooks/useConfirm";
 import es from "date-fns/locale/es";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
 import CrearEventoModal from "../components/CrearEventoModal";
@@ -31,7 +32,6 @@ export default function Calendario() {
   const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
   const [mostrarEditar, setMostrarEditar] = useState(false);
   const [mostrarDetalles, setMostrarDetalles] = useState(false);
-  const { confirm, ConfirmUI } = useConfirm();
 
   // 🧭 Control de vista y fecha
   const [vistaActual, setVistaActual] = useState("month");
@@ -51,7 +51,6 @@ export default function Calendario() {
       (perm) => perm.categoria === categoria && perm.equipo === equipo
     );
 
-  // 🧲 Obtener eventos del backend con filtro por permisos
   const fetchEventos = useCallback(() => {
     fetch(`${import.meta.env.VITE_API_URL}/eventos/`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -65,7 +64,7 @@ export default function Calendario() {
             if (ev.categoria_equipo && ev.equipo_genero) {
               return userTienePermiso(ev.categoria_equipo, ev.equipo_genero);
             }
-            return true; // permite reuniones u otros sin categoría/equipo
+            return true;
           })
           .map((ev) => ({
             id: ev.id,
@@ -94,7 +93,6 @@ export default function Calendario() {
     }
   }, [puedeVerCalendario, navigate, fetchEventos]);
 
-  // 📆 Textos del calendario en español
   const calendarMessages = useMemo(
     () => ({
       allDay: "Todo el día",
@@ -113,7 +111,6 @@ export default function Calendario() {
     []
   );
 
-  // 🎨 Estilos por tipo de evento
   const eventPropGetter = (event) => {
     let backgroundColor = "#333";
 
@@ -178,7 +175,6 @@ export default function Calendario() {
           onView={setVistaActual}
         />
 
-        {/* ✅ Solo si el usuario tiene permisos para crear algo */}
         {permisos.length > 0 && (
           <Button
             variant="success"
@@ -220,33 +216,29 @@ export default function Calendario() {
             setMostrarEditar(true);
           }}
           onEliminar={async () => {
-            const confirmed = await confirm({
-              title: "¿Eliminar evento?",
-              message: "¿Estás seguro de que quieres eliminar este evento?",
-            });
-
-            if (!confirmed) return;
-
             try {
-              await fetch(
-                `${import.meta.env.VITE_API_URL}/eventos/${
-                  eventoSeleccionado.id
-                }/`,
+              const res = await fetch(
+                `${import.meta.env.VITE_API_URL}/eventos/${eventoSeleccionado.id}/`,
                 {
                   method: "DELETE",
                   headers: { Authorization: `Bearer ${token}` },
                 }
               );
-              setMostrarDetalles(false);
-              fetchEventos();
+
+              if (res.ok) {
+                toast.success("Evento eliminado");
+                setMostrarDetalles(false);
+                fetchEventos();
+              } else {
+                toast.error("Error al eliminar el evento");
+              }
             } catch (err) {
               console.error("Error al eliminar evento:", err);
+              toast.error("Error de red al eliminar el evento");
             }
           }}
         />
       </div>
-      {ConfirmUI}
-
     </>
   );
 }

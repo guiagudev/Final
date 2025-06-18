@@ -2,10 +2,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { Table, Container, Button, Form, Row, Col } from "react-bootstrap";
 import JugadorForm from "./jugadores/JugadorForm";
-import { eliminarJugador } from "./jugadores/EliminarJugadorBtn";
+import { toast } from "react-toastify";
 import { getToken } from "../utils/auth";
 import React from "react";
-import { useConfirm } from "../hooks/useConfirm";
 
 const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
 const equipos = ["M", "F"];
@@ -17,7 +16,6 @@ export default function Jugadores() {
   const [editingJugador, setEditingJugador] = useState(null);
   const [user, setUser] = useState({});
   const navigate = useNavigate();
-  const { confirm, ConfirmUI } = useConfirm();
 
   const fetchJugadores = useCallback(async () => {
     try {
@@ -35,6 +33,7 @@ export default function Jugadores() {
       setJugadores(data);
     } catch (error) {
       console.error("Error fetching jugadores:", error);
+      toast.error("Error al cargar jugadores.");
     }
   }, [searchParams]);
 
@@ -55,9 +54,28 @@ export default function Jugadores() {
   };
 
   const handleDelete = async (id) => {
-  await eliminarJugador(id, fetchJugadores, confirm);
-};
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/jugadores/${id}/`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        }
+      );
 
+      if (res.ok) {
+        toast.success("Jugador eliminado");
+        fetchJugadores();
+      } else {
+        toast.error("Error al eliminar jugador");
+      }
+    } catch (error) {
+      console.error("Error al eliminar jugador:", error);
+      toast.error("Error de red al eliminar jugador");
+    }
+  };
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -70,7 +88,6 @@ export default function Jugadores() {
     setSearchParams(newParams);
   };
 
-  // Admin y categoría ≠ SEN
   const mostrarCuota =
     user.groups?.includes("admin") && searchParams.get("categoria") !== "SEN";
 
@@ -97,7 +114,6 @@ export default function Jugadores() {
               onChange={handleFilterChange}
             />
           </Col>
-
           <Col md={2}>
             <Form.Label>Edad mínima</Form.Label>
             <Form.Control
@@ -140,7 +156,7 @@ export default function Jugadores() {
             <th>Edad</th>
             <th>Equipo</th>
             <th>Categoría</th>
-            <th>Cuota</th> {/* Siempre presente, visible o con placeholder */}
+            <th>Cuota</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -197,8 +213,5 @@ export default function Jugadores() {
         }}
       />
     </Container>
-    
   );
-  {ConfirmUI}
-
 }

@@ -3,14 +3,15 @@ import { Modal, Table, Button, Form, Spinner } from "react-bootstrap";
 import { getToken } from "../utils/auth";
 import { useAuth } from "../hooks/useAuth";
 import CrearUsuarioModal from "../components/CrearUsuarioModal";
-import "../assets/styles/UserManager.css";
 import PermisosModal from "../components/PermisosModal";
-import { useConfirm } from "../hooks/useConfirm";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import React from "react";
+import "../assets/styles/UserManager.css";
 
 const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
 const equipos = ["M", "F"];
-const vistasDisponibles = ["direccion-deportiva", "rivales","calendario"];
+const vistasDisponibles = ["direccion-deportiva", "rivales", "calendario"];
 
 export default function UserManager({ show, onClose }) {
   const { user } = useAuth();
@@ -19,7 +20,6 @@ export default function UserManager({ show, onClose }) {
   const [showCrearModal, setShowCrearModal] = useState(false);
   const [showPermisosModal, setShowPermisosModal] = useState(false);
   const [usuarioActivo, setUsuarioActivo] = useState(null);
-  const { confirm, ConfirmUI } = useConfirm();
 
   const isAdmin = user?.groups?.includes("admin");
 
@@ -34,7 +34,11 @@ export default function UserManager({ show, onClose }) {
       if (res.ok) {
         const data = await res.json();
         setUsuarios(data);
+      } else {
+        toast.error("Error al obtener usuarios");
       }
+    } catch (error) {
+      toast.error("Error de red al cargar usuarios");
     } finally {
       setLoading(false);
     }
@@ -47,58 +51,58 @@ export default function UserManager({ show, onClose }) {
   }, [show, isAdmin, fetchUsuarios]);
 
   const handleUpdate = async (user) => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/actualizar-usuario/${user.id}/`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({
-          username: user.username,
-          grupo: user.grupo,
-          permisos: user.permisos,
-          vistas: user.vistas,
-          password: user.password || undefined,
-        }),
-      }
-    );
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/actualizar-usuario/${user.id}/`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`,
+          },
+          body: JSON.stringify({
+            username: user.username,
+            grupo: user.grupo,
+            permisos: user.permisos,
+            vistas: user.vistas,
+            password: user.password || undefined,
+          }),
+        }
+      );
 
-    if (res.ok) {
-      alert("Usuario actualizado");
-      fetchUsuarios();
-    } else {
-      alert("Error al actualizar usuario");
+      if (res.ok) {
+        toast.success("Usuario actualizado");
+        fetchUsuarios();
+      } else {
+        toast.error("Error al actualizar usuario");
+      }
+    } catch {
+      toast.error("Error de red al actualizar usuario");
     }
   };
 
   const handleDelete = async (userId) => {
-  const confirmed = await confirm({
-    title: "¿Eliminar usuario?",
-    message: "¿Estás seguro de que quieres eliminar este usuario?",
-  });
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/usuarios/${userId}/`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        }
+      );
 
-  if (!confirmed) return;
-
-  const res = await fetch(
-    `${import.meta.env.VITE_API_URL}/usuarios/${userId}/`,
-    {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-      },
+      if (res.ok) {
+        toast.success("Usuario eliminado");
+        fetchUsuarios();
+      } else {
+        toast.error("Error al eliminar usuario");
+      }
+    } catch {
+      toast.error("Error de red al eliminar usuario");
     }
-  );
-
-  if (res.ok) {
-    alert("Usuario eliminado");
-    fetchUsuarios();
-  } else {
-    alert("Error al eliminar usuario");
-  }
-};
-
+  };
 
   const toggleVista = (user, vista) => {
     const vistas = user.vistas || [];
@@ -111,7 +115,7 @@ export default function UserManager({ show, onClose }) {
   };
 
   if (!isAdmin) return null;
-//TODO, hacer los permisos más legibles
+
   return (
     <Modal show={show} onHide={onClose} size="xl" backdrop="static" fullscreen>
       <Modal.Header closeButton>
@@ -230,6 +234,7 @@ export default function UserManager({ show, onClose }) {
           if (shouldReload) fetchUsuarios();
         }}
       />
+
       {usuarioActivo && (
         <PermisosModal
           show={showPermisosModal}
@@ -240,11 +245,7 @@ export default function UserManager({ show, onClose }) {
             setUsuarios([...usuarios]);
           }}
         />
-        
       )}
-      {ConfirmUI}
-
     </Modal>
-    
   );
 }
