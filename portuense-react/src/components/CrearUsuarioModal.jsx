@@ -18,7 +18,7 @@ const vistasDisponibles = ["direccion-deportiva", "rivales", "calendario"];
 export default function CrearUsuarioModal({ show, onClose }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [grupo, setGrupo] = useState("usuario");
+  const [grupo, setGrupo] = useState(""); // ← vacío por defecto
   const [permisos, setPermisos] = useState([]);
   const [vistas, setVistas] = useState([]);
 
@@ -52,7 +52,7 @@ export default function CrearUsuarioModal({ show, onClose }) {
   const resetFormulario = () => {
     setUsername("");
     setPassword("");
-    setGrupo("entrenador");
+    setGrupo(""); // ← vacío
     setPermisos([]);
     setVistas([]);
   };
@@ -75,8 +75,6 @@ export default function CrearUsuarioModal({ show, onClose }) {
       vistas,
     };
 
-    console.log("📤 Enviando payload:", payload);
-
     const token = sessionStorage.getItem("accessToken");
 
     try {
@@ -93,7 +91,6 @@ export default function CrearUsuarioModal({ show, onClose }) {
       );
 
       const result = await res.json();
-      console.log("📥 Respuesta del servidor:", result);
 
       if (res.ok) {
         setToastMessage(`Usuario "${username}" creado con éxito`);
@@ -101,6 +98,7 @@ export default function CrearUsuarioModal({ show, onClose }) {
         onClose(true);
       } else {
         alert("❌ Error al crear usuario (ver consola)");
+        console.error(result);
       }
     } catch (error) {
       console.error("❌ Error de red:", error);
@@ -144,6 +142,7 @@ export default function CrearUsuarioModal({ show, onClose }) {
                 value={grupo}
                 onChange={(e) => setGrupo(e.target.value)}
               >
+                <option value="">Seleccionar grupo</option>
                 {gruposDisponibles.map((g) => (
                   <option key={g} value={g}>
                     {g.charAt(0).toUpperCase() + g.slice(1)}
@@ -210,7 +209,7 @@ export default function CrearUsuarioModal({ show, onClose }) {
           <Button
             variant="primary"
             onClick={handleSubmit}
-            disabled={!username || !password}
+            disabled={!username || !password || !grupo}
           >
             Crear Usuario
           </Button>
