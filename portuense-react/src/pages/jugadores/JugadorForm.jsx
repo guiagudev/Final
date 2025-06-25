@@ -149,15 +149,7 @@ export default function JugadorForm({
               <option value="C">C</option>
             </Form.Select>
           </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Observaciones</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-            />
-          </Form.Group>
+          
 
           {mode === "editar" && categoria !== "SEN" && (
             <Form.Group className="mb-3">

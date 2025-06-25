@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./components/Login";
 import React from "react";
-
+import RivalesPorGenero from "./pages/Rivales/RivalesPorGenero";
 import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
 import Jugadores from "./pages/Jugadores";
@@ -92,7 +92,7 @@ export default function Router() {
           element={<ExcelPorCategoria />}
         />
         <Route path="/jugadores/:id/documentos" element={<JugadorDocumentos />} />
-
+        <Route path="/rivales/:genero" element={<RivalesPorGenero />} />
       </Routes>
     </BrowserRouter>
   );

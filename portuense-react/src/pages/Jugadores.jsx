@@ -6,9 +6,6 @@ import { toast } from "react-toastify";
 import { getToken } from "../utils/auth";
 import React from "react";
 
-const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
-const equipos = ["M", "F"];
-
 export default function Jugadores() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [jugadores, setJugadores] = useState([]);
@@ -144,7 +141,7 @@ export default function Jugadores() {
         </Row>
       </Form>
 
-      <Button variant="success" className="mb-3" onClick={handleCreate}>
+      <Button variant="danger" className="mb-3" onClick={handleCreate}>
         Añadir Jugador
       </Button>
 

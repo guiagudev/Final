@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, Button } from "react-bootstrap";
-import { useAuth } from "../hooks/useAuth";
+
 import AppHeader from "../components/AppHeader";
 import React from "react";
 import ModalCarpetasPDFs from "../components/ModalCarpetasPDFs";
@@ -15,7 +15,7 @@ export default function DetalleJugador() {
   const [comentarios, setComentarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const { isInGroup } = useAuth();
+  
   const [hoveredComentarioId, setHoveredComentarioId] = useState(null);
 
   useEffect(() => {
@@ -49,8 +49,7 @@ export default function DetalleJugador() {
   const nombreCompleto = `${jugador.nombre} ${jugador.p_apellido || ""} ${
     jugador.s_apellido || ""
   }`;
-  const esAdmin = isInGroup("admin");
-  const esPrimerEquipo = jugador.categoria === "SEN";
+  
 
   const eliminarComentario = async (comentarioId) => {
     const token = sessionStorage.getItem("accessToken");
@@ -137,12 +136,7 @@ export default function DetalleJugador() {
               <strong>Edad:</strong> {jugador.edad} años
             </p>
 
-            {jugador.descripcion && (
-              <div className="mt-4">
-                <h5>Observaciones</h5>
-                <p style={{ whiteSpace: "pre-wrap" }}>{jugador.descripcion}</p>
-              </div>
-            )}
+          
 
             <hr className="my-4" />
 
