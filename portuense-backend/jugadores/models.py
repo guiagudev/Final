@@ -69,8 +69,8 @@ class ComentarioJugador(models.Model):
     titulo = models.CharField(max_length=100)
     contenido = models.TextField()
     contenido = models.TextField()
-    fecha_emision = models.DateField(default=lambda: now().date())
-    fecha_creacion = models.DateField(default=lambda: now().date())
+    fecha_emision = models.DateField(default=now)
+    fecha_creacion = models.DateField(default=now)
     def __str__(self):
         return f"{self.titulo} ({self.jugador.nombre})"
 class Contrato(models.Model):
@@ -237,6 +237,8 @@ class JugadorRival(models.Model):
     edad = models.PositiveIntegerField(blank=True, null=True)
     imagen = models.ImageField(upload_to ='rivales/', blank=True, null=True)
     equipo = models.CharField(max_length=1, choices=Jugador.OPCIONES_EQUIPO, blank=True, null=True)
+    observaciones = models.TextField(null=True, blank=True)
+
     
 
     def __str__(self):

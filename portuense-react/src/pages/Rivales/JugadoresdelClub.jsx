@@ -9,57 +9,67 @@ import {
   Col,
   Modal,
   Form,
-  Tabs,
-  Tab,
-  Alert,
 } from "react-bootstrap";
 import { toast } from "react-toastify";
 import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
 
-
 const token = sessionStorage.getItem("accessToken");
 const userPermisos = JSON.parse(sessionStorage.getItem("userPermisos") || "[]");
 
 export default function JugadoresDelClub() {
-  const { clubId } = useParams();
+  const { genero, clubId } = useParams();
   const navigate = useNavigate();
 
+  const generoActivo = genero === "masculino" ? "M" : "F";
+  const generoNombre = genero === "masculino" ? "Masculino" : "Femenino";
+
+  const tienePermiso = userPermisos.some(
+    (p) => p.categoria === "SEN" && p.equipo === generoActivo
+  );
+
+  const [clubNombre, setClubNombre] = useState("");
   const [jugadores, setJugadores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-
-  const tieneMasculino = userPermisos.some((p) => p.categoria === "SEN" && p.equipo === "M");
-  const tieneFemenino = userPermisos.some((p) => p.categoria === "SEN" && p.equipo === "F");
-  const [generoActivo, setGeneroActivo] = useState(tieneMasculino ? "M" : "F");
-
   const [formData, setFormData] = useState({
     nombre: "",
     dorsal: "",
     posicion: "",
     edad: "",
     imagen: null,
-    equipo: tieneMasculino ? "M" : "F",
   });
 
-
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/?club=${clubId}`, {
+    if (!tienePermiso) {
+      navigate("/");
+      return;
+    }
+
+    const fetchClub = fetch(`${import.meta.env.VITE_API_URL}/clubes-rivales/${clubId}/`, {
       headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setJugadores(data);
+    }).then((res) => res.json());
+
+    const fetchJugadores = fetch(
+      `${import.meta.env.VITE_API_URL}/jugadores-rivales/?club=${clubId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    ).then((res) => res.json());
+
+    Promise.all([fetchClub, fetchJugadores])
+      .then(([club, jugadores]) => {
+        setClubNombre(club.nombre);
+        setJugadores(jugadores);
         setLoading(false);
-      });
-  }, [clubId]);
+      })
+      .catch(() => toast.error("Error al cargar datos."));
+  }, [clubId, genero]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formPayload = new FormData();
     formPayload.append("club", clubId);
     formPayload.append("nombre", formData.nombre);
-    formPayload.append("equipo", formData.equipo);
+    formPayload.append("equipo", generoActivo);
     if (formData.dorsal) formPayload.append("dorsal", formData.dorsal);
     if (formData.posicion) formPayload.append("posicion", formData.posicion);
     if (formData.edad) formPayload.append("edad", formData.edad);
@@ -82,24 +92,18 @@ export default function JugadoresDelClub() {
           posicion: "",
           edad: "",
           imagen: null,
-          equipo: generoActivo,
         });
         toast.success("Jugador creado correctamente");
       } else {
         toast.error("Error al crear jugador");
       }
-    } catch (err) {
+    } catch {
       toast.error("Error al conectar con el servidor");
     }
   };
 
   const eliminarJugador = async (id) => {
-    const confirmed = await confirm({
-      title: "Eliminar jugador",
-      message: "¿Seguro que deseas eliminar este jugador?",
-    });
-
-    if (!confirmed) return;
+    if (!confirm("¿Seguro que deseas eliminar este jugador?")) return;
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/${id}/`, {
@@ -113,7 +117,7 @@ export default function JugadoresDelClub() {
       } else {
         toast.error("No se pudo eliminar el jugador.");
       }
-    } catch (err) {
+    } catch {
       toast.error("Error al conectar con el servidor.");
     }
   };
@@ -124,73 +128,54 @@ export default function JugadoresDelClub() {
     <>
       <AppHeader />
       <Container className="mt-4">
-        <BackButton to="/clubes-rivales" />
+        <BackButton to={`/clubes-rivales/${genero}`} />
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3 className="mb-0">Jugadores del Club</h3>
+          <h3 className="mb-0">
+            Jugadores del Club {clubNombre} ({generoNombre})
+          </h3>
           <Button variant="success" onClick={() => setShowModal(true)}>
             Añadir Jugador
           </Button>
         </div>
 
-        {(tieneMasculino || tieneFemenino) ? (
-          <>
-            <Tabs
-              activeKey={generoActivo}
-              onSelect={(k) => {
-                setGeneroActivo(k);
-                setFormData((prev) => ({ ...prev, equipo: k }));
-              }}
-              className="mb-3"
-            >
-              {tieneMasculino && <Tab eventKey="M" title="Masculino" />}
-              {tieneFemenino && <Tab eventKey="F" title="Femenino" />}
-            </Tabs>
-
-            {loading ? (
-              <Spinner animation="border" />
-            ) : (
-              <Row>
-                {jugadoresFiltrados.map((jugador) => (
-                  <Col md={4} key={jugador.id} className="mb-4">
-                    <Card>
-                      <Card.Body>
-                        <Card.Title>{jugador.nombre}</Card.Title>
-                        <Card.Text>
-                          <strong>Posición:</strong> {jugador.posicion} <br />
-                          <strong>Edad:</strong> {jugador.edad}
-                        </Card.Text>
-                        <div className="d-flex justify-content-between">
-                          <Button
-                            variant="info"
-                            size="sm"
-                            onClick={() => navigate(`${jugador.id}`)}
-                          >
-                            Ver Detalle
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => eliminarJugador(jugador.id)}
-                          >
-                            Eliminar
-                          </Button>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
-            )}
-          </>
+        {loading ? (
+          <Spinner animation="border" />
         ) : (
-          <Alert variant="warning">
-            No tienes permisos para ver jugadores rivales en esta categoría.
-          </Alert>
+          <Row>
+            {jugadoresFiltrados.map((jugador) => (
+              <Col md={4} key={jugador.id} className="mb-4">
+                <Card>
+                  <Card.Body>
+                    <Card.Title>{jugador.nombre}</Card.Title>
+                    <Card.Text>
+                      <strong>Posición:</strong> {jugador.posicion} <br />
+                      <strong>Edad:</strong> {jugador.edad}
+                    </Card.Text>
+                    <div className="d-flex justify-content-between">
+                      <Button
+                        variant="info"
+                        size="sm"
+                        onClick={() => navigate(`${jugador.id}`)}
+                      >
+                        Ver Detalle
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => eliminarJugador(jugador.id)}
+                      >
+                        Eliminar
+                      </Button>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
         )}
 
         <Outlet />
       </Container>
-
 
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
@@ -203,20 +188,11 @@ export default function JugadoresDelClub() {
               <Form.Control
                 type="text"
                 value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, nombre: e.target.value })
+                }
                 required
               />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Género</Form.Label>
-              <Form.Select
-                value={formData.equipo}
-                onChange={(e) => setFormData({ ...formData, equipo: e.target.value })}
-              >
-                <option value="M">Masculino</option>
-                <option value="F">Femenino</option>
-              </Form.Select>
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -224,7 +200,9 @@ export default function JugadoresDelClub() {
               <Form.Control
                 type="number"
                 value={formData.dorsal}
-                onChange={(e) => setFormData({ ...formData, dorsal: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, dorsal: e.target.value })
+                }
               />
             </Form.Group>
 
@@ -233,7 +211,9 @@ export default function JugadoresDelClub() {
               <Form.Control
                 type="text"
                 value={formData.posicion}
-                onChange={(e) => setFormData({ ...formData, posicion: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, posicion: e.target.value })
+                }
               />
             </Form.Group>
 
@@ -242,7 +222,9 @@ export default function JugadoresDelClub() {
               <Form.Control
                 type="number"
                 value={formData.edad}
-                onChange={(e) => setFormData({ ...formData, edad: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, edad: e.target.value })
+                }
               />
             </Form.Group>
 
@@ -251,11 +233,11 @@ export default function JugadoresDelClub() {
               <Form.Control
                 type="file"
                 accept="image/*"
-                onChange={(e) => setFormData({ ...formData, imagen: e.target.files[0] })}
+                onChange={(e) =>
+                  setFormData({ ...formData, imagen: e.target.files[0] })
+                }
               />
             </Form.Group>
-
-           
 
             <div className="d-flex justify-content-end">
               <Button variant="secondary" onClick={() => setShowModal(false)} className="me-2">
