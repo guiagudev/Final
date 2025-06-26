@@ -14,7 +14,7 @@ import UserManager from "./pages/UserManager";
 import PaginaCuotas from "./pages/Cuota";
 import AcademiaCategoria from "./pages/AcademiaCategoria";
 import DireccionDeportiva from "./pages/DireccionDeportiva";
-import ClubesRivales from "./pages/Rivales/ClubesRivales";
+import ClubesRivalesPorGenero from "./pages/Rivales/ClubesRivalesPorGenero";
 import PrimerEquipoDireccion from "./pages/DireccionDeportiva/PrimerEquipo";
 import AcademiaDireccion from "./pages/DireccionDeportiva/Academia";
 import NuevoComentario from "./pages/NuevoComentario";
@@ -52,9 +52,9 @@ export default function Router() {
         <Route path="/usuarios" element={<UserManager />} />
         <Route path="/cuotas" element={<PaginaCuotas />} />
         <Route path="/direccion-deportiva" element={<DireccionDeportiva />} />
-        <Route path="/clubes-rivales" element={<ClubesRivales />} />
+        <Route path="/clubes-rivales/:genero" element={<ClubesRivalesPorGenero />} />
         <Route
-          path="/clubes-rivales/:clubId/jugadores"
+          path="/clubes-rivales/:genero/:clubId/jugadores"
           element={<JugadoresDelClub />}
         >
           <Route path=":jugadorId" element={<DetalleJugadorRival />} />
@@ -82,7 +82,7 @@ export default function Router() {
           path="/direccion-deportiva/primer-equipo/:categoria/:equipo/jugadores"
           element={<JugadoresPorCategoria />}
         />
-        <Route path="/clubes-rivales/:id" element={<ClubDetalle />} />
+        <Route path="/clubes-rivales/:genero/:id" element={<ClubDetalle />} />
         <Route
           path="/direccion-deportiva/primer-equipo/:categoria/:equipo/excel"
           element={<ExcelPorCategoria />}

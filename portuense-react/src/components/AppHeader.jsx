@@ -8,12 +8,19 @@ export default function AppHeader() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [vistas, setVistas] = useState([]);
+  const [permisosSEN, setPermisosSEN] = useState({ M: false, F: false });
 
   useEffect(() => {
     const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
     const storedVistas = JSON.parse(sessionStorage.getItem("userVistas") || "[]");
+    const storedPermisos = JSON.parse(sessionStorage.getItem("userPermisos") || "[]");
+
     setUsername(storedUser.username || "");
     setVistas(storedVistas);
+
+    const senM = storedPermisos.some(p => p.categoria === "SEN" && p.equipo === "M");
+    const senF = storedPermisos.some(p => p.categoria === "SEN" && p.equipo === "F");
+    setPermisosSEN({ M: senM, F: senF });
   }, []);
 
   const handleLogout = () => {
@@ -24,11 +31,7 @@ export default function AppHeader() {
   const puedeVer = (clave) => vistas.includes(clave);
 
   return (
-    <Navbar
-      style={{ backgroundColor: "#610b1c" }}
-      expand="lg"
-      className="shadow-sm mb-4"
-    >
+    <Navbar style={{ backgroundColor: "#610b1c" }} expand="lg" className="shadow-sm mb-4">
       <Container fluid>
         <Navbar.Brand
           onClick={() => navigate("/dashboard")}
@@ -39,11 +42,7 @@ export default function AppHeader() {
             gap: "1rem",
           }}
         >
-          <img
-            src={logo}
-            alt="Logo Portuense"
-            style={{ width: "50px", height: "50px" }}
-          />
+          <img src={logo} alt="Logo Portuense" style={{ width: "50px", height: "50px" }} />
           <span
             style={{
               fontWeight: "bold",
@@ -61,30 +60,37 @@ export default function AppHeader() {
           {puedeVer("direccion-deportiva") && (
             <Nav.Link
               onClick={() => navigate("/direccion-deportiva")}
-              style={{
-                color: "white",
-                fontWeight: "500",
-                fontSize: "1rem",
-              }}
+              style={{ color: "white", fontWeight: "500", fontSize: "1rem" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "black")}
               onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
             >
               Dirección Deportiva
             </Nav.Link>
           )}
-          {puedeVer("rivales") && (
-            <Nav.Link
-              onClick={() => navigate("/clubes-rivales")}
-              style={{
-                color: "white",
-                fontWeight: "500",
-                fontSize: "1rem",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "black")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
-            >
-              Rivales
-            </Nav.Link>
+
+          {puedeVer("rivales") && (permisosSEN.M || permisosSEN.F) && (
+            <Dropdown as={Nav.Item}>
+              <Dropdown.Toggle
+                as={Nav.Link}
+                style={{ color: "white", fontWeight: "500", fontSize: "1rem" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "black")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
+              >
+                Rivales
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {permisosSEN.M && (
+                  <Dropdown.Item onClick={() => navigate("/clubes-rivales/masculino")}>
+                    Rivales Masculinos
+                  </Dropdown.Item>
+                )}
+                {permisosSEN.F && (
+                  <Dropdown.Item onClick={() => navigate("/clubes-rivales/femenino")}>
+                    Rivales Femeninos
+                  </Dropdown.Item>
+                )}
+              </Dropdown.Menu>
+            </Dropdown>
           )}
         </Nav>
 

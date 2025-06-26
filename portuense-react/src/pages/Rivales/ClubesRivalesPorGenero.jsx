@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import ModalJugadoresCoinciden from "../../components/ModalJugadoresCoinciden";
 import {
   Table,
@@ -16,7 +16,10 @@ import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
 import { toast } from "react-toastify";
 
-export default function ClubesRivales() {
+export default function ClubesRivalesPorGenero() {
+  const { genero } = useParams(); // "masculino" o "femenino"
+  const equipo = genero === "masculino" ? "M" : "F";
+
   const [clubes, setClubes] = useState([]);
   const [conteos, setConteos] = useState({});
   const [filtros, setFiltros] = useState({
@@ -43,13 +46,16 @@ export default function ClubesRivales() {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then(setClubes)
+      .then((todos) => {
+        const filtrados = todos.filter((c) => c.equipo === equipo);
+        setClubes(filtrados);
+      })
       .catch(() => toast.error("Error al cargar clubes."));
   };
 
   useEffect(() => {
     cargarClubes();
-  }, [token]);
+  }, [token, genero]);
 
   const buscar = async () => {
     setCargando(true);
@@ -104,6 +110,7 @@ export default function ClubesRivales() {
     const formData = new FormData();
     formData.append("nombre", nuevoClub.nombre);
     formData.append("ciudad", nuevoClub.ciudad);
+    formData.append("equipo", equipo);
     if (nuevoClub.imagen) formData.append("imagen", nuevoClub.imagen);
 
     try {
@@ -158,12 +165,13 @@ export default function ClubesRivales() {
       <Container className="mt-4">
         <BackButton to="/dashboard" />
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2>Clubes Rivales</h2>
+          <h2>Clubes Rivales {genero === "masculino" ? "Masculinos" : "Femeninos"}</h2>
           <Button variant="success" onClick={() => setShowCreateModal(true)}>
             + Crear Club
           </Button>
         </div>
 
+        {/* Filtros */}
         <Form className="mb-4">
           <Row>
             <Col md={2}>
@@ -200,6 +208,7 @@ export default function ClubesRivales() {
           </Row>
         </Form>
 
+        {/* Tabla */}
         <Table striped bordered hover responsive>
           <thead>
             <tr>
@@ -222,7 +231,7 @@ export default function ClubesRivales() {
                   )}
                 </td>
                 <td>
-                  <Link to={`/clubes-rivales/${club.id}`}>{club.nombre}</Link>
+                  <Link to={`/clubes-rivales/${genero}/${club.id}`}>{club.nombre}</Link>
                 </td>
                 <td>{club.ciudad}</td>
                 <td>
@@ -244,7 +253,7 @@ export default function ClubesRivales() {
                   <Button
                     size="sm"
                     variant="info"
-                    onClick={() => navigate(`/clubes-rivales/${club.id}/jugadores`)}
+                    onClick={() => navigate(`/clubes-rivales/${genero}/${club.id}/jugadores`)}
                   >
                     Ver Jugadores
                   </Button>
@@ -274,6 +283,14 @@ export default function ClubesRivales() {
           </tbody>
         </Table>
       </Container>
+
+      {/* Modal jugadores coinciden */}
+      <ModalJugadoresCoinciden
+        show={modalClubId !== null}
+        onHide={() => setModalClubId(null)}
+        clubId={modalClubId}
+        filtros={filtros}
+      />
 
       {/* Modal de creación */}
       <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)}>
@@ -377,13 +394,6 @@ export default function ClubesRivales() {
           </Button>
         </Modal.Footer>
       </Modal>
-
-      <ModalJugadoresCoinciden
-        show={modalClubId !== null}
-        onHide={() => setModalClubId(null)}
-        clubId={modalClubId}
-        filtros={filtros}
-      />
     </>
   );
 }
