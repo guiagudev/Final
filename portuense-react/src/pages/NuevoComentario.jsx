@@ -10,8 +10,6 @@ export default function NuevoComentario() {
   const navigate = useNavigate();
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
-  const [fechaEmision, setFechaEmision] = useState("");
-  const [fechaCreacion, setFechaCreacion] = useState("");
   const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
@@ -20,9 +18,7 @@ export default function NuevoComentario() {
 
     const comentario = {
       titulo,
-      contenido,
-      fecha_emision: fechaEmision,
-      fecha_creacion: fechaCreacion
+      contenido
     };
 
     try {
@@ -73,25 +69,7 @@ export default function NuevoComentario() {
           />
         </Form.Group>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Fecha de Emisión</Form.Label>
-          <Form.Control
-            type="date"
-            value={fechaEmision}
-            onChange={(e) => setFechaEmision(e.target.value)}
-            required
-          />
-        </Form.Group>
-
-        <Form.Group className="mb-3">
-          <Form.Label>Fecha de Creación</Form.Label>
-          <Form.Control
-            type="date"
-            value={fechaCreacion}
-            onChange={(e) => setFechaCreacion(e.target.value)}
-            required
-          />
-        </Form.Group>
+        
 
         <Button type="submit" variant="primary">
           Publicar Comentario
@@ -100,10 +78,3 @@ export default function NuevoComentario() {
     </Container>
   );
 }
-
-
-//TODO: Crear la mierda de Dirección Deportiva y asociar los permisos --Sabado mañana
-//TODO: Crear el Excel de los cojones en Frontend y Asociarlo al Backend --Sabado tarde
-//TODO: Poner carpetas y PDFs en cada jugador --Sabado Mañana
-//TODO: Crear lo de Jugadores y Clubes a estudiar con la pta logica de formulario que piden --Domingo Mañana
-//TODO: Desarrollar los contenedores y ponerlos en produccion , rectificar endpoints, crear el WSGI y el NGINX--Domingo Mañana

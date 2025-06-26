@@ -68,9 +68,9 @@ class ComentarioJugador(models.Model):
     autor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     titulo = models.CharField(max_length=100)
     contenido = models.TextField()
-    fecha_emision = models.DateField(null=True)
-    fecha_creacion = models.DateField(null=True)
-
+    contenido = models.TextField()
+    fecha_emision = models.DateField(default=lambda: now().date())
+    fecha_creacion = models.DateField(default=lambda: now().date())
     def __str__(self):
         return f"{self.titulo} ({self.jugador.nombre})"
 class Contrato(models.Model):
@@ -232,12 +232,11 @@ class ClubRival(models.Model):
 class JugadorRival(models.Model):
     club = models.ForeignKey(ClubRival, related_name='jugadores', on_delete=models.CASCADE)
     nombre = models.CharField(max_length=100)
-    equipo = models.CharField(max_length=1, choices=Jugador.OPCIONES_EQUIPO, default='M')
     dorsal = models.PositiveIntegerField(blank=True, null=True)
     posicion = models.CharField(max_length=50, blank=True)
     edad = models.PositiveIntegerField(blank=True, null=True)
     imagen = models.ImageField(upload_to ='rivales/', blank=True, null=True)
-    observaciones = models.TextField(blank=True)
+    
 
     def __str__(self):
         return f"{self.nombre} ({self.club.nombre})"
@@ -246,8 +245,9 @@ class ComentarioRival(models.Model):
     autor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     titulo = models.CharField(max_length=100)
     contenido = models.TextField()
-    fecha_emision = models.DateField(default=now)
-    fecha_creacion = models.DateField(default=now)
+    fecha_emision = models.DateField(default=now)  # <-- SIN lambda
+    fecha_creacion = models.DateField(default=now)  # <-- SIN lambda
+
 
     def __str__(self):
         return f"{self.titulo} ({self.jugador.nombre})"
@@ -256,7 +256,7 @@ class ComentarioClubRival(models.Model):
     autor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     titulo = models.CharField(max_length=100)
     contenido = models.TextField()
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_creacion = models.DateTimeField(default=now)
 
     def __str__(self):
         return f"{self.titulo} - {self.club.nombre}"

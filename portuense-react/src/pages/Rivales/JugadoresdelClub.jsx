@@ -39,7 +39,6 @@ export default function JugadoresDelClub() {
     posicion: "",
     edad: "",
     imagen: null,
-    observaciones: "",
     equipo: tieneMasculino ? "M" : "F",
   });
 
@@ -65,7 +64,6 @@ export default function JugadoresDelClub() {
     if (formData.posicion) formPayload.append("posicion", formData.posicion);
     if (formData.edad) formPayload.append("edad", formData.edad);
     if (formData.imagen) formPayload.append("imagen", formData.imagen);
-    if (formData.observaciones) formPayload.append("observaciones", formData.observaciones);
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/`, {
@@ -84,7 +82,6 @@ export default function JugadoresDelClub() {
           posicion: "",
           edad: "",
           imagen: null,
-          observaciones: "",
           equipo: generoActivo,
         });
         toast.success("Jugador creado correctamente");
@@ -258,15 +255,7 @@ export default function JugadoresDelClub() {
               />
             </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Observaciones</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={formData.observaciones}
-                onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
-              />
-            </Form.Group>
+           
 
             <div className="d-flex justify-content-end">
               <Button variant="secondary" onClick={() => setShowModal(false)} className="me-2">
