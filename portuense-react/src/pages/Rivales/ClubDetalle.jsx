@@ -5,7 +5,7 @@ import BackButton from "../../components/BackButton";
 import { toast } from "react-toastify";
 
 export default function ClubDetalle() {
-  const { id } = useParams();
+  const { id, genero } = useParams();
   const [club, setClub] = useState(null);
   const [comentarios, setComentarios] = useState([]);
   const [hoveredComentarioId, setHoveredComentarioId] = useState(null);
@@ -97,7 +97,7 @@ export default function ClubDetalle() {
 
   return (
     <Container className="mt-4">
-      <BackButton to="/clubes-rivales" />
+      <BackButton to={`/clubes-rivales/${genero}`} />
       <Card className="mb-4">
         <Card.Body>
           <h3>{club.nombre}</h3>

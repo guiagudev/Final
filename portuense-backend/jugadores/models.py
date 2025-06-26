@@ -236,6 +236,7 @@ class JugadorRival(models.Model):
     posicion = models.CharField(max_length=50, blank=True)
     edad = models.PositiveIntegerField(blank=True, null=True)
     imagen = models.ImageField(upload_to ='rivales/', blank=True, null=True)
+    equipo = models.CharField(max_length=1, choices=Jugador.OPCIONES_EQUIPO, blank=True, null=True)
     
 
     def __str__(self):
