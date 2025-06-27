@@ -2,6 +2,16 @@ import React, { useEffect, useState } from "react";
 import { Modal, Button, Row, Col, Form } from "react-bootstrap";
 
 const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN","RIV"];
+const categoriasLabels = {
+  PREBEN: "Prebenjamín",
+  BEN: "Benjamín",
+  ALE: "Alevín",
+  INF: "Infantil",
+  CAD: "Cadete",
+  JUV: "Juvenil",
+  SEN: "Senior",
+  RIV: "Rivales"
+};
 const equipos = ["M", "F"];
 
 export default function PermisosModal({ show, onClose, user, onPermisosUpdate }) {
@@ -42,7 +52,7 @@ export default function PermisosModal({ show, onClose, user, onPermisosUpdate })
         <Row className="gy-3">
           {categorias.map((cat) => (
             <Col key={cat} md={6}>
-              <strong>{cat}</strong>
+              <strong>{categoriasLabels[cat]}</strong>
               <div className="d-flex gap-3 mt-1">
                 {equipos.map((eq) => {
                   const checked = permisosSeleccionados.some(
