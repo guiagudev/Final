@@ -44,7 +44,7 @@ export default function Calendario() {
 
   const navigate = useNavigate();
   const token = sessionStorage.getItem("accessToken");
-  const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+  
 
   const userTienePermiso = (categoria, equipo) =>
     permisos.some(
