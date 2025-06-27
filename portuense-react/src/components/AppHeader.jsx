@@ -68,7 +68,7 @@ export default function AppHeader() {
             </Nav.Link>
           )}
 
-          {puedeVer("rivales") && (permisosRIV.M || permisosRIV.F) && (
+          {(permisosRIV.M || permisosRIV.F) && (
             <Dropdown as={Nav.Item}>
               <Dropdown.Toggle
                 as={Nav.Link}

@@ -10,7 +10,7 @@ import React from "react";
 import "../assets/styles/UserManager.css";
 
 
-const vistasDisponibles = ["direccion-deportiva", "rivales", "calendario"];
+const vistasDisponibles = ["direccion-deportiva","calendario"];
 
 export default function UserManager({ show, onClose }) {
   const { user } = useAuth();
