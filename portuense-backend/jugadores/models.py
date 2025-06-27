@@ -177,7 +177,8 @@ class PermisoPersonalizado(models.Model):
         ('INF', 'Infantil'),
         ('CAD', 'Cadete'),
         ('JUV', 'Juvenil'),
-        ('SEN', 'Sénior')
+        ('SEN', 'Sénior'),
+        ('RIV', 'Rivales')
     ]
     EQUIPOS = [
         ('M', 'Masculino'),

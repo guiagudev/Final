@@ -1,25 +1,36 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Button, Row, Col, Form } from "react-bootstrap";
 
-const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
+const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN","RIV"];
 const equipos = ["M", "F"];
 
 export default function PermisosModal({ show, onClose, user, onPermisosUpdate }) {
-  const permisos = user.permisos || [];
+  const [permisosSeleccionados, setPermisosSeleccionados] = useState([]);
+
+  // Cuando se abra el modal o cambie el usuario, se cargan los permisos
+  useEffect(() => {
+    if (show && user) {
+      setPermisosSeleccionados(user.permisos || []);
+    }
+  }, [show, user]);
 
   const togglePermiso = (cat, eq) => {
-    const key = `${cat}-${eq}`;
-    const current = permisos.map((p) => `${p.categoria}-${p.equipo}`);
-    const updated = current.includes(key)
-      ? current.filter((k) => k !== key)
-      : [...current, key];
+    const exists = permisosSeleccionados.some(
+      (p) => p.categoria === cat && p.equipo === eq
+    );
 
-    const nuevos = updated.map((k) => {
-      const [categoria, equipo] = k.split("-");
-      return { categoria, equipo };
-    });
+    if (exists) {
+      setPermisosSeleccionados((prev) =>
+        prev.filter((p) => !(p.categoria === cat && p.equipo === eq))
+      );
+    } else {
+      setPermisosSeleccionados((prev) => [...prev, { categoria: cat, equipo: eq }]);
+    }
+  };
 
-    onPermisosUpdate(nuevos);
+  const handleGuardar = () => {
+    onPermisosUpdate(permisosSeleccionados);
+    onClose();
   };
 
   return (
@@ -34,7 +45,7 @@ export default function PermisosModal({ show, onClose, user, onPermisosUpdate })
               <strong>{cat}</strong>
               <div className="d-flex gap-3 mt-1">
                 {equipos.map((eq) => {
-                  const checked = permisos.some(
+                  const checked = permisosSeleccionados.some(
                     (p) => p.categoria === cat && p.equipo === eq
                   );
                   return (
@@ -54,7 +65,10 @@ export default function PermisosModal({ show, onClose, user, onPermisosUpdate })
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onClose}>
-          Cerrar
+          Cancelar
+        </Button>
+        <Button variant="primary" onClick={handleGuardar}>
+          Guardar
         </Button>
       </Modal.Footer>
     </Modal>

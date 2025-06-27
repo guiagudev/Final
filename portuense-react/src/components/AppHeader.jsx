@@ -8,7 +8,7 @@ export default function AppHeader() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [vistas, setVistas] = useState([]);
-  const [permisosSEN, setPermisosSEN] = useState({ M: false, F: false });
+  const [permisosRIV, setPermisosRIV] = useState({ M: false, F: false });
 
   useEffect(() => {
     const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
@@ -18,9 +18,9 @@ export default function AppHeader() {
     setUsername(storedUser.username || "");
     setVistas(storedVistas);
 
-    const senM = storedPermisos.some(p => p.categoria === "SEN" && p.equipo === "M");
-    const senF = storedPermisos.some(p => p.categoria === "SEN" && p.equipo === "F");
-    setPermisosSEN({ M: senM, F: senF });
+    const rivM = storedPermisos.some(p => p.categoria === "RIV" && p.equipo === "M");
+    const rivF = storedPermisos.some(p => p.categoria === "RIV" && p.equipo === "F");
+    setPermisosRIV({ M: rivM, F: rivF });
   }, []);
 
   const handleLogout = () => {
@@ -68,7 +68,7 @@ export default function AppHeader() {
             </Nav.Link>
           )}
 
-          {puedeVer("rivales") && (permisosSEN.M || permisosSEN.F) && (
+          {puedeVer("rivales") && (permisosRIV.M || permisosRIV.F) && (
             <Dropdown as={Nav.Item}>
               <Dropdown.Toggle
                 as={Nav.Link}
@@ -79,12 +79,12 @@ export default function AppHeader() {
                 Rivales
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                {permisosSEN.M && (
+                {permisosRIV.M && (
                   <Dropdown.Item onClick={() => navigate("/clubes-rivales/masculino")}>
                     Rivales Masculinos
                   </Dropdown.Item>
                 )}
-                {permisosSEN.F && (
+                {permisosRIV.F && (
                   <Dropdown.Item onClick={() => navigate("/clubes-rivales/femenino")}>
                     Rivales Femeninos
                   </Dropdown.Item>

@@ -95,7 +95,8 @@ export default function Dashboard() {
             <div className="text-center mt-4">
               <Button
                 variant="outline-warning"
-                onClick={() => setShowUserManager(true)}
+                onClick={() => 
+                  setShowUserManager(true)}
                 className="mt-3"
               >
                 Gestionar usuarios

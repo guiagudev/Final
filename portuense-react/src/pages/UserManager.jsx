@@ -9,8 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 import React from "react";
 import "../assets/styles/UserManager.css";
 
-const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
-const equipos = ["M", "F"];
+
 const vistasDisponibles = ["direccion-deportiva", "rivales", "calendario"];
 
 export default function UserManager({ show, onClose }) {
@@ -33,7 +32,16 @@ export default function UserManager({ show, onClose }) {
       });
       if (res.ok) {
         const data = await res.json();
-        setUsuarios(data);
+        setUsuarios(
+  data.map((u) => ({
+    ...u,
+    grupo: u.groups?.[0] || "",     // extrae el primer grupo para el select
+    vistas: u.vistas || [],         // asegura que no sea undefined
+    permisos: u.permisos || [],     // asegura que no sea undefined
+    password: ""                    // permite editar desde el frontend
+  }))
+);
+
       } else {
         toast.error("Error al obtener usuarios");
       }
@@ -154,14 +162,13 @@ export default function UserManager({ show, onClose }) {
                         size="sm"
                         value={user.grupo || ""}
                         onChange={(e) => {
-                          user.grupo = e.target.value;
+                          user.userGroups = e.target.value;
                           setUsuarios([...usuarios]);
                         }}
                       >
                         <option value="">Sin grupo</option>
-                        <option value="admin">Admin</option>
-                        <option value="coordinador">Coordinador</option>
-                        <option value="entrenador">Entrenador</option>
+                        <option value="admin">Administrador</option>
+                        <option value="usuario">Usuario</option>
                       </Form.Select>
                     </td>
                     <td>
@@ -191,7 +198,7 @@ export default function UserManager({ show, onClose }) {
                     <td>
                       <Form.Control
                         type="password"
-                        placeholder="Nueva contraseña"
+                        placeholder="••••••••••••••••"
                         onChange={(e) => {
                           user.password = e.target.value;
                         }}
