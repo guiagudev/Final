@@ -13,7 +13,7 @@ import React from "react";
 const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
 const equipos = ["M", "F"];
 const gruposDisponibles = ["admin", "usuario"];
-const vistasDisponibles = ["direccion-deportiva", "rivales", "calendario"];
+const vistasDisponibles = ["direccion-deportiva", "calendario"];
 
 export default function CrearUsuarioModal({ show, onClose }) {
   const [username, setUsername] = useState("");

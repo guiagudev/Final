@@ -76,9 +76,11 @@ def actualizar_usuario(request, user_id):
     # Guardar nuevos permisos
     for permiso in permisos:
         categoria = permiso.get('categoria')
+        subcategoria = permiso.get('subcategoria')
         equipo = permiso.get('equipo')
+
         if categoria and equipo:
-            PermisoPersonalizado.objects.create(user=user, categoria=categoria, equipo=equipo)
+            PermisoPersonalizado.objects.create(user=user, categoria=categoria, subcategoria=subcategoria, equipo=equipo)
 
     for vista in vistas:
         PermisoVista.objects.create(user=user, vista=vista)
@@ -135,7 +137,7 @@ def me_view(request):
         "is_staff": user.is_staff,
         "is_superuser": user.is_superuser,
         "groups": [group.name for group in user.groups.all()],
-        "permisos": list(permisos.values('categoria', 'equipo')),
+        "permisos": list(permisos.values('categoria', 'subcategoria', 'equipo')),
         "vistas": list(vistas),
     })
 

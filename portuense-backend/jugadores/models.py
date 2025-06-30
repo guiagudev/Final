@@ -184,15 +184,22 @@ class PermisoPersonalizado(models.Model):
         ('M', 'Masculino'),
         ('F', 'Femenino')
     ]
+    SUBCATEGORIAS = [
+        ('A', 'A'),
+        ('B', 'B'),
+        ('C', 'C'),
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='permisos')
     categoria = models.CharField(max_length=10, choices=CATEGORIAS)
+    subcategoria = models.CharField(max_length=6, choices=SUBCATEGORIAS, default='A')
     equipo = models.CharField(max_length=1, choices=EQUIPOS)
 
     class Meta:
-        unique_together = ('user', 'categoria', 'equipo')
+        unique_together = ('user', 'categoria', 'equipo', 'subcategoria')
 
     def __str__(self):
-        return f"{self.user.username} → {self.categoria}-{self.equipo}"
+        return f"{self.user.username} → {self.categoria}-{self.subcategoria}-{self.equipo}"
+
 class PermisoVista(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vistas')
     vista = models.CharField(max_length=50)

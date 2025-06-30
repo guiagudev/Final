@@ -35,7 +35,7 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.groups.first().name if obj.groups.exists() else ""
 
     def get_permisos(self, obj):
-        return list(obj.permisos.values('categoria', 'equipo'))
+        return list(obj.permisos.values('categoria', 'subcategoria', 'equipo'))
 
     def get_vistas(self, obj):
         return list(obj.vistas.values_list('vista', flat=True))
