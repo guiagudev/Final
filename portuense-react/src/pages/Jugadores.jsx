@@ -17,6 +17,12 @@ export default function Jugadores() {
   const fetchJugadores = useCallback(async () => {
     try {
       const queryString = searchParams.toString();
+      const categoria = searchParams.get("categoria");
+      const subcategoria = searchParams.get("subcategoria");
+      const equipo = searchParams.get("equipo");
+      console.log(
+      `🔎 Fetching jugadores de: ${categoria || "todas las categorías"} | ${subcategoria || "todas las subcategorías"} | ${equipo || "todos los equipos"}`
+    );
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/jugadores/?${queryString}`,
         {

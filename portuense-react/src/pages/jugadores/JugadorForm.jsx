@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { getToken } from "../../utils/auth";
-import React from 'react';
+import React from "react";
 
 export default function JugadorForm({
   show,
@@ -21,6 +21,23 @@ export default function JugadorForm({
   const [descripcion, setDescripcion] = useState("");
   const [haPagadoCuota, setHaPagadoCuota] = useState(false);
   const [imagen, setImagen] = useState(null);
+  const [permisos, setPermisos] = useState([]);
+
+  useEffect(() => {
+    const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+    setPermisos(storedUser.permisos || []);
+  }, []);
+
+  // Opciones disponibles basadas en permisos
+  const equiposDisponibles = [...new Set(permisos.map(p => p.equipo))];
+  const categoriasDisponibles = [...new Set(permisos.map(p => p.categoria))];
+  const subcategoriasDisponibles = [
+    ...new Set(
+      permisos
+        .filter(p => p.categoria === categoria && p.equipo === equipo)
+        .map(p => p.subcategoria)
+    ),
+  ];
 
   useEffect(() => {
     if (mode === "editar" && initialData) {
@@ -34,21 +51,21 @@ export default function JugadorForm({
       setEdad(initialData.edad || "");
       setDescripcion(initialData.descripcion || "");
       setHaPagadoCuota(initialData.ha_pagado_cuota || false);
-      setImagen(null);  // Solo se sube si cambia
+      setImagen(null);
     } else {
       setNombre("");
       setP_apellido("");
       setS_apellido("");
-      setEquipo("M");
-      setCategoria("PREBEN");
-      setSubcategoria("A");
+      setEquipo(equiposDisponibles[0] || "M");
+      setCategoria(categoriasDisponibles[0] || "PREBEN");
+      setSubcategoria(subcategoriasDisponibles[0] || "A");
       setPosicion("");
       setEdad("");
       setDescripcion("");
       setHaPagadoCuota(false);
       setImagen(null);
     }
-  }, [mode, initialData, show]);
+  }, [mode, initialData, show, equiposDisponibles, categoriasDisponibles, subcategoriasDisponibles]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -124,32 +141,45 @@ export default function JugadorForm({
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Equipo</Form.Label>
-            <Form.Select value={equipo} onChange={(e) => setEquipo(e.target.value)} required>
-              <option value="M">Masculino</option>
-              <option value="F">Femenino</option>
+            <Form.Select
+              value={equipo}
+              onChange={(e) => setEquipo(e.target.value)}
+              disabled={equiposDisponibles.length === 1}
+              required
+            >
+              {equiposDisponibles.map(eq => (
+                <option key={eq} value={eq}>
+                  {eq === "M" ? "Masculino" : "Femenino"}
+                </option>
+              ))}
             </Form.Select>
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Categoría</Form.Label>
-            <Form.Select value={categoria} onChange={(e) => setCategoria(e.target.value)} required>
-              <option value="PREBEN">Prebenjamín</option>
-              <option value="BEN">Benjamín</option>
-              <option value="ALE">Alevín</option>
-              <option value="INF">Infantil</option>
-              <option value="CAD">Cadete</option>
-              <option value="JUV">Juvenil</option>
-              <option value="SEN">Sénior</option>
+            <Form.Select
+              value={categoria}
+              onChange={(e) => setCategoria(e.target.value)}
+              disabled={categoriasDisponibles.length === 1}
+              required
+            >
+              {categoriasDisponibles.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
             </Form.Select>
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Subcategoría</Form.Label>
-            <Form.Select value={subcategoria} onChange={(e) => setSubcategoria(e.target.value)} required>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
+            <Form.Select
+              value={subcategoria}
+              onChange={(e) => setSubcategoria(e.target.value)}
+              disabled={subcategoriasDisponibles.length === 1}
+              required
+            >
+              {subcategoriasDisponibles.map(sub => (
+                <option key={sub} value={sub}>{sub}</option>
+              ))}
             </Form.Select>
           </Form.Group>
-          
 
           {mode === "editar" && categoria !== "SEN" && (
             <Form.Group className="mb-3">
