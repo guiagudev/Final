@@ -1,16 +1,16 @@
 [
   {
-    "title": "Masculino",
+    "title": "Masculino ",
     "categoria": "SEN",
     "equipo": "M",
-    "text": "Jugadores del Primer Equipo",
-    "visibleTo": ["admin", "coordinador"]
+    "subcategoria": "A",
+    "text": "Jugadores del Primer Equipo Masculino "
   },
   {
-    "title": "Femenino",
+    "title": "Femenino ",
     "categoria": "SEN",
     "equipo": "F",
-    "text": "Jugadoras del Primer Equipo",
-    "visibleTo": ["admin", "coordinador"]
+    "subcategoria": "A",
+    "text": "Jugadoras del Primer Equipo Femenino "
   }
 ]

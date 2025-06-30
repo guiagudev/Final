@@ -6,6 +6,7 @@ import AppHeader from "../components/AppHeader";
 import CrearUsuarioModal from "../components/CrearUsuarioModal";
 import React from "react";
 import UserManager from "./UserManager";
+import "../assets/styles/paneles.css";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -24,8 +25,8 @@ export default function Dashboard() {
     setVistas(storedVistas);
   }, []);
 
-  const tienePermisoSen = permisos.some((p) => p.categoria === "SEN");
-  const tienePermisoAcademia = permisos.some((p) => p.categoria !== "SEN");
+  const tienePermisoSen = permisos.some((p) => p.categoria === "SEN" && p.subcategoria === "A");
+  const tienePermisoAcademia = permisos.some((p) => p.categoria !== "SEN" || (p.categoria === "SEN" && p.subcategoria !== "A"));
 
   return (
     <>

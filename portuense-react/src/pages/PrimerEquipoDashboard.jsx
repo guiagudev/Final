@@ -7,7 +7,7 @@ import panelData from '../data/primerEquipoPanels.json';
 import BackButton from '../components/BackButton';
 import AppHeader from '../components/AppHeader';
 import React from 'react';
-
+import "../assets/styles/paneles.css";
 export default function PrimerEquipoDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState({});

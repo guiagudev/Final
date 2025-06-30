@@ -3,84 +3,112 @@
     "title": "Prebenjamín Masculino",
     "categoria": "PREBEN",
     "equipo": "M",
-    "text": "Jugadores Prebenjamín Masculino",
-    "visibleTo": ["admin", "entrenador"]
+    "subcategoria": "A",
+    "text": "Jugadores Prebenjamín Masculino"
   },
   {
     "title": "Prebenjamín Femenino",
     "categoria": "PREBEN",
     "equipo": "F",
-    "text": "Jugadoras Prebenjamín Femenino",
-    "visibleTo": ["admin", "entrenador"]
+    "subcategoria": "A",
+    "text": "Jugadoras Prebenjamín Femenino"
   },
   {
     "title": "Benjamín Masculino",
     "categoria": "BEN",
     "equipo": "M",
-    "text": "Jugadores Benjamín Masculino",
-    "visibleTo": ["admin", "entrenador"]
+    "subcategoria": "A",
+    "text": "Jugadores Benjamín Masculino"
   },
   {
     "title": "Benjamín Femenino",
     "categoria": "BEN",
     "equipo": "F",
-    "text": "Jugadoras Benjamín Femenino",
-    "visibleTo": ["admin", "entrenador"]
+    "subcategoria": "A",
+    "text": "Jugadoras Benjamín Femenino"
   },
   {
     "title": "Alevín Masculino",
     "categoria": "ALE",
     "equipo": "M",
-    "text": "Jugadores Alevín Masculino",
-    "visibleTo": ["admin", "entrenador"]
+    "subcategoria": "A",
+    "text": "Jugadores Alevín Masculino"
   },
   {
     "title": "Alevín Femenino",
     "categoria": "ALE",
     "equipo": "F",
-    "text": "Jugadoras Alevín Femenino",
-    "visibleTo": ["admin", "entrenador"]
+    "subcategoria": "A",
+    "text": "Jugadoras Alevín Femenino"
   },
   {
     "title": "Infantil Masculino",
     "categoria": "INF",
     "equipo": "M",
-    "text": "Jugadores Infantil Masculino",
-    "visibleTo": ["admin", "entrenador"]
+    "subcategoria": "A",
+    "text": "Jugadores Infantil Masculino"
   },
   {
     "title": "Infantil Femenino",
     "categoria": "INF",
     "equipo": "F",
-    "text": "Jugadoras Infantil Femenino",
-    "visibleTo": ["admin", "entrenador"]
+    "subcategoria": "A",
+    "text": "Jugadoras Infantil Femenino"
   },
   {
     "title": "Cadete Masculino",
     "categoria": "CAD",
     "equipo": "M",
-    "text": "Jugadores Cadete Masculino",
-    "visibleTo": ["admin", "entrenador"]
+    "subcategoria": "A",
+    "text": "Jugadores Cadete Masculino"
   },
   {
     "title": "Cadete Femenino",
     "categoria": "CAD",
     "equipo": "F",
-    "text": "Jugadoras Cadete Femenino",
-    "visibleTo": ["admin", "entrenador"]
+    "subcategoria": "A",
+    "text": "Jugadoras Cadete Femenino"
   },
   {
     "title": "Juvenil Masculino",
     "categoria": "JUV",
     "equipo": "M",
-    "text": "Jugadores Juvenil Masculino",
-    "visibleTo": ["admin", "entrenador"]
+    "subcategoria": "A",
+    "text": "Jugadores Juvenil Masculino"
   },
   {
     "title": "Juvenil Femenino",
     "categoria": "JUV",
     "equipo": "F",
-    "text": "Jugadoras Juvenil Femenino",
-    "visibleTo": ["admin", "entrenador"]
+    "subcategoria": "A",
+    "text": "Jugadoras Juvenil Femenino"
+  },
+  {
+    "title": "Sénior Masculino B",
+    "categoria": "SEN",
+    "equipo": "M",
+    "subcategoria": "B",
+    "text": "Jugadores Sénior Masculino B"
+  },
+  {
+    "title": "Sénior Femenino B",
+    "categoria": "SEN",
+    "equipo": "F",
+    "subcategoria": "B",
+    "text": "Jugadoras Sénior Femenino B"
+  },
+  {
+    "title": "Sénior Masculino C",
+    "categoria": "SEN",
+    "equipo": "M",
+    "subcategoria": "C",
+    "text": "Jugadores Sénior Masculino C"
+  },
+  {
+    "title": "Sénior Femenino C",
+    "categoria": "SEN",
+    "equipo": "F",
+    "subcategoria": "C",
+    "text": "Jugadoras Sénior Femenino C"
   }
 ]
