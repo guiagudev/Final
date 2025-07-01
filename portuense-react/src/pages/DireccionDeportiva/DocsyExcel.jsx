@@ -5,7 +5,7 @@ import AppHeader from "../../components/AppHeader";
 import React from "react";
 import BackButton  from '../../components/BackButton'
 export default function DocsyExcel() {
-  const { categoria, equipo } = useParams();
+  const { categoria, equipo,subcategoria } = useParams();
   const navigate = useNavigate();
 
   return (
@@ -18,7 +18,7 @@ export default function DocsyExcel() {
           className="me-2"
           onClick={() =>
             navigate(
-              `/direccion-deportiva/primer-equipo/${categoria}/${equipo}/jugadores`
+              `/direccion-deportiva/primer-equipo/${categoria}/${equipo}/${subcategoria}/jugadores`
             )
           }
         >
@@ -27,7 +27,7 @@ export default function DocsyExcel() {
         <Button
           onClick={() =>
             navigate(
-              `/direccion-deportiva/primer-equipo/${categoria}/${equipo}/excel`
+              `/direccion-deportiva/primer-equipo/${categoria}/${equipo}/${subcategoria}/excel`
             )
           }
         >

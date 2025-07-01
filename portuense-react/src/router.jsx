@@ -65,30 +65,30 @@ export default function Router() {
           element={<PrimerEquipoDireccion />}
         />
         <Route
-          path="/direccion-deportiva/primer-equipo/:categoria/:equipo"
+          path="/direccion-deportiva/primer-equipo/:categoria/:equipo/:subcategoria"
           element={<DocsyExcel />}
         />
         
         <Route
-          path="/direccion-deportiva/academia/:categoria/:equipo"
+          path="/direccion-deportiva/academia/:categoria/:equipo/:subcategoria"
           element={<DocsyExcel />}
         />
        
         <Route
-          path="/direccion-deportiva/academia/:categoria/:equipo/jugadores"
+          path="/direccion-deportiva/academia/:categoria/:equipo/:subcategoria/jugadores"
           element={<JugadoresPorCategoria />}
         />
         <Route
-          path="/direccion-deportiva/primer-equipo/:categoria/:equipo/jugadores"
+          path="/direccion-deportiva/primer-equipo/:categoria/:equipo/:subcategoria/jugadores"
           element={<JugadoresPorCategoria />}
         />
         <Route path="/clubes-rivales/:genero/:id" element={<ClubDetalle />} />
         <Route
-          path="/direccion-deportiva/primer-equipo/:categoria/:equipo/excel"
+          path="/direccion-deportiva/primer-equipo/:categoria/:equipo/:subcategoria/excel"
           element={<ExcelPorCategoria />}
         />
         <Route
-          path="/direccion-deportiva/academia/:categoria/:equipo/excel"
+          path="/direccion-deportiva/academia/:categoria/:equipo/:subcategoria/excel"
           element={<ExcelPorCategoria />}
         />
         <Route path="/jugadores/:id/documentos" element={<JugadorDocumentos />} />

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import * as XLSX from "xlsx";
 import {
   Container,
   Spinner,
@@ -8,7 +7,6 @@ import {
   Button,
   Form,
   Card,
-  Table,
 } from "react-bootstrap";
 import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
@@ -19,7 +17,6 @@ export default function ExcelPorCategoria() {
   const [excel, setExcel] = useState(null);
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [excelData, setExcelData] = useState([]);
 
   const fetchExcel = async () => {
     setLoading(true);
@@ -32,17 +29,6 @@ export default function ExcelPorCategoria() {
       );
       const data = await res.json();
       setExcel(data[0] || null);
-
-      // Si existe archivo, descargarlo y procesarlo
-      if (data[0]?.archivo) {
-        const response = await fetch(data[0].archivo);
-        const blob = await response.blob();
-        const arrayBuffer = await blob.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { type: "array" });
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        setExcelData(jsonData);
-      }
     } catch (err) {
       console.error("Error al obtener Excel:", err);
     } finally {
@@ -50,20 +36,8 @@ export default function ExcelPorCategoria() {
     }
   };
 
-  const handleFileChange = async (e) => {
-    const selectedFile = e.target.files[0];
-    setFile(selectedFile);
-
-    // Leer el contenido del Excel
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      setExcelData(jsonData);
-    };
-    reader.readAsArrayBuffer(selectedFile);
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
   };
 
   const handleUpload = async (e) => {
@@ -116,30 +90,21 @@ export default function ExcelPorCategoria() {
         {loading ? (
           <Spinner animation="border" />
         ) : (
-          <>
-            {excelData.length > 0 ? (
-              <Card className="mb-4">
-                <Card.Body>
-                  <Table striped bordered hover responsive>
-                    <tbody>
-                      {excelData.map((row, rowIndex) => (
-                        <tr key={rowIndex}>
-                          {row.map((cell, colIndex) => (
-                            <td key={colIndex}>{cell}</td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </Card.Body>
-              </Card>
+          <Card className="p-3">
+            {excel?.archivo ? (
+              <div className="mb-3">
+                <strong>Archivo actual:</strong>{" "}
+                <a href={excel.archivo} target="_blank" rel="noopener noreferrer">
+                  Descargar Excel
+                </a>
+              </div>
             ) : (
-              <Alert variant="info">No hay datos para mostrar.</Alert>
+              <Alert variant="info">No hay archivo subido aún.</Alert>
             )}
 
             <Form onSubmit={handleUpload}>
-              <Form.Group>
-                <Form.Label>Actualizar / Subir Excel</Form.Label>
+              <Form.Group controlId="formFile">
+                <Form.Label>Subir nuevo archivo Excel</Form.Label>
                 <Form.Control
                   type="file"
                   accept=".xlsx,.xls"
@@ -147,11 +112,11 @@ export default function ExcelPorCategoria() {
                   required
                 />
               </Form.Group>
-              <Button className="mt-2" type="submit">
+              <Button type="submit" className="mt-2">
                 {excel ? "Actualizar Excel" : "Subir Excel"}
               </Button>
             </Form>
-          </>
+          </Card>
         )}
       </Container>
     </>
