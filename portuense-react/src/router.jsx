@@ -65,7 +65,7 @@ export default function Router() {
           element={<PrimerEquipoDireccion />}
         />
         <Route
-          path="/direccion-deportiva/primer-equipo/:categoria/:equipo/:subcategoria"
+          path="/direccion-deportiva/primer-equipo/:categoria/:equipo"
           element={<DocsyExcel />}
         />
         
