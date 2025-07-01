@@ -28,7 +28,7 @@ export default function AcademiaDashboard() {
 
     // Excluir RIV y SEN
     const permisosFiltrados = (storedUser.permisos || []).filter(
-      (p) => p.categoria !== "RIV" && p.categoria !== "SEN"
+      (p) => p.categoria !== "RIV" 
     );
 
     setUser({ ...storedUser, permisos: permisosFiltrados });
