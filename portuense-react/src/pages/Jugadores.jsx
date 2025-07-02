@@ -91,8 +91,7 @@ export default function Jugadores() {
     setSearchParams(newParams);
   };
 
-  const mostrarCuota =
-    user.groups?.includes("admin") && searchParams.get("categoria") !== "SEN";
+  
 
   return (
     <Container className="mt-4">
@@ -159,7 +158,7 @@ export default function Jugadores() {
             <th>Edad</th>
             <th>Equipo</th>
             <th>Categoría</th>
-            <th>Cuota</th>
+            
             <th>Acciones</th>
           </tr>
         </thead>
@@ -173,17 +172,7 @@ export default function Jugadores() {
               <td>{jugador.edad}</td>
               <td>{jugador.equipo}</td>
               <td>{jugador.categoria}</td>
-              <td>
-                {mostrarCuota ? (
-                  <span
-                    style={{ color: jugador.ha_pagado_cuota ? "green" : "red" }}
-                  >
-                    {jugador.ha_pagado_cuota ? "Pagada" : "Pendiente"}
-                  </span>
-                ) : (
-                  <span className="text-muted">—</span>
-                )}
-              </td>
+             
               <td>
                 <Button
                   size="sm"

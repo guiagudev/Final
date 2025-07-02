@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { getToken } from "../../utils/auth";
-import React from "react";
 
 export default function JugadorForm({
   show,
@@ -28,18 +27,27 @@ export default function JugadorForm({
     setPermisos(storedUser.permisos || []);
   }, []);
 
-  // Opciones disponibles basadas en permisos
-  const equiposDisponibles = [...new Set(permisos.map(p => p.equipo))];
-  const categoriasDisponibles = [...new Set(permisos.map(p => p.categoria))];
-  const subcategoriasDisponibles = [
-    ...new Set(
-      permisos
-        .filter(p => p.categoria === categoria && p.equipo === equipo)
-        .map(p => p.subcategoria)
-    ),
-  ];
+  const equiposDisponibles = useMemo(() => {
+    return [...new Set(permisos.map(p => p.equipo))];
+  }, [permisos]);
+
+  const categoriasDisponibles = useMemo(() => {
+    return [...new Set(permisos.map(p => p.categoria))];
+  }, [permisos]);
+
+  const subcategoriasDisponibles = useMemo(() => {
+    return [
+      ...new Set(
+        permisos
+          .filter(p => p.categoria === categoria && p.equipo === equipo)
+          .map(p => p.subcategoria)
+      ),
+    ];
+  }, [permisos, categoria, equipo]);
 
   useEffect(() => {
+    if (!show) return;
+
     if (mode === "editar" && initialData) {
       setNombre(initialData.nombre || "");
       setP_apellido(initialData.p_apellido || "");
@@ -65,7 +73,7 @@ export default function JugadorForm({
       setHaPagadoCuota(false);
       setImagen(null);
     }
-  }, [mode, initialData, show, equiposDisponibles, categoriasDisponibles, subcategoriasDisponibles]);
+  }, [show]); // ← Solo se ejecuta al abrir el modal
 
   const handleSubmit = async (e) => {
     e.preventDefault();
