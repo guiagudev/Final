@@ -10,7 +10,8 @@ import {
 } from "react-bootstrap";
 import React from "react";
 
-const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN"];
+const categorias = ["PREBEN", "BEN", "ALE", "INF", "CAD", "JUV", "SEN", "RIV"];
+const subcategorias = ["A", "B", "C"];
 const equipos = ["M", "F"];
 const gruposDisponibles = ["admin", "usuario"];
 const vistasDisponibles = ["direccion-deportiva", "calendario"];
@@ -18,7 +19,7 @@ const vistasDisponibles = ["direccion-deportiva", "calendario"];
 export default function CrearUsuarioModal({ show, onClose }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [grupo, setGrupo] = useState(""); // ← vacío por defecto
+  const [grupo, setGrupo] = useState("");
   const [permisos, setPermisos] = useState([]);
   const [vistas, setVistas] = useState([]);
 
@@ -26,11 +27,13 @@ export default function CrearUsuarioModal({ show, onClose }) {
   const [toastMessage, setToastMessage] = useState("");
 
   const allPermisos = categorias.flatMap((cat) =>
-    equipos.map((eq) => `${cat}-${eq}`)
+    subcategorias.flatMap((sub) =>
+      equipos.map((eq) => `${cat}-${sub}-${eq}`)
+    )
   );
 
-  const togglePermiso = (cat, eq) => {
-    const key = `${cat}-${eq}`;
+  const togglePermiso = (cat, sub, eq) => {
+    const key = `${cat}-${sub}-${eq}`;
     setPermisos((prev) =>
       prev.includes(key) ? prev.filter((p) => p !== key) : [...prev, key]
     );
@@ -43,16 +46,14 @@ export default function CrearUsuarioModal({ show, onClose }) {
 
   const toggleVista = (vista) => {
     setVistas((prev) =>
-      prev.includes(vista)
-        ? prev.filter((v) => v !== vista)
-        : [...prev, vista]
+      prev.includes(vista) ? prev.filter((v) => v !== vista) : [...prev, vista]
     );
   };
 
   const resetFormulario = () => {
     setUsername("");
     setPassword("");
-    setGrupo(""); // ← vacío
+    setGrupo("");
     setPermisos([]);
     setVistas([]);
   };
@@ -63,8 +64,8 @@ export default function CrearUsuarioModal({ show, onClose }) {
 
   const handleSubmit = async () => {
     const permisosData = permisos.map((p) => {
-      const [categoria, equipo] = p.split("-");
-      return { categoria, equipo };
+      const [categoria, subcategoria, equipo] = p.split("-");
+      return { categoria, subcategoria, equipo };
     });
 
     const payload = {
@@ -165,26 +166,32 @@ export default function CrearUsuarioModal({ show, onClose }) {
               </Button>
             </h5>
 
-            <Row>
-              {categorias.map((cat) => (
-                <Col md={6} key={cat}>
-                  <strong>{cat}</strong>
-                  {equipos.map((eq) => {
-                    const key = `${cat}-${eq}`;
-                    return (
-                      <Form.Check
-                        key={key}
-                        type="checkbox"
-                        id={key}
-                        label={eq === "M" ? "Masculino" : "Femenino"}
-                        checked={permisos.includes(key)}
-                        onChange={() => togglePermiso(cat, eq)}
-                      />
-                    );
-                  })}
-                </Col>
-              ))}
-            </Row>
+            {categorias.map((cat) => (
+              <div key={cat} className="mb-3">
+                <strong>{cat}</strong>
+                {subcategorias.map((sub) => (
+                  <Row key={`${cat}-${sub}`} className="ps-3">
+                    <Col md={2} className="pt-2">
+                      <span className="text-muted">Sub {sub}</span>
+                    </Col>
+                    {equipos.map((eq) => {
+                      const key = `${cat}-${sub}-${eq}`;
+                      return (
+                        <Col key={key} md={2}>
+                          <Form.Check
+                            type="checkbox"
+                            id={key}
+                            label={eq === "M" ? "Masc." : "Fem."}
+                            checked={permisos.includes(key)}
+                            onChange={() => togglePermiso(cat, sub, eq)}
+                          />
+                        </Col>
+                      );
+                    })}
+                  </Row>
+                ))}
+              </div>
+            ))}
 
             <hr />
             <h5>Vistas permitidas</h5>

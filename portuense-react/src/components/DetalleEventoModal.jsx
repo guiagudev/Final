@@ -9,6 +9,7 @@ export default function DetallesEventoModal({ show, evento, onClose, onEliminar 
     localizacion: '',
     equipo2: '',
     categoriaEquipo: '',
+    subcategoriaEquipo: '',
     equipoGenero: '',
   });
 
@@ -19,11 +20,11 @@ export default function DetallesEventoModal({ show, evento, onClose, onEliminar 
       const localizacion = evento.localizacion || '';
       const equipo2 = evento.equipo2 || '';
       const categoriaEquipo = evento.categoria_equipo || '';
+      const subcategoriaEquipo = evento.subcategoria_equipo || '';
       const equipoGenero = evento.equipo_genero || '';
-
       const fecha = new Date(evento.start).toLocaleString();
 
-      setDatos({ tipo, descripcion, localizacion, equipo2, categoriaEquipo, equipoGenero, fecha });
+      setDatos({ tipo, descripcion, localizacion, equipo2, categoriaEquipo, subcategoriaEquipo, equipoGenero, fecha });
     }
   }, [evento, show]);
 
@@ -45,6 +46,10 @@ export default function DetallesEventoModal({ show, evento, onClose, onEliminar 
 
         {(datos.tipo === 'Partido' || datos.tipo === 'Entrenamiento') && datos.categoriaEquipo && (
           <p><strong>Categoría:</strong> {datos.categoriaEquipo}</p>
+        )}
+
+        {(datos.tipo === 'Partido' || datos.tipo === 'Entrenamiento') && datos.subcategoriaEquipo && (
+          <p><strong>Subcategoría:</strong> {datos.subcategoriaEquipo}</p>
         )}
 
         {(datos.tipo === 'Partido' || datos.tipo === 'Entrenamiento') && datos.equipoGenero && (

@@ -33,22 +33,22 @@ export default function Calendario() {
   const [mostrarEditar, setMostrarEditar] = useState(false);
   const [mostrarDetalles, setMostrarDetalles] = useState(false);
 
-  // 🧭 Control de vista y fecha
   const [vistaActual, setVistaActual] = useState("month");
   const [fechaActual, setFechaActual] = useState(new Date());
 
-  // 🔐 Permisos desde sesión
   const permisos = JSON.parse(sessionStorage.getItem("userPermisos") || "[]");
   const vistas = JSON.parse(sessionStorage.getItem("userVistas") || "[]");
   const puedeVerCalendario = vistas.includes("calendario");
 
   const navigate = useNavigate();
   const token = sessionStorage.getItem("accessToken");
-  
 
-  const userTienePermiso = (categoria, equipo) =>
+  const userTienePermiso = (categoria, subcategoria, equipo) =>
     permisos.some(
-      (perm) => perm.categoria === categoria && perm.equipo === equipo
+      (perm) =>
+        perm.categoria === categoria &&
+        perm.subcategoria === subcategoria &&
+        perm.equipo === equipo
     );
 
   const fetchEventos = useCallback(() => {
@@ -61,8 +61,12 @@ export default function Calendario() {
 
         const eventosFiltrados = data
           .filter((ev) => {
-            if (ev.categoria_equipo && ev.equipo_genero) {
-              return userTienePermiso(ev.categoria_equipo, ev.equipo_genero);
+            if (ev.categoria_equipo && ev.subcategoria_equipo && ev.equipo_genero) {
+              return userTienePermiso(
+                ev.categoria_equipo,
+                ev.subcategoria_equipo,
+                ev.equipo_genero
+              );
             }
             return true;
           })

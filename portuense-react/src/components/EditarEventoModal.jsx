@@ -10,6 +10,7 @@ export default function EditarEventoModal({ show, onClose, evento }) {
   const [fechaInput, setFechaInput] = useState("");
   const [tipo, setTipo] = useState("Entrenamiento");
   const [categoriaEquipo, setCategoriaEquipo] = useState("");
+  const [subcategoriaEquipo, setSubcategoriaEquipo] = useState("");
   const [equipoGenero, setEquipoGenero] = useState("");
 
   const token = sessionStorage.getItem("accessToken");
@@ -41,6 +42,7 @@ export default function EditarEventoModal({ show, onClose, evento }) {
         setLocalizacion(data.localizacion || "");
         setTipo(data.categoria || "Entrenamiento");
         setCategoriaEquipo(data.categoria_equipo || "");
+        setSubcategoriaEquipo(data.subcategoria_equipo || "");
         setEquipoGenero(data.equipo_genero || "");
 
         const date = new Date(data.fecha);
@@ -72,6 +74,8 @@ export default function EditarEventoModal({ show, onClose, evento }) {
       localizacion,
       categoria_equipo:
         tipo === "Partido" || tipo === "Entrenamiento" ? categoriaEquipo : null,
+      subcategoria_equipo:
+        tipo === "Partido" || tipo === "Entrenamiento" ? subcategoriaEquipo : null,
       equipo_genero:
         tipo === "Partido" || tipo === "Entrenamiento" ? equipoGenero : null,
     };
@@ -102,7 +106,6 @@ export default function EditarEventoModal({ show, onClose, evento }) {
   };
 
   const handleDelete = async () => {
-    // 💣 Sin confirmaciones
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/eventos/${evento.id}/`,
@@ -127,106 +130,117 @@ export default function EditarEventoModal({ show, onClose, evento }) {
   };
 
   return (
-    <>
-      <Modal show={show} onHide={() => onClose(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Editar Evento</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group>
-              <Form.Label>Tipo de evento</Form.Label>
-              <Form.Select value={tipo} onChange={(e) => setTipo(e.target.value)}>
-                <option value="Entrenamiento">Entrenamiento</option>
-                <option value="Partido">Partido</option>
-                <option value="Reunion">Reunión</option>
-              </Form.Select>
-            </Form.Group>
+    <Modal show={show} onHide={() => onClose(false)}>
+      <Modal.Header closeButton>
+        <Modal.Title>Editar Evento</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form>
+          <Form.Group>
+            <Form.Label>Tipo de evento</Form.Label>
+            <Form.Select value={tipo} onChange={(e) => setTipo(e.target.value)}>
+              <option value="Entrenamiento">Entrenamiento</option>
+              <option value="Partido">Partido</option>
+              <option value="Reunion">Reunión</option>
+            </Form.Select>
+          </Form.Group>
 
-            <Form.Group className="mt-3">
-              <Form.Label>Fecha y hora</Form.Label>
-              <Form.Control
-                type="datetime-local"
-                value={fechaInput}
-                onChange={(e) => setFechaInput(e.target.value)}
-              />
-            </Form.Group>
+          <Form.Group className="mt-3">
+            <Form.Label>Fecha y hora</Form.Label>
+            <Form.Control
+              type="datetime-local"
+              value={fechaInput}
+              onChange={(e) => setFechaInput(e.target.value)}
+            />
+          </Form.Group>
 
+          <Form.Group className="mt-3">
+            <Form.Label>Descripción</Form.Label>
+            <Form.Control
+              type="text"
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+            />
+          </Form.Group>
+
+          {tipo === "Partido" && (
             <Form.Group className="mt-3">
-              <Form.Label>Descripción</Form.Label>
+              <Form.Label>Equipo contrario</Form.Label>
               <Form.Control
                 type="text"
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
+                value={equipo2}
+                onChange={(e) => setEquipo2(e.target.value)}
               />
             </Form.Group>
+          )}
 
-            {tipo === "Partido" && (
+          {(tipo === "Partido" || tipo === "Entrenamiento") && (
+            <>
               <Form.Group className="mt-3">
-                <Form.Label>Equipo contrario</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={equipo2}
-                  onChange={(e) => setEquipo2(e.target.value)}
-                />
+                <Form.Label>Categoría</Form.Label>
+                <Form.Select
+                  value={categoriaEquipo}
+                  onChange={(e) => setCategoriaEquipo(e.target.value)}
+                >
+                  <option value="">Selecciona una categoría</option>
+                  <option value="PREBEN">Prebenjamín</option>
+                  <option value="BEN">Benjamín</option>
+                  <option value="ALE">Alevín</option>
+                  <option value="INF">Infantil</option>
+                  <option value="CAD">Cadete</option>
+                  <option value="JUV">Juvenil</option>
+                  <option value="SEN">Sénior</option>
+                </Form.Select>
               </Form.Group>
-            )}
 
-            {(tipo === "Partido" || tipo === "Entrenamiento") && (
-              <>
-                <Form.Group className="mt-3">
-                  <Form.Label>Categoría</Form.Label>
-                  <Form.Select
-                    value={categoriaEquipo}
-                    onChange={(e) => setCategoriaEquipo(e.target.value)}
-                  >
-                    <option value="">Selecciona una categoría</option>
-                    <option value="PREBEN">Prebenjamín</option>
-                    <option value="BEN">Benjamín</option>
-                    <option value="ALE">Alevín</option>
-                    <option value="INF">Infantil</option>
-                    <option value="CAD">Cadete</option>
-                    <option value="JUV">Juvenil</option>
-                    <option value="SEN">Sénior</option>
-                  </Form.Select>
-                </Form.Group>
+              <Form.Group className="mt-3">
+                <Form.Label>Subcategoría</Form.Label>
+                <Form.Select
+                  value={subcategoriaEquipo}
+                  onChange={(e) => setSubcategoriaEquipo(e.target.value)}
+                >
+                  <option value="">Selecciona subcategoría</option>
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                </Form.Select>
+              </Form.Group>
 
-                <Form.Group className="mt-3">
-                  <Form.Label>Equipo (Género)</Form.Label>
-                  <Form.Select
-                    value={equipoGenero}
-                    onChange={(e) => setEquipoGenero(e.target.value)}
-                  >
-                    <option value="">Selecciona el género</option>
-                    <option value="M">Masculino</option>
-                    <option value="F">Femenino</option>
-                  </Form.Select>
-                </Form.Group>
-              </>
-            )}
+              <Form.Group className="mt-3">
+                <Form.Label>Equipo (Género)</Form.Label>
+                <Form.Select
+                  value={equipoGenero}
+                  onChange={(e) => setEquipoGenero(e.target.value)}
+                >
+                  <option value="">Selecciona el género</option>
+                  <option value="M">Masculino</option>
+                  <option value="F">Femenino</option>
+                </Form.Select>
+              </Form.Group>
+            </>
+          )}
 
-            <Form.Group className="mt-3">
-              <Form.Label>Localización</Form.Label>
-              <Form.Control
-                type="text"
-                value={localizacion}
-                onChange={(e) => setLocalizacion(e.target.value)}
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="danger" onClick={handleDelete}>
-            Eliminar
-          </Button>
-          <Button variant="secondary" onClick={() => onClose(false)}>
-            Cancelar
-          </Button>
-          <Button variant="primary" onClick={handleUpdate}>
-            Guardar Cambios
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </>
+          <Form.Group className="mt-3">
+            <Form.Label>Localización</Form.Label>
+            <Form.Control
+              type="text"
+              value={localizacion}
+              onChange={(e) => setLocalizacion(e.target.value)}
+            />
+          </Form.Group>
+        </Form>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="danger" onClick={handleDelete}>
+          Eliminar
+        </Button>
+        <Button variant="secondary" onClick={() => onClose(false)}>
+          Cancelar
+        </Button>
+        <Button variant="primary" onClick={handleUpdate}>
+          Guardar Cambios
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }

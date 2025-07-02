@@ -133,6 +133,13 @@ class Evento(models.Model):
         ('Entrenamiento', 'Entrenamiento'),
         ('Reunion', 'Reunión'),
     ]
+    subcategoria_equipo = models.CharField(
+        max_length=30,
+        choices=Jugador.OPCIONES_SUBCATEGORIA,
+        blank=True,
+        null=True,
+        help_text="Subcategoría del equipo (e.g., A, B)"
+    )
 
     descripcion = models.TextField(null=True)
     fecha = models.DateTimeField()
@@ -160,12 +167,12 @@ class Evento(models.Model):
             return (
                 f"{self.fecha.strftime('%Y-%m-%d')} - Partido: "
                 f"{self.equipo1} vs {self.equipo2 or 'TBD'} "
-                f"({self.categoria_equipo or ''} {self.equipo_genero or ''})"
+                f"({self.categoria_equipo or ''} {self.subcategoria_equipo or ''} {self.equipo_genero or ''})"
             )
         elif self.categoria == 'Entrenamiento':
             return (f"{self.fecha.strftime('%Y-%m-%d')} - Entrenamiento ({self.equipo1})"
                     f"{self.equipo1} vs {self.equipo2 or 'TBD'} "
-                f"({self.categoria_equipo or ''} {self.equipo_genero or ''})")
+                f"({self.categoria_equipo or ''} {self.subcategoria_equipo or ''} {self.equipo_genero or ''})")
         else:
             return f"{self.fecha.strftime('%Y-%m-%d')} - Reunión ({self.descripcion[:30]}...)"
                                                      
@@ -189,6 +196,7 @@ class PermisoPersonalizado(models.Model):
         ('B', 'B'),
         ('C', 'C'),
     ]
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='permisos')
     categoria = models.CharField(max_length=10, choices=CATEGORIAS)
     subcategoria = models.CharField(max_length=6, choices=SUBCATEGORIAS, default='A')

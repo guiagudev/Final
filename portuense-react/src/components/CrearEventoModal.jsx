@@ -10,13 +10,12 @@ export default function CrearEventoModal({ show, onClose, fecha, tipo: tipoInici
   const [tipo, setTipo] = useState(tipoInicial || "Entrenamiento");
   const [fechaInput, setFechaInput] = useState("");
 
-  // 🆕 nuevos estados
   const [categoriaEquipo, setCategoriaEquipo] = useState("");
+  const [subcategoriaEquipo, setSubcategoriaEquipo] = useState("");
   const [equipoGenero, setEquipoGenero] = useState("");
 
   const token = sessionStorage.getItem("accessToken");
 
-  /* ------------ reinicio de campos cada vez que se abre ------------ */
   useEffect(() => {
     if (show) {
       setDescripcion("");
@@ -25,6 +24,7 @@ export default function CrearEventoModal({ show, onClose, fecha, tipo: tipoInici
       setLocalizacion("");
       setTipo(tipoInicial || "Entrenamiento");
       setCategoriaEquipo("");
+      setSubcategoriaEquipo("");
       setEquipoGenero("");
 
       if (fecha) {
@@ -41,22 +41,20 @@ export default function CrearEventoModal({ show, onClose, fecha, tipo: tipoInici
     }
   }, [show, tipoInicial, fecha]);
 
-  /* -------------------------- submit -------------------------- */
   const handleSubmit = async () => {
     const evento = {
       descripcion,
       fecha: new Date(fechaInput).toISOString(),
       categoria: tipo,
       localizacion,
-      // sólo Partido / Entrenamiento llevan estos campos extra
       ...(tipo === "Partido" || tipo === "Entrenamiento"
         ? {
             equipo1,
             categoria_equipo: categoriaEquipo,
+            subcategoria_equipo: subcategoriaEquipo,
             equipo_genero: equipoGenero,
           }
         : {}),
-      // sólo Partido lleva equipo2
       ...(tipo === "Partido" ? { equipo2 } : {}),
     };
 
@@ -77,7 +75,6 @@ export default function CrearEventoModal({ show, onClose, fecha, tipo: tipoInici
     }
   };
 
-  /* -------------------------- UI -------------------------- */
   return (
     <Modal show={show} onHide={() => onClose(false)}>
       <Modal.Header closeButton>
@@ -86,7 +83,6 @@ export default function CrearEventoModal({ show, onClose, fecha, tipo: tipoInici
 
       <Modal.Body>
         <Form>
-          {/* Tipo */}
           <Form.Group>
             <Form.Label>Tipo de evento</Form.Label>
             <Form.Select value={tipo} onChange={(e) => setTipo(e.target.value)}>
@@ -96,7 +92,6 @@ export default function CrearEventoModal({ show, onClose, fecha, tipo: tipoInici
             </Form.Select>
           </Form.Group>
 
-          {/* Fecha */}
           <Form.Group className="mt-3">
             <Form.Label>Fecha y hora</Form.Label>
             <Form.Control
@@ -107,7 +102,6 @@ export default function CrearEventoModal({ show, onClose, fecha, tipo: tipoInici
             />
           </Form.Group>
 
-          {/* Descripción */}
           <Form.Group className="mt-3">
             <Form.Label>Descripción</Form.Label>
             <Form.Control
@@ -117,35 +111,18 @@ export default function CrearEventoModal({ show, onClose, fecha, tipo: tipoInici
             />
           </Form.Group>
 
-          {/* Equipo 1: sólo Partido o Entrenamiento */}
-          {(tipo === "Partido" || tipo === "Entrenamiento") && (
-            <Form.Group className="mt-3">
-              <Form.Label>Equipo propio</Form.Label>
-              <Form.Control
-                type="text"
-                value={equipo1}
-                onChange={(e) => setEquipo1(e.target.value)}
-                required
-              />
-            </Form.Group>
-          )}
-
-          {/* Equipo 2: sólo Partido */}
-          {tipo === "Partido" && (
-            <Form.Group className="mt-3">
-              <Form.Label>Equipo rival</Form.Label>
-              <Form.Control
-                type="text"
-                value={equipo2}
-                onChange={(e) => setEquipo2(e.target.value)}
-                required
-              />
-            </Form.Group>
-          )}
-
-          {/* Categoría + Género: Partido o Entrenamiento */}
           {(tipo === "Partido" || tipo === "Entrenamiento") && (
             <>
+              <Form.Group className="mt-3">
+                <Form.Label>Equipo propio</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={equipo1}
+                  onChange={(e) => setEquipo1(e.target.value)}
+                  required
+                />
+              </Form.Group>
+
               <Form.Group className="mt-3">
                 <Form.Label>Categoría</Form.Label>
                 <Form.Select
@@ -165,6 +142,20 @@ export default function CrearEventoModal({ show, onClose, fecha, tipo: tipoInici
               </Form.Group>
 
               <Form.Group className="mt-3">
+                <Form.Label>Subcategoría</Form.Label>
+                <Form.Select
+                  value={subcategoriaEquipo}
+                  onChange={(e) => setSubcategoriaEquipo(e.target.value)}
+                  required
+                >
+                  <option value="">Selecciona subcategoría</option>
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                </Form.Select>
+              </Form.Group>
+
+              <Form.Group className="mt-3">
                 <Form.Label>Equipo (Género)</Form.Label>
                 <Form.Select
                   value={equipoGenero}
@@ -179,7 +170,18 @@ export default function CrearEventoModal({ show, onClose, fecha, tipo: tipoInici
             </>
           )}
 
-          {/* Localización */}
+          {tipo === "Partido" && (
+            <Form.Group className="mt-3">
+              <Form.Label>Equipo rival</Form.Label>
+              <Form.Control
+                type="text"
+                value={equipo2}
+                onChange={(e) => setEquipo2(e.target.value)}
+                required
+              />
+            </Form.Group>
+          )}
+
           <Form.Group className="mt-3">
             <Form.Label>Localización</Form.Label>
             <Form.Control
