@@ -1,4 +1,4 @@
-// src/pages/JugadorDocumentos.jsx
+// src/pages/DireccionDeportiva/JugadorDocumentos.jsx
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -93,7 +93,7 @@ export default function JugadorDocumentos() {
   return (
     <Container className="mt-4">
       <ToastContainer />
-      <h3>Documentos del Jugador</h3>
+      <h3>📂 Documentos del Jugador</h3>
 
       {carpetas.length === 0 ? (
         <p>No hay carpetas disponibles.</p>
@@ -118,7 +118,7 @@ export default function JugadorDocumentos() {
                       />
                     </Form>
                   ) : (
-                    <strong>{carpeta.nombre}</strong>
+                    <strong>📁 {carpeta.nombre}</strong>
                   )}
                 </Col>
                 <Col xs="auto" className="mt-2 mt-md-0">
@@ -128,7 +128,7 @@ export default function JugadorDocumentos() {
                       size="sm"
                       onClick={() => setEditando(null)}
                     >
-                      Cancelar
+                      ❌ Cancelar
                     </Button>
                   ) : (
                     <>
@@ -141,14 +141,14 @@ export default function JugadorDocumentos() {
                           setNuevoNombre(carpeta.nombre);
                         }}
                       >
-                        Editar
+                        ✏️ Editar
                       </Button>
                       <Button
                         variant="outline-danger"
                         size="sm"
                         onClick={() => handleBorrar(carpeta.id)}
                       >
-                        Borrar
+                        🗑️ Borrar
                       </Button>
                     </>
                   )}
@@ -160,7 +160,7 @@ export default function JugadorDocumentos() {
               {carpeta.pdfs.map((pdf) => (
                 <ListGroup.Item key={pdf.id}>
                   <a href={pdf.archivo} target="_blank" rel="noreferrer">
-                    {pdf.nombre || "Ver PDF"}
+                    📄 {pdf.nombre || "Ver PDF"}
                   </a>
                 </ListGroup.Item>
               ))}

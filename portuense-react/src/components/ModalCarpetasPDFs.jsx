@@ -6,15 +6,18 @@ import {
   Form,
   Spinner,
   Alert,
+  Row,
+  Col,
 } from "react-bootstrap";
 
 export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
   const token = sessionStorage.getItem("accessToken");
   const [carpetas, setCarpetas] = useState([]);
   const [nuevaCarpeta, setNuevaCarpeta] = useState("");
+  const [editando, setEditando] = useState(null);
+  const [nuevoNombre, setNuevoNombre] = useState("");
   const [subiendo, setSubiendo] = useState(false);
   const [pdfs, setPdfs] = useState({});
-  const [fileInputs, setFileInputs] = useState({});
   const inputRefs = useRef({});
 
   const fetchCarpetas = () => {
@@ -30,9 +33,7 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then((data) =>
-        setPdfs((prev) => ({ ...prev, [carpetaId]: data }))
-      );
+      .then((data) => setPdfs((prev) => ({ ...prev, [carpetaId]: data })));
   };
 
   const crearCarpeta = () => {
@@ -52,9 +53,29 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
       });
   };
 
+  const borrarCarpeta = async (carpetaId) => {
+    await fetch(`${import.meta.env.VITE_API_URL}/carpetas/${carpetaId}/`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    fetchCarpetas();
+  };
+
+  const editarCarpeta = async (carpetaId) => {
+    await fetch(`${import.meta.env.VITE_API_URL}/carpetas/${carpetaId}/`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ nombre: nuevoNombre }),
+    });
+    setEditando(null);
+    fetchCarpetas();
+  };
+
   const subirPDF = async (carpetaId, file) => {
     if (!file) return;
-
     const formData = new FormData();
     formData.append("archivo", file);
     formData.append("carpeta", carpetaId);
@@ -78,7 +99,7 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
   return (
     <Modal show={show} onHide={onHide} size="lg" centered>
       <Modal.Header closeButton>
-        <Modal.Title>Gestión de Carpetas y PDFs</Modal.Title>
+        <Modal.Title>📁 Gestión de Carpetas y PDFs</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {carpetas.length === 0 ? (
@@ -87,58 +108,91 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
           <ListGroup>
             {carpetas.map((carpeta) => (
               <ListGroup.Item key={carpeta.id}>
-                <strong>{carpeta.nombre}</strong>
+                <Row className="align-items-center">
+                  <Col xs={12} md={6}>
+                    {editando === carpeta.id ? (
+                      <Form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          editarCarpeta(carpeta.id);
+                        }}
+                      >
+                        <Form.Control
+                          size="sm"
+                          value={nuevoNombre}
+                          onChange={(e) => setNuevoNombre(e.target.value)}
+                          required
+                        />
+                      </Form>
+                    ) : (
+                      <span>📁 {carpeta.nombre}</span>
+                    )}
+                  </Col>
+                  <Col xs="auto">
+                    {editando === carpeta.id ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => setEditando(null)}
+                      >
+                        ❌ Cancelar
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          onClick={() => {
+                            setEditando(carpeta.id);
+                            setNuevoNombre(carpeta.nombre);
+                          }}
+                        >
+                          📝
+                        </Button>{" "}
+                        <Button
+                          size="sm"
+                          variant="outline-danger"
+                          onClick={() => borrarCarpeta(carpeta.id)}
+                        >
+                          🗑️
+                        </Button>
+                      </>
+                    )}
+                  </Col>
+                </Row>
 
-                {/* Input oculto + botón visible para subir PDF */}
-                <div className="mt-2 mb-1 d-flex align-items-center gap-2">
+                <div className="mt-2 mb-2">
+                  <Button
+                    size="sm"
+                    variant="link"
+                    onClick={() => fetchPDFs(carpeta.id)}
+                  >
+                    📄 Ver PDFs
+                  </Button>{" "}
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() => inputRefs.current[carpeta.id]?.click()}
+                    disabled={subiendo}
+                  >
+                    {subiendo ? <Spinner size="sm" animation="border" /> : "📤 Subir PDF"}
+                  </Button>
                   <input
                     type="file"
                     ref={(el) => (inputRefs.current[carpeta.id] = el)}
                     style={{ display: "none" }}
                     onChange={(e) => {
                       const file = e.target.files[0];
-                      if (file) {
-                        setFileInputs((prev) => ({
-                          ...prev,
-                          [carpeta.id]: file,
-                        }));
-                        subirPDF(carpeta.id, file);
-                      }
+                      if (file) subirPDF(carpeta.id, file);
                     }}
                   />
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    onClick={() =>
-                      inputRefs.current[carpeta.id] &&
-                      inputRefs.current[carpeta.id].click()
-                    }
-                    disabled={subiendo}
-                  >
-                    {subiendo ? (
-                      <Spinner size="sm" animation="border" />
-                    ) : (
-                      "Subir PDF"
-                    )}
-                  </Button>
                 </div>
 
-                <Button
-                  variant="link"
-                  size="sm"
-                  onClick={() => fetchPDFs(carpeta.id)}
-                >
-                  Ver PDFs
-                </Button>
                 <ul className="mt-2">
                   {(pdfs[carpeta.id] || []).map((pdf) => (
                     <li key={pdf.id}>
-                      <a
-                        href={pdf.archivo}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {pdf.nombre || "Documento"}
+                      <a href={pdf.archivo} target="_blank" rel="noreferrer">
+                        📎 {pdf.nombre || "Documento"}
                       </a>
                     </li>
                   ))}
@@ -156,7 +210,7 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
             onChange={(e) => setNuevaCarpeta(e.target.value)}
           />
           <Button variant="success" onClick={crearCarpeta} className="ms-2">
-            Crear
+            ➕ Crear
           </Button>
         </Form.Group>
       </Modal.Body>
