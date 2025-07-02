@@ -7,7 +7,7 @@ import BackButton from "../../components/BackButton";
 import React from "react";
 import Panel from "../../components/Panel";
 import panelData from "../../data/primerEquipoPanels.json";
-// import { BackButton } from "../../components/BackButton"
+
 export default function PrimerEquipoDireccion() {
   const navigate = useNavigate();
   const [user, setUser] = useState({});
@@ -25,9 +25,8 @@ export default function PrimerEquipoDireccion() {
       return;
     }
 
-    // Asegúrate de que tenga permisos
     if (!parsedUser.permisos || !Array.isArray(parsedUser.permisos)) {
-      parsedUser.permisos = []; // Evitar errores si no vienen
+      parsedUser.permisos = [];
     }
 
     setUser(parsedUser);
@@ -45,15 +44,16 @@ export default function PrimerEquipoDireccion() {
               user.permisos?.some(
                 (permiso) =>
                   permiso.categoria === panel.categoria &&
-                  permiso.equipo === panel.equipo
+                  permiso.equipo === panel.equipo &&
+                  permiso.subcategoria === panel.subcategoria
               )
             )
             .map((panel, idx) => (
               <Col md={6} lg={4} className="mb-4" key={idx}>
                 <Panel
                   title={panel.title}
-                  text={`Documentos y PDFs del equipo ${panel.equipo}`}
-                  redirect={`/direccion-deportiva/primer-equipo/${panel.categoria}/${panel.equipo}`}
+                  text={`Documentos y PDFs del equipo ${panel.equipo} (${panel.subcategoria})`}
+                  redirect={`/direccion-deportiva/primer-equipo/${panel.categoria}/${panel.equipo}/${panel.subcategoria}`}
                   buttonText="Ver Documentos"
                 />
               </Col>
