@@ -9,7 +9,7 @@ import {
   Modal,
   Form,
 } from "react-bootstrap";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
@@ -19,13 +19,13 @@ const userPermisos = JSON.parse(sessionStorage.getItem("userPermisos") || "[]");
 
 export default function JugadoresDelClub() {
   const { genero, clubId } = useParams();
-  const navigate = useNavigate();
+
 
   const generoActivo = genero === "masculino" ? "M" : "F";
   const generoNombre = genero === "masculino" ? "Masculino" : "Femenino";
 
   const tienePermiso = userPermisos.some(
-    (p) => p.categoria === "SEN" && p.equipo === generoActivo
+    (p) => p.categoria === "RIV" && p.equipo === generoActivo
   );
 
   const [clubNombre, setClubNombre] = useState("");
@@ -46,10 +46,7 @@ export default function JugadoresDelClub() {
   });
 
   useEffect(() => {
-    if (!tienePermiso) {
-      
-      return;
-    }
+    if (!tienePermiso) return;
 
     const fetchClub = fetch(`${import.meta.env.VITE_API_URL}/clubes-rivales/${clubId}/`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -61,9 +58,14 @@ export default function JugadoresDelClub() {
     ).then((res) => res.json());
 
     Promise.all([fetchClub, fetchJugadores])
-      .then(([club, jugadores]) => {
+      .then(([club, jugadoresData]) => {
         setClubNombre(club.nombre);
-        setJugadores(jugadores);
+
+        const listaJugadores = Array.isArray(jugadoresData)
+          ? jugadoresData
+          : jugadoresData.results || [];
+
+        setJugadores(listaJugadores);
         setLoading(false);
       })
       .catch(() => toast.error("Error al cargar datos."));
@@ -94,9 +96,14 @@ export default function JugadoresDelClub() {
       });
 
       if (res.ok) {
-        fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/?club=${clubId}`)
+        fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/?club=${clubId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
           .then((r) => r.json())
-          .then(setJugadores);
+          .then((data) => {
+            const lista = Array.isArray(data) ? data : data.results || [];
+            setJugadores(lista);
+          });
 
         setShowAddModal(false);
         setFormData({ nombre: "", dorsal: "", posicion: "", edad: "", imagen: null });
@@ -129,7 +136,20 @@ export default function JugadoresDelClub() {
     }
   };
 
-  const jugadoresFiltrados = jugadores.filter((j) => j.equipo === generoActivo);
+  const jugadoresFiltrados = Array.isArray(jugadores)
+    ? jugadores.filter((j) => j.equipo === generoActivo)
+    : [];
+
+  if (!tienePermiso) {
+    return (
+      <>
+        <AppHeader />
+        <Container className="mt-4">
+          <h4>No tienes permisos para ver esta sección.</h4>
+        </Container>
+      </>
+    );
+  }
 
   return (
     <>
@@ -137,8 +157,12 @@ export default function JugadoresDelClub() {
       <Container className="mt-4">
         <BackButton to={`/clubes-rivales/${genero}`} />
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3 className="mb-0">Jugadores del Club {clubNombre} ({generoNombre})</h3>
-          <Button variant="success" onClick={() => setShowAddModal(true)}>Añadir Jugador</Button>
+          <h3 className="mb-0">
+            Jugadores del Club {clubNombre} ({generoNombre})
+          </h3>
+          <Button variant="success" onClick={() => setShowAddModal(true)}>
+            Añadir Jugador
+          </Button>
         </div>
 
         {loading ? (
@@ -162,12 +186,16 @@ export default function JugadoresDelClub() {
                           setJugadorSeleccionado(jugador);
                           setShowDetailModal(true);
                         }}
-                      >Ver Detalle</Button>
+                      >
+                        Ver Detalle
+                      </Button>
                       <Button
                         variant="danger"
                         size="sm"
                         onClick={() => eliminarJugador(jugador.id)}
-                      >Eliminar</Button>
+                      >
+                        Eliminar
+                      </Button>
                     </div>
                   </Card.Body>
                 </Card>
@@ -177,41 +205,72 @@ export default function JugadoresDelClub() {
         )}
       </Container>
 
-      <Modal show={showAddModal || showDetailModal} onHide={() => {
-        setShowAddModal(false);
-        setShowDetailModal(false);
-        setIsEditing(false);
-        setFormData({ nombre: "", dorsal: "", posicion: "", edad: "", imagen: null });
-      }} centered>
+      <Modal
+        show={showAddModal || showDetailModal}
+        onHide={() => {
+          setShowAddModal(false);
+          setShowDetailModal(false);
+          setIsEditing(false);
+          setFormData({ nombre: "", dorsal: "", posicion: "", edad: "", imagen: null });
+        }}
+        centered
+      >
         <Modal.Header closeButton>
-          <Modal.Title>{isEditing ? "Editar Jugador" : showAddModal ? "Nuevo Jugador" : "Detalle del Jugador"}</Modal.Title>
+          <Modal.Title>
+            {isEditing ? "Editar Jugador" : showAddModal ? "Nuevo Jugador" : "Detalle del Jugador"}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {(showAddModal || isEditing) ? (
             <Form onSubmit={handleSubmit} encType="multipart/form-data">
               <Form.Group className="mb-3">
                 <Form.Label>Nombre</Form.Label>
-                <Form.Control type="text" value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })} required />
+                <Form.Control
+                  type="text"
+                  value={formData.nombre}
+                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                  required
+                />
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Dorsal</Form.Label>
-                <Form.Control type="number" value={formData.dorsal} onChange={(e) => setFormData({ ...formData, dorsal: e.target.value })} />
+                <Form.Control
+                  type="number"
+                  value={formData.dorsal}
+                  onChange={(e) => setFormData({ ...formData, dorsal: e.target.value })}
+                />
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Posición</Form.Label>
-                <Form.Control type="text" value={formData.posicion} onChange={(e) => setFormData({ ...formData, posicion: e.target.value })} />
+                <Form.Control
+                  type="text"
+                  value={formData.posicion}
+                  onChange={(e) => setFormData({ ...formData, posicion: e.target.value })}
+                />
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Edad</Form.Label>
-                <Form.Control type="number" value={formData.edad} onChange={(e) => setFormData({ ...formData, edad: e.target.value })} />
+                <Form.Control
+                  type="number"
+                  value={formData.edad}
+                  onChange={(e) => setFormData({ ...formData, edad: e.target.value })}
+                />
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Imagen</Form.Label>
-                <Form.Control type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, imagen: e.target.files[0] })} />
+                <Form.Control
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setFormData({ ...formData, imagen: e.target.files[0] })}
+                />
               </Form.Group>
               <div className="d-flex justify-content-end">
-                <Button variant="secondary" onClick={() => setShowAddModal(false)} className="me-2">Cancelar</Button>
-                <Button variant="primary" type="submit">Guardar</Button>
+                <Button variant="secondary" onClick={() => setShowAddModal(false)} className="me-2">
+                  Cancelar
+                </Button>
+                <Button variant="primary" type="submit">
+                  Guardar
+                </Button>
               </div>
             </Form>
           ) : (
@@ -222,7 +281,11 @@ export default function JugadoresDelClub() {
                 <p><strong>Posición:</strong> {jugadorSeleccionado.posicion || "N/A"}</p>
                 <p><strong>Edad:</strong> {jugadorSeleccionado.edad || "N/A"}</p>
                 {jugadorSeleccionado.imagen && (
-                  <img src={jugadorSeleccionado.imagen} alt="Imagen del jugador" style={{ width: "100%", borderRadius: "8px" }} />
+                  <img
+                    src={jugadorSeleccionado.imagen}
+                    alt="Imagen del jugador"
+                    style={{ width: "100%", borderRadius: "8px" }}
+                  />
                 )}
                 <div className="d-flex justify-content-end mt-3">
                   <Button variant="primary" onClick={() => {
@@ -236,7 +299,9 @@ export default function JugadoresDelClub() {
                       edad: jugadorSeleccionado.edad,
                       imagen: null,
                     });
-                  }}>Editar</Button>
+                  }}>
+                    Editar
+                  </Button>
                 </div>
               </>
             )
