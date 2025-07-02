@@ -70,7 +70,7 @@ export default function UserManager({ show, onClose }) {
           },
           body: JSON.stringify({
             username: user.username,
-            grupo: user.grupo,
+            grupo: user.groups,
             permisos: user.permisos,
             vistas: user.vistas,
             password: user.password || undefined,
@@ -162,7 +162,7 @@ export default function UserManager({ show, onClose }) {
                         size="sm"
                         value={user.grupo || ""}
                         onChange={(e) => {
-                          user.userGroups = e.target.value;
+                          user.groups = e.target.value;
                           setUsuarios([...usuarios]);
                         }}
                       >
