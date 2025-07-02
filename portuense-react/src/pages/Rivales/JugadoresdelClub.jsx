@@ -23,10 +23,15 @@ export default function JugadoresDelClub() {
 
   const generoActivo = genero === "masculino" ? "M" : "F";
   const generoNombre = genero === "masculino" ? "Masculino" : "Femenino";
+console.log("✅ Buscando permiso RIV para equipo:", generoActivo);
+console.log("🧾 Permisos RIV:", userPermisos.filter(p => p.categoria === "RIV"));
 
-  const tienePermiso = userPermisos.some(
-    (p) => p.categoria === "RIV" && p.equipo === generoActivo
-  );
+const tienePermiso = userPermisos.some(
+  (p) =>
+    p.categoria === "RIV" &&
+    p.equipo.toUpperCase() === generoActivo.toUpperCase().trim()
+);
+
 
   const [clubNombre, setClubNombre] = useState("");
   const [jugadores, setJugadores] = useState([]);
