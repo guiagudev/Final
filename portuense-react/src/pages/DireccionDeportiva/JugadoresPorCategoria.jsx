@@ -1,14 +1,15 @@
 // src/pages/DireccionDeportiva/JugadoresPorCategoria.jsx
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Container, ListGroup, Spinner, Alert } from "react-bootstrap";
 import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
 import ModalCarpetasPDFs from "../../components/ModalCarpetasPDFs";
 
 export default function JugadoresPorCategoria() {
-  const { categoria, equipo } = useParams();
+  const { categoria, equipo, subcategoria } = useParams();
   const token = sessionStorage.getItem("accessToken");
+
   const [jugadores, setJugadores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,15 +20,14 @@ export default function JugadoresPorCategoria() {
     const fetchJugadores = async () => {
       try {
         const res = await fetch(
-          `${
-            import.meta.env.VITE_API_URL
-          }/jugadores?categoria=${categoria}&equipo=${equipo}`,
+          `${import.meta.env.VITE_API_URL}/jugadores?categoria=${categoria}&equipo=${equipo}&subcategoria=${subcategoria}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
+
         if (!res.ok) throw new Error("Error al cargar jugadores");
 
         const data = await res.json();
@@ -40,17 +40,18 @@ export default function JugadoresPorCategoria() {
     };
 
     fetchJugadores();
-  }, [categoria, equipo, token]);
+  }, [categoria, equipo, subcategoria, token]);
 
   return (
     <>
       <AppHeader />
-      <BackButton to="/direccion-deportiva/" />
+      <BackButton to="/direccion-deportiva" />
       <Container className="mt-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h4>
             Jugadores de <strong>{categoria}</strong> -{" "}
-            <strong>{equipo}</strong>
+            <strong>{equipo === "M" ? "Masculino" : "Femenino"}</strong> -{" "}
+            <strong>Subcategoría {subcategoria}</strong>
           </h4>
         </div>
 
@@ -84,6 +85,7 @@ export default function JugadoresPorCategoria() {
           </ListGroup>
         )}
       </Container>
+
       {jugadorSeleccionado && (
         <ModalCarpetasPDFs
           show={showModal}

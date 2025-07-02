@@ -13,7 +13,7 @@ export default function DocsyExcel() {
       <AppHeader />
      <BackButton to="/direccion-deportiva" label="←" />
       <Container className="mt-4">
-        <h2>Documentos y Excel – {categoria} {equipo}</h2>
+        <h2>Documentos y Excel – {categoria}-{subcategoria} {equipo}</h2>
         <Button
           className="me-2"
           onClick={() =>
