@@ -47,7 +47,7 @@ export default function JugadoresDelClub() {
 
   useEffect(() => {
     if (!tienePermiso) {
-      navigate("/");
+      
       return;
     }
 
