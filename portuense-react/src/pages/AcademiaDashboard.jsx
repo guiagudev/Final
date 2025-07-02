@@ -13,11 +13,11 @@ export default function AcademiaDashboard() {
   const [user, setUser] = useState({});
   const [categoria, setCategoria] = useState("");
   const [equipo, setEquipo] = useState("");
-  const [subcategoria, setSubcategoria] = useState("");
+  const [subcategoria, setSubcategoria] = useState("A");
 
   const [categoriasDisponibles, setCategoriasDisponibles] = useState([]);
   const [equiposDisponibles, setEquiposDisponibles] = useState([]);
-  const [subcategoriasDisponibles, setSubcategoriasDisponibles] = useState([]);
+  const [subcategoriasDisponibles, setSubcategoriasDisponibles] = useState(["A", "B", "C"]);
 
   useEffect(() => {
     const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
@@ -26,43 +26,44 @@ export default function AcademiaDashboard() {
       return;
     }
 
-    // Excluir RIV y SEN
     const permisosFiltrados = (storedUser.permisos || []).filter(
-      (p) => p.categoria !== "RIV" 
+      (p) => p.categoria !== "RIV"
     );
 
     setUser({ ...storedUser, permisos: permisosFiltrados });
 
-    const cats = [...new Set(permisosFiltrados.map((p) => p.categoria))];
-    setCategoriasDisponibles(cats);
-    const defaultCategoria = cats[0] || "";
-    setCategoria(defaultCategoria);
+    const categorias = [...new Set(permisosFiltrados.map((p) => p.categoria))];
+    const defaultCategoria = categorias[0] || "";
 
-    const equipos = [...new Set(
-      permisosFiltrados
-        .filter((p) => p.categoria === defaultCategoria)
-        .map((p) => p.equipo)
-    )];
-    setEquiposDisponibles(equipos);
+    const equipos = [
+      ...new Set(
+        permisosFiltrados
+          .filter((p) => p.categoria === defaultCategoria)
+          .map((p) => p.equipo)
+      ),
+    ];
     const defaultEquipo = equipos[0] || "";
-    setEquipo(defaultEquipo);
 
-    const subcats = [...new Set(
-      permisosFiltrados
-        .filter((p) => p.categoria === defaultCategoria && p.equipo === defaultEquipo)
-        .map((p) => p.subcategoria)
-    )];
+    const subcats = ["A", "B", "C"];
     setSubcategoriasDisponibles(subcats);
-    setSubcategoria(subcats[0] || "");
+
+    setCategoriasDisponibles(categorias);
+    setCategoria(defaultCategoria);
+    setEquiposDisponibles(equipos);
+    setEquipo(defaultEquipo);
+    setSubcategoria(subcats[0]);
   }, [navigate]);
 
   useEffect(() => {
-    const permisos = user.permisos || [];
-    const equipos = [...new Set(
-      permisos
-        .filter((p) => p.categoria === categoria)
-        .map((p) => p.equipo)
-    )];
+    if (!user.permisos) return;
+
+    const equipos = [
+      ...new Set(
+        user.permisos
+          .filter((p) => p.categoria === categoria)
+          .map((p) => p.equipo)
+      ),
+    ];
     setEquiposDisponibles(equipos);
     if (!equipos.includes(equipo)) {
       setEquipo(equipos[0] || "");
@@ -70,15 +71,10 @@ export default function AcademiaDashboard() {
   }, [categoria]);
 
   useEffect(() => {
-    const permisos = user.permisos || [];
-    const subcats = [...new Set(
-      permisos
-        .filter((p) => p.categoria === categoria && p.equipo === equipo)
-        .map((p) => p.subcategoria)
-    )];
+    const subcats = ["A", "B", "C"];
     setSubcategoriasDisponibles(subcats);
     if (!subcats.includes(subcategoria)) {
-      setSubcategoria(subcats[0] || "");
+      setSubcategoria(subcats[0]);
     }
   }, [categoria, equipo]);
 
@@ -109,7 +105,9 @@ export default function AcademiaDashboard() {
               disabled={categoriasDisponibles.length <= 1}
             >
               {categoriasDisponibles.map((c) => (
-                <option key={c} value={c}>{c}</option>
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
             </Form.Select>
           </Col>
@@ -135,7 +133,9 @@ export default function AcademiaDashboard() {
               disabled={subcategoriasDisponibles.length <= 1}
             >
               {subcategoriasDisponibles.map((s) => (
-                <option key={s} value={s}>Subcategoría {s}</option>
+                <option key={s} value={s}>
+                  Subcategoría {s}
+                </option>
               ))}
             </Form.Select>
           </Col>

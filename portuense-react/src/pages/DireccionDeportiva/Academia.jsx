@@ -11,11 +11,11 @@ export default function AcademiaDireccion() {
   const [user, setUser] = useState({});
   const [categoria, setCategoria] = useState("");
   const [equipo, setEquipo] = useState("");
-  const [subcategoria, setSubcategoria] = useState("");
+  const [subcategoria, setSubcategoria] = useState("A");
 
   const [categoriasDisponibles, setCategoriasDisponibles] = useState([]);
   const [equiposDisponibles, setEquiposDisponibles] = useState([]);
-  const [subcategoriasDisponibles, setSubcategoriasDisponibles] = useState([]);
+  const subcategoriasDisponibles = ["A", "B", "C"];
 
   useEffect(() => {
     const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
@@ -30,36 +30,34 @@ export default function AcademiaDireccion() {
 
     setUser({ ...storedUser, permisos: permisosFiltrados });
 
-    const cats = [...new Set(permisosFiltrados.map((p) => p.categoria))];
-    setCategoriasDisponibles(cats);
-    const defaultCategoria = cats[0] || "";
+    const categorias = [...new Set(permisosFiltrados.map((p) => p.categoria))];
+    const defaultCategoria = categorias[0] || "";
+    setCategoriasDisponibles(categorias);
     setCategoria(defaultCategoria);
 
-    const equipos = [...new Set(
-      permisosFiltrados
-        .filter((p) => p.categoria === defaultCategoria)
-        .map((p) => p.equipo)
-    )];
-    setEquiposDisponibles(equipos);
+    const equipos = [
+      ...new Set(
+        permisosFiltrados
+          .filter((p) => p.categoria === defaultCategoria)
+          .map((p) => p.equipo)
+      ),
+    ];
     const defaultEquipo = equipos[0] || "";
+    setEquiposDisponibles(equipos);
     setEquipo(defaultEquipo);
-
-    const subcats = [...new Set(
-      permisosFiltrados
-        .filter((p) => p.categoria === defaultCategoria && p.equipo === defaultEquipo)
-        .map((p) => p.subcategoria)
-    )];
-    setSubcategoriasDisponibles(subcats);
-    setSubcategoria(subcats[0] || "");
+    setSubcategoria("A");
   }, [navigate]);
 
   useEffect(() => {
-    const permisos = user.permisos || [];
-    const equipos = [...new Set(
-      permisos
-        .filter((p) => p.categoria === categoria)
-        .map((p) => p.equipo)
-    )];
+    if (!user.permisos) return;
+
+    const equipos = [
+      ...new Set(
+        user.permisos
+          .filter((p) => p.categoria === categoria)
+          .map((p) => p.equipo)
+      ),
+    ];
     setEquiposDisponibles(equipos);
     if (!equipos.includes(equipo)) {
       setEquipo(equipos[0] || "");
@@ -67,15 +65,8 @@ export default function AcademiaDireccion() {
   }, [categoria]);
 
   useEffect(() => {
-    const permisos = user.permisos || [];
-    const subcats = [...new Set(
-      permisos
-        .filter((p) => p.categoria === categoria && p.equipo === equipo)
-        .map((p) => p.subcategoria)
-    )];
-    setSubcategoriasDisponibles(subcats);
-    if (!subcats.includes(subcategoria)) {
-      setSubcategoria(subcats[0] || "");
+    if (!subcategoriasDisponibles.includes(subcategoria)) {
+      setSubcategoria("A");
     }
   }, [categoria, equipo]);
 
@@ -102,7 +93,9 @@ export default function AcademiaDireccion() {
               disabled={categoriasDisponibles.length <= 1}
             >
               {categoriasDisponibles.map((c) => (
-                <option key={c} value={c}>{c}</option>
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
             </Form.Select>
           </Col>
@@ -128,7 +121,9 @@ export default function AcademiaDireccion() {
               disabled={subcategoriasDisponibles.length <= 1}
             >
               {subcategoriasDisponibles.map((s) => (
-                <option key={s} value={s}>Subcategoría {s}</option>
+                <option key={s} value={s}>
+                  Subcategoría {s}
+                </option>
               ))}
             </Form.Select>
           </Col>
@@ -140,11 +135,7 @@ export default function AcademiaDireccion() {
               <Panel
                 title={panelSeleccionado.title}
                 text={panelSeleccionado.text}
-                query={{
-                  categoria,
-                  equipo,
-                  subcategoria,
-                }}
+                query={{ categoria, equipo, subcategoria }}
                 redirect={`/direccion-deportiva/academia/${categoria}/${equipo}/${subcategoria}`}
                 buttonText="Mostrar Documentos"
               />
