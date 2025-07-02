@@ -15,23 +15,15 @@ import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
 
 const token = sessionStorage.getItem("accessToken");
-const userPermisos = JSON.parse(sessionStorage.getItem("userPermisos") || "[]");
 
 export default function JugadoresDelClub() {
   const { genero, clubId } = useParams();
 
-
   const generoActivo = genero === "masculino" ? "M" : "F";
   const generoNombre = genero === "masculino" ? "Masculino" : "Femenino";
-console.log("✅ Buscando permiso RIV para equipo:", generoActivo);
-console.log("🧾 Permisos RIV:", userPermisos.filter(p => p.categoria === "RIV"));
 
-const tienePermiso = userPermisos.some(
-  (p) =>
-    p.categoria === "RIV" &&
-    p.equipo.toUpperCase() === generoActivo.toUpperCase().trim()
-);
-
+  const [userPermisos, setUserPermisos] = useState([]);
+  const [permisosCargados, setPermisosCargados] = useState(false);
 
   const [clubNombre, setClubNombre] = useState("");
   const [jugadores, setJugadores] = useState([]);
@@ -50,6 +42,19 @@ const tienePermiso = userPermisos.some(
     imagen: null,
   });
 
+  // ⏳ Cargar permisos desde sessionStorage al montar
+  useEffect(() => {
+    const permisos = JSON.parse(sessionStorage.getItem("userPermisos") || "[]");
+    setUserPermisos(permisos);
+    setPermisosCargados(true);
+  }, []);
+
+  const tienePermiso = userPermisos.some(
+    (p) =>
+      p.categoria === "RIV" &&
+      p.equipo?.toUpperCase().trim() === generoActivo.toUpperCase().trim()
+  );
+
   useEffect(() => {
     if (!tienePermiso) return;
 
@@ -65,16 +70,14 @@ const tienePermiso = userPermisos.some(
     Promise.all([fetchClub, fetchJugadores])
       .then(([club, jugadoresData]) => {
         setClubNombre(club.nombre);
-
         const listaJugadores = Array.isArray(jugadoresData)
           ? jugadoresData
           : jugadoresData.results || [];
-
         setJugadores(listaJugadores);
         setLoading(false);
       })
       .catch(() => toast.error("Error al cargar datos."));
-  }, [clubId, genero]);
+  }, [clubId, genero, tienePermiso]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -145,12 +148,37 @@ const tienePermiso = userPermisos.some(
     ? jugadores.filter((j) => j.equipo === generoActivo)
     : [];
 
+  // Esperar a que carguen los permisos
+  if (!permisosCargados) {
+    return (
+      <Container className="mt-4 text-center">
+        <Spinner animation="border" />
+        <p className="mt-3">Cargando permisos...</p>
+      </Container>
+    );
+  }
+
+  // Mostrar mensaje si no tiene permiso
   if (!tienePermiso) {
     return (
       <>
         <AppHeader />
         <Container className="mt-4">
-          <h4>No tienes permisos para ver esta sección.</h4>
+          <h4 className="text-danger">No tienes permisos para ver esta sección.</h4>
+          <p>
+            Se requiere: <code>RIV</code> para equipo <code>{generoActivo}</code>
+          </p>
+          <pre
+            style={{
+              background: "#f8f9fa",
+              padding: "10px",
+              borderRadius: "5px",
+              maxHeight: 300,
+              overflowY: "auto",
+            }}
+          >
+            {JSON.stringify(userPermisos, null, 2)}
+          </pre>
         </Container>
       </>
     );
