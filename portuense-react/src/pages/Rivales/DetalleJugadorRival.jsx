@@ -1,279 +1,264 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Outlet } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Container,
   Card,
   Button,
   Spinner,
-  Row,
-  Col,
-  Modal,
   Form,
-  Tabs,
-  Tab,
   Alert,
+  Modal,
 } from "react-bootstrap";
-import AppHeader from "../../components/AppHeader";
-import BackButton from "../../components/BackButton";
 import { toast } from "react-toastify";
 
 const token = sessionStorage.getItem("accessToken");
-const userPermisos = JSON.parse(sessionStorage.getItem("userPermisos") || "[]");
 
-export default function JugadoresDelClub() {
-  const { clubId } = useParams();
+export default function DetalleJugadorRival() {
+  const { jugadorId, genero, clubId } = useParams();
   const navigate = useNavigate();
 
-  const [jugadores, setJugadores] = useState([]);
+  const [jugador, setJugador] = useState(null);
+  const [comentarios, setComentarios] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-
-  const tieneMasculino = userPermisos.some((p) => p.categoria === "SEN" && p.equipo === "M");
-  const tieneFemenino = userPermisos.some((p) => p.categoria === "SEN" && p.equipo === "F");
-  const [generoActivo, setGeneroActivo] = useState(tieneMasculino ? "M" : "F");
-
-  const [formData, setFormData] = useState({
-    nombre: "",
-    dorsal: "",
-    posicion: "",
-    edad: "",
-    imagen: null,
-    observaciones: "",
-    equipo: tieneMasculino ? "M" : "F",
+  const [comentarioForm, setComentarioForm] = useState({
+    titulo: "",
+    contenido: "",
   });
+  const [showComentarioModal, setShowComentarioModal] = useState(false);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/?club=${clubId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setJugadores(data);
+    console.log("Cargando jugador y comentarios para ID:", jugadorId);
+
+    const fetchJugador = fetch(
+      `${import.meta.env.VITE_API_URL}/jugadores-rivales/${jugadorId}/`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    ).then(async (res) => {
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Error al obtener jugador:", res.status, text);
+        throw new Error(`Jugador error ${res.status}`);
+      }
+      return res.json();
+    });
+
+    const fetchComentarios = fetch(
+      `${
+        import.meta.env.VITE_API_URL
+      }/comentarios-rivales/jugador/${jugadorId}/`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    ).then(async (res) => {
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Error al obtener comentarios:", res.status, text);
+        throw new Error(`Comentarios error ${res.status}`);
+      }
+      return res.json();
+    });
+
+    Promise.all([fetchJugador, fetchComentarios])
+      .then(([jugadorData, comentariosData]) => {
+        setJugador(jugadorData);
+        setComentarios(Array.isArray(comentariosData) ? comentariosData : []);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error general al cargar:", error);
+        toast.error("Error al cargar los datos del jugador.");
         setLoading(false);
       });
-  }, [clubId]);
+  }, [jugadorId]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formPayload = new FormData();
-    formPayload.append("club", clubId);
-    formPayload.append("nombre", formData.nombre);
-    formPayload.append("equipo", formData.equipo);
-    if (formData.dorsal) formPayload.append("dorsal", formData.dorsal);
-    if (formData.posicion) formPayload.append("posicion", formData.posicion);
-    if (formData.edad) formPayload.append("edad", formData.edad);
-    if (formData.imagen) formPayload.append("imagen", formData.imagen);
-    if (formData.observaciones) formPayload.append("observaciones", formData.observaciones);
+  const enviarComentario = async () => {
+    const payload = {
+      jugador: parseInt(jugadorId),
+      titulo: comentarioForm.titulo,
+      contenido: comentarioForm.contenido,
+    };
+
+    console.log("Intentando enviar comentario con payload:", payload);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formPayload,
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/comentarios-rivales/`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      console.log("Respuesta status:", res.status);
+      const responseText = await res.text();
+      console.log("Texto de respuesta:", responseText);
 
       if (res.ok) {
-        const nuevo = await res.json();
-        setJugadores((prev) => [...prev, nuevo]);
-        setShowModal(false);
-        setFormData({
-          nombre: "",
-          dorsal: "",
-          posicion: "",
-          edad: "",
-          imagen: null,
-          observaciones: "",
-          equipo: generoActivo,
-        });
-        toast.success("Jugador creado correctamente");
+        const nuevo = JSON.parse(responseText);
+        console.log("Comentario creado OK:", nuevo);
+        setComentarios((prev) => [nuevo, ...prev]);
+        setComentarioForm({ titulo: "", contenido: "" });
+        setShowComentarioModal(false);
       } else {
-        toast.error("Error al crear jugador");
+        console.error("Error al enviar comentario:", res.status, responseText);
+        toast.error("Error al enviar comentario.");
       }
     } catch (err) {
-      console.error("Error al crear jugador", err);
-      toast.error("Error al conectar con el servidor");
+      console.error("Excepción al enviar comentario:", err);
+      toast.error("Fallo de red.");
     }
   };
 
-  const eliminarJugador = async (id) => {
+  const eliminarComentario = async (id) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/${id}/`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/comentarios-rivales/${id}/`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (res.ok) {
-        setJugadores((prev) => prev.filter((j) => j.id !== id));
-        toast.success("Jugador eliminado");
+        setComentarios((prev) => prev.filter((c) => c.id !== id));
       } else {
-        toast.error("No se pudo eliminar el jugador.");
+        toast.error("No se pudo eliminar el comentario.");
       }
-    } catch (err) {
+    } catch {
       toast.error("Error al conectar con el servidor.");
     }
   };
 
-  const jugadoresFiltrados = jugadores.filter((j) => j.equipo === generoActivo);
+  if (loading) {
+    return (
+      <Container className="mt-4 text-center">
+        <Spinner animation="border" />
+        <p className="mt-3">Cargando jugador...</p>
+      </Container>
+    );
+  }
+
+  if (!jugador) {
+    return (
+      <Container className="mt-4">
+        <Alert variant="danger">Jugador no encontrado.</Alert>
+      </Container>
+    );
+  }
 
   return (
-    <>
-      <AppHeader />
-      <Container className="mt-4">
-        <BackButton to="/clubes-rivales" />
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3 className="mb-0">Jugadores del Club</h3>
-          <Button variant="success" onClick={() => setShowModal(true)}>
-            Añadir Jugador
-          </Button>
-        </div>
+    <Container className="mt-4">
+      <Button
+        variant="secondary"
+        onClick={() =>
+          navigate(`/clubes-rivales/${genero}/${clubId}/jugadores`)
+        }
+      >
+        Volver a la lista
+      </Button>
 
-        {(tieneMasculino || tieneFemenino) ? (
-          <>
-            <Tabs
-              activeKey={generoActivo}
-              onSelect={(k) => {
-                setGeneroActivo(k);
-                setFormData((prev) => ({ ...prev, equipo: k }));
-              }}
-              className="mb-3"
-            >
-              {tieneMasculino && <Tab eventKey="M" title="Masculino" />}
-              {tieneFemenino && <Tab eventKey="F" title="Femenino" />}
-            </Tabs>
+      <Card className="mt-4">
+        <Card.Body>
+          <Card.Title>{jugador.nombre}</Card.Title>
+          <Card.Text>
+            <strong>Posición:</strong> {jugador.posicion || "N/A"} <br />
+            <strong>Edad:</strong> {jugador.edad || "N/A"} <br />
+            <strong>Dorsal:</strong> {jugador.dorsal || "N/A"} <br />
+            <strong>Observaciones:</strong> {jugador.observaciones || "N/A"}
+          </Card.Text>
+          {jugador.imagen && (
+            <img
+              src={jugador.imagen}
+              alt="Imagen del jugador"
+              style={{ width: "100%", maxHeight: 300, objectFit: "cover" }}
+            />
+          )}
+        </Card.Body>
+      </Card>
 
-            {loading ? (
-              <Spinner animation="border" />
-            ) : (
-              <Row>
-                {jugadoresFiltrados.map((jugador) => (
-                  <Col md={4} key={jugador.id} className="mb-4">
-                    <Card>
-                      <Card.Body>
-                        <Card.Title>{jugador.nombre}</Card.Title>
-                        <Card.Text>
-                          <strong>Posición:</strong> {jugador.posicion} <br />
-                          <strong>Edad:</strong> {jugador.edad}
-                        </Card.Text>
-                        <div className="d-flex justify-content-between">
-                          <Button
-                            variant="info"
-                            size="sm"
-                            onClick={() => navigate(`${jugador.id}`)}
-                          >
-                            Ver Detalle
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => eliminarJugador(jugador.id)}
-                          >
-                            Eliminar
-                          </Button>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
-            )}
-          </>
-        ) : (
-          <Alert variant="warning">
-            No tienes permisos para ver jugadores rivales en esta categoría.
-          </Alert>
-        )}
+      <div className="d-flex justify-content-between align-items-center mt-4">
+        <h4>Comentarios</h4>
+        <Button variant="primary" onClick={() => setShowComentarioModal(true)}>
+          Añadir Comentario
+        </Button>
+      </div>
 
-        <Outlet />
-      </Container>
+      {comentarios.length === 0 ? (
+        <p>No hay comentarios aún.</p>
+      ) : (
+        comentarios.map((c) => (
+          <Card key={c.id} className="mb-2">
+            <Card.Body>
+              <Card.Title>{c.titulo}</Card.Title>
+              <Card.Text>{c.contenido}</Card.Text>
+              <Button
+                variant="outline-danger"
+                size="sm"
+                onClick={() => eliminarComentario(c.id)}
+              >
+                Eliminar
+              </Button>
+            </Card.Body>
+          </Card>
+        ))
+      )}
 
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+      <Modal
+        show={showComentarioModal}
+        onHide={() => setShowComentarioModal(false)}
+        centered
+      >
         <Modal.Header closeButton>
-          <Modal.Title>Nuevo Jugador Rival</Modal.Title>
+          <Modal.Title>Nuevo Comentario</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form onSubmit={handleSubmit} encType="multipart/form-data">
+          <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Nombre</Form.Label>
+              <Form.Label>Título</Form.Label>
               <Form.Control
                 type="text"
-                value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                required
+                value={comentarioForm.titulo}
+                onChange={(e) =>
+                  setComentarioForm({
+                    ...comentarioForm,
+                    titulo: e.target.value,
+                  })
+                }
               />
             </Form.Group>
-
             <Form.Group className="mb-3">
-              <Form.Label>Género</Form.Label>
-              <Form.Select
-                value={formData.equipo}
-                onChange={(e) => setFormData({ ...formData, equipo: e.target.value })}
-              >
-                <option value="M">Masculino</option>
-                <option value="F">Femenino</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Dorsal</Form.Label>
-              <Form.Control
-                type="number"
-                value={formData.dorsal}
-                onChange={(e) => setFormData({ ...formData, dorsal: e.target.value })}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Posición</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.posicion}
-                onChange={(e) => setFormData({ ...formData, posicion: e.target.value })}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Edad</Form.Label>
-              <Form.Control
-                type="number"
-                value={formData.edad}
-                onChange={(e) => setFormData({ ...formData, edad: e.target.value })}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Imagen</Form.Label>
-              <Form.Control
-                type="file"
-                accept="image/*"
-                onChange={(e) => setFormData({ ...formData, imagen: e.target.files[0] })}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Observaciones</Form.Label>
+              <Form.Label>Contenido</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
-                value={formData.observaciones}
-                onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
+                value={comentarioForm.contenido}
+                onChange={(e) =>
+                  setComentarioForm({
+                    ...comentarioForm,
+                    contenido: e.target.value,
+                  })
+                }
               />
             </Form.Group>
-
             <div className="d-flex justify-content-end">
-              <Button variant="secondary" onClick={() => setShowModal(false)} className="me-2">
+              <Button
+                variant="secondary"
+                onClick={() => setShowComentarioModal(false)}
+                className="me-2"
+              >
                 Cancelar
               </Button>
-              <Button variant="primary" type="submit">
-                Guardar
+              <Button variant="primary" onClick={enviarComentario}>
+                Publicar
               </Button>
             </div>
           </Form>
         </Modal.Body>
       </Modal>
-    </>
+    </Container>
   );
 }

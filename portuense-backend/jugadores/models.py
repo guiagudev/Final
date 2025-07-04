@@ -264,8 +264,8 @@ class ComentarioRival(models.Model):
     autor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     titulo = models.CharField(max_length=100)
     contenido = models.TextField()
-    fecha_emision = models.DateField(default=now)  # <-- SIN lambda
-    fecha_creacion = models.DateField(default=now)  # <-- SIN lambda
+    fecha_emision = models.DateTimeField(default=now, null=True)
+
 
 
     def __str__(self):
@@ -276,6 +276,6 @@ class ComentarioClubRival(models.Model):
     titulo = models.CharField(max_length=100)
     contenido = models.TextField()
     fecha_creacion = models.DateTimeField(default=now)
-
+    
     def __str__(self):
         return f"{self.titulo} - {self.club.nombre}"

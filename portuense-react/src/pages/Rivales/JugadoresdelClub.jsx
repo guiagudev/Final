@@ -9,7 +9,7 @@ import {
   Modal,
   Form,
 } from "react-bootstrap";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, Outlet } from "react-router-dom";
 import { toast } from "react-toastify";
 import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
@@ -58,9 +58,12 @@ export default function JugadoresDelClub() {
   useEffect(() => {
     if (!tienePermiso) return;
 
-    const fetchClub = fetch(`${import.meta.env.VITE_API_URL}/clubes-rivales/${clubId}/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then((res) => res.json());
+    const fetchClub = fetch(
+      `${import.meta.env.VITE_API_URL}/clubes-rivales/${clubId}/`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    ).then((res) => res.json());
 
     const fetchJugadores = fetch(
       `${import.meta.env.VITE_API_URL}/jugadores-rivales/?club=${clubId}`,
@@ -78,6 +81,7 @@ export default function JugadoresDelClub() {
       })
       .catch(() => toast.error("Error al cargar datos."));
   }, [clubId, genero, tienePermiso]);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -91,7 +95,9 @@ export default function JugadoresDelClub() {
     if (formData.imagen) formPayload.append("imagen", formData.imagen);
 
     const url = isEditing
-      ? `${import.meta.env.VITE_API_URL}/jugadores-rivales/${jugadorSeleccionado.id}/`
+      ? `${import.meta.env.VITE_API_URL}/jugadores-rivales/${
+          jugadorSeleccionado.id
+        }/`
       : `${import.meta.env.VITE_API_URL}/jugadores-rivales/`;
 
     const method = isEditing ? "PUT" : "POST";
@@ -104,9 +110,12 @@ export default function JugadoresDelClub() {
       });
 
       if (res.ok) {
-        fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/?club=${clubId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        fetch(
+          `${import.meta.env.VITE_API_URL}/jugadores-rivales/?club=${clubId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
           .then((r) => r.json())
           .then((data) => {
             const lista = Array.isArray(data) ? data : data.results || [];
@@ -114,7 +123,13 @@ export default function JugadoresDelClub() {
           });
 
         setShowAddModal(false);
-        setFormData({ nombre: "", dorsal: "", posicion: "", edad: "", imagen: null });
+        setFormData({
+          nombre: "",
+          dorsal: "",
+          posicion: "",
+          edad: "",
+          imagen: null,
+        });
         setIsEditing(false);
         setJugadorSeleccionado(null);
         toast.success(isEditing ? "Jugador actualizado" : "Jugador creado");
@@ -128,10 +143,13 @@ export default function JugadoresDelClub() {
 
   const eliminarJugador = async (id) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/jugadores-rivales/${id}/`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/jugadores-rivales/${id}/`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       if (res.ok) {
         setJugadores((prev) => prev.filter((j) => j.id !== id));
@@ -164,9 +182,12 @@ export default function JugadoresDelClub() {
       <>
         <AppHeader />
         <Container className="mt-4">
-          <h4 className="text-danger">No tienes permisos para ver esta sección.</h4>
+          <h4 className="text-danger">
+            No tienes permisos para ver esta sección.
+          </h4>
           <p>
-            Se requiere: <code>RIV</code> para equipo <code>{generoActivo}</code>
+            Se requiere: <code>RIV</code> para equipo{" "}
+            <code>{generoActivo}</code>
           </p>
           <pre
             style={{
@@ -215,13 +236,15 @@ export default function JugadoresDelClub() {
                       <Button
                         variant="info"
                         size="sm"
-                        onClick={() => {
-                          setJugadorSeleccionado(jugador);
-                          setShowDetailModal(true);
-                        }}
+                        onClick={() =>
+                          navigate(
+                            `/clubes-rivales/${genero}/${clubId}/jugadores/${jugador.id}`
+                          )
+                        }
                       >
                         Ver Detalle
                       </Button>
+
                       <Button
                         variant="danger"
                         size="sm"
@@ -244,24 +267,36 @@ export default function JugadoresDelClub() {
           setShowAddModal(false);
           setShowDetailModal(false);
           setIsEditing(false);
-          setFormData({ nombre: "", dorsal: "", posicion: "", edad: "", imagen: null });
+          setFormData({
+            nombre: "",
+            dorsal: "",
+            posicion: "",
+            edad: "",
+            imagen: null,
+          });
         }}
         centered
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            {isEditing ? "Editar Jugador" : showAddModal ? "Nuevo Jugador" : "Detalle del Jugador"}
+            {isEditing
+              ? "Editar Jugador"
+              : showAddModal
+              ? "Nuevo Jugador"
+              : "Detalle del Jugador"}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {(showAddModal || isEditing) ? (
+          {showAddModal || isEditing ? (
             <Form onSubmit={handleSubmit} encType="multipart/form-data">
               <Form.Group className="mb-3">
                 <Form.Label>Nombre</Form.Label>
                 <Form.Control
                   type="text"
                   value={formData.nombre}
-                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nombre: e.target.value })
+                  }
                   required
                 />
               </Form.Group>
@@ -270,7 +305,9 @@ export default function JugadoresDelClub() {
                 <Form.Control
                   type="number"
                   value={formData.dorsal}
-                  onChange={(e) => setFormData({ ...formData, dorsal: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, dorsal: e.target.value })
+                  }
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -278,7 +315,9 @@ export default function JugadoresDelClub() {
                 <Form.Control
                   type="text"
                   value={formData.posicion}
-                  onChange={(e) => setFormData({ ...formData, posicion: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, posicion: e.target.value })
+                  }
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -286,7 +325,9 @@ export default function JugadoresDelClub() {
                 <Form.Control
                   type="number"
                   value={formData.edad}
-                  onChange={(e) => setFormData({ ...formData, edad: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, edad: e.target.value })
+                  }
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -294,11 +335,17 @@ export default function JugadoresDelClub() {
                 <Form.Control
                   type="file"
                   accept="image/*"
-                  onChange={(e) => setFormData({ ...formData, imagen: e.target.files[0] })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, imagen: e.target.files[0] })
+                  }
                 />
               </Form.Group>
               <div className="d-flex justify-content-end">
-                <Button variant="secondary" onClick={() => setShowAddModal(false)} className="me-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowAddModal(false)}
+                  className="me-2"
+                >
                   Cancelar
                 </Button>
                 <Button variant="primary" type="submit">
@@ -309,10 +356,19 @@ export default function JugadoresDelClub() {
           ) : (
             jugadorSeleccionado && (
               <>
-                <p><strong>Nombre:</strong> {jugadorSeleccionado.nombre}</p>
-                <p><strong>Dorsal:</strong> {jugadorSeleccionado.dorsal || "N/A"}</p>
-                <p><strong>Posición:</strong> {jugadorSeleccionado.posicion || "N/A"}</p>
-                <p><strong>Edad:</strong> {jugadorSeleccionado.edad || "N/A"}</p>
+                <p>
+                  <strong>Nombre:</strong> {jugadorSeleccionado.nombre}
+                </p>
+                <p>
+                  <strong>Dorsal:</strong> {jugadorSeleccionado.dorsal || "N/A"}
+                </p>
+                <p>
+                  <strong>Posición:</strong>{" "}
+                  {jugadorSeleccionado.posicion || "N/A"}
+                </p>
+                <p>
+                  <strong>Edad:</strong> {jugadorSeleccionado.edad || "N/A"}
+                </p>
                 {jugadorSeleccionado.imagen && (
                   <img
                     src={jugadorSeleccionado.imagen}
@@ -321,18 +377,21 @@ export default function JugadoresDelClub() {
                   />
                 )}
                 <div className="d-flex justify-content-end mt-3">
-                  <Button variant="primary" onClick={() => {
-                    setIsEditing(true);
-                    setShowDetailModal(false);
-                    setShowAddModal(true);
-                    setFormData({
-                      nombre: jugadorSeleccionado.nombre,
-                      dorsal: jugadorSeleccionado.dorsal,
-                      posicion: jugadorSeleccionado.posicion,
-                      edad: jugadorSeleccionado.edad,
-                      imagen: null,
-                    });
-                  }}>
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      setIsEditing(true);
+                      setShowDetailModal(false);
+                      setShowAddModal(true);
+                      setFormData({
+                        nombre: jugadorSeleccionado.nombre,
+                        dorsal: jugadorSeleccionado.dorsal,
+                        posicion: jugadorSeleccionado.posicion,
+                        edad: jugadorSeleccionado.edad,
+                        imagen: null,
+                      });
+                    }}
+                  >
                     Editar
                   </Button>
                 </div>
@@ -341,6 +400,7 @@ export default function JugadoresDelClub() {
           )}
         </Modal.Body>
       </Modal>
+      <Outlet />
     </>
   );
 }
