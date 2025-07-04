@@ -14,11 +14,10 @@ import { toast } from "react-toastify";
 import AppHeader from "../../components/AppHeader";
 import BackButton from "../../components/BackButton";
 
-const token = sessionStorage.getItem("accessToken");
-
 export default function JugadoresDelClub() {
   const { genero, clubId } = useParams();
 
+  const token = sessionStorage.getItem("accessToken");
   const generoActivo = genero === "masculino" ? "M" : "F";
   const generoNombre = genero === "masculino" ? "Masculino" : "Femenino";
 
