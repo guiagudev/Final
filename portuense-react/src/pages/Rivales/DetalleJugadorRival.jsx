@@ -11,12 +11,12 @@ import {
 } from "react-bootstrap";
 import { toast } from "react-toastify";
 
-const token = sessionStorage.getItem("accessToken");
+
 
 export default function DetalleJugadorRival() {
   const { jugadorId, genero, clubId } = useParams();
   const navigate = useNavigate();
-
+const token = sessionStorage.getItem("accessToken");
   const [jugador, setJugador] = useState(null);
   const [comentarios, setComentarios] = useState([]);
   const [loading, setLoading] = useState(true);
