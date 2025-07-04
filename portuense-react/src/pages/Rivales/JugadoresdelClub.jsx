@@ -16,22 +16,19 @@ import BackButton from "../../components/BackButton";
 
 export default function JugadoresDelClub() {
   const { genero, clubId } = useParams();
+  const navigate = useNavigate();
 
-  const token = sessionStorage.getItem("accessToken");
   const generoActivo = genero === "masculino" ? "M" : "F";
   const generoNombre = genero === "masculino" ? "Masculino" : "Femenino";
 
   const [userPermisos, setUserPermisos] = useState([]);
   const [permisosCargados, setPermisosCargados] = useState(false);
-
   const [clubNombre, setClubNombre] = useState("");
   const [jugadores, setJugadores] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [jugadorSeleccionado, setJugadorSeleccionado] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [jugadorSeleccionado, setJugadorSeleccionado] = useState(null);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -41,7 +38,6 @@ export default function JugadoresDelClub() {
     imagen: null,
   });
 
-  // ⏳ Cargar permisos desde sessionStorage al montar
   useEffect(() => {
     const permisos = JSON.parse(sessionStorage.getItem("userPermisos") || "[]");
     setUserPermisos(permisos);
@@ -55,13 +51,12 @@ export default function JugadoresDelClub() {
   );
 
   useEffect(() => {
-    if (!tienePermiso) return;
+    const token = sessionStorage.getItem("accessToken");
+    if (!token || !tienePermiso) return;
 
     const fetchClub = fetch(
       `${import.meta.env.VITE_API_URL}/clubes-rivales/${clubId}/`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      { headers: { Authorization: `Bearer ${token}` } }
     ).then((res) => res.json());
 
     const fetchJugadores = fetch(
@@ -72,18 +67,20 @@ export default function JugadoresDelClub() {
     Promise.all([fetchClub, fetchJugadores])
       .then(([club, jugadoresData]) => {
         setClubNombre(club.nombre);
-        const listaJugadores = Array.isArray(jugadoresData)
+        const lista = Array.isArray(jugadoresData)
           ? jugadoresData
           : jugadoresData.results || [];
-        setJugadores(listaJugadores);
+        setJugadores(lista);
         setLoading(false);
       })
       .catch(() => toast.error("Error al cargar datos."));
   }, [clubId, genero, tienePermiso]);
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = sessionStorage.getItem("accessToken");
+    if (!token) return toast.error("No estás autenticado.");
+
     const formPayload = new FormData();
     formPayload.append("club", clubId);
     formPayload.append("nombre", formData.nombre);
@@ -94,9 +91,7 @@ export default function JugadoresDelClub() {
     if (formData.imagen) formPayload.append("imagen", formData.imagen);
 
     const url = isEditing
-      ? `${import.meta.env.VITE_API_URL}/jugadores-rivales/${
-          jugadorSeleccionado.id
-        }/`
+      ? `${import.meta.env.VITE_API_URL}/jugadores-rivales/${jugadorSeleccionado.id}/`
       : `${import.meta.env.VITE_API_URL}/jugadores-rivales/`;
 
     const method = isEditing ? "PUT" : "POST";
@@ -109,26 +104,16 @@ export default function JugadoresDelClub() {
       });
 
       if (res.ok) {
-        fetch(
+        const jugadoresRes = await fetch(
           `${import.meta.env.VITE_API_URL}/jugadores-rivales/?club=${clubId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        )
-          .then((r) => r.json())
-          .then((data) => {
-            const lista = Array.isArray(data) ? data : data.results || [];
-            setJugadores(lista);
-          });
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const data = await jugadoresRes.json();
+        const lista = Array.isArray(data) ? data : data.results || [];
+        setJugadores(lista);
 
         setShowAddModal(false);
-        setFormData({
-          nombre: "",
-          dorsal: "",
-          posicion: "",
-          edad: "",
-          imagen: null,
-        });
+        setFormData({ nombre: "", dorsal: "", posicion: "", edad: "", imagen: null });
         setIsEditing(false);
         setJugadorSeleccionado(null);
         toast.success(isEditing ? "Jugador actualizado" : "Jugador creado");
@@ -141,13 +126,13 @@ export default function JugadoresDelClub() {
   };
 
   const eliminarJugador = async (id) => {
+    const token = sessionStorage.getItem("accessToken");
+    if (!token) return;
+
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/jugadores-rivales/${id}/`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (res.ok) {
@@ -161,11 +146,8 @@ export default function JugadoresDelClub() {
     }
   };
 
-  const jugadoresFiltrados = Array.isArray(jugadores)
-    ? jugadores.filter((j) => j.equipo === generoActivo)
-    : [];
+  const jugadoresFiltrados = jugadores.filter((j) => j.equipo === generoActivo);
 
-  // Esperar a que carguen los permisos
   if (!permisosCargados) {
     return (
       <Container className="mt-4 text-center">
@@ -175,30 +157,13 @@ export default function JugadoresDelClub() {
     );
   }
 
-  // Mostrar mensaje si no tiene permiso
   if (!tienePermiso) {
     return (
       <>
         <AppHeader />
         <Container className="mt-4">
-          <h4 className="text-danger">
-            No tienes permisos para ver esta sección.
-          </h4>
-          <p>
-            Se requiere: <code>RIV</code> para equipo{" "}
-            <code>{generoActivo}</code>
-          </p>
-          <pre
-            style={{
-              background: "#f8f9fa",
-              padding: "10px",
-              borderRadius: "5px",
-              maxHeight: 300,
-              overflowY: "auto",
-            }}
-          >
-            {JSON.stringify(userPermisos, null, 2)}
-          </pre>
+          <h4 className="text-danger">No tienes permisos para ver esta sección.</h4>
+          <pre className="bg-light p-3 rounded">{JSON.stringify(userPermisos, null, 2)}</pre>
         </Container>
       </>
     );
@@ -210,9 +175,7 @@ export default function JugadoresDelClub() {
       <Container className="mt-4">
         <BackButton to={`/clubes-rivales/${genero}`} />
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3 className="mb-0">
-            Jugadores del Club {clubNombre} ({generoNombre})
-          </h3>
+          <h3>Jugadores del Club {clubNombre} ({generoNombre})</h3>
           <Button variant="success" onClick={() => setShowAddModal(true)}>
             Añadir Jugador
           </Button>
@@ -236,14 +199,11 @@ export default function JugadoresDelClub() {
                         variant="info"
                         size="sm"
                         onClick={() =>
-                          navigate(
-                            `/clubes-rivales/${genero}/${clubId}/jugadores/${jugador.id}`
-                          )
+                          navigate(`/clubes-rivales/${genero}/${clubId}/jugadores/${jugador.id}`)
                         }
                       >
                         Ver Detalle
                       </Button>
-
                       <Button
                         variant="danger"
                         size="sm"
@@ -261,144 +221,72 @@ export default function JugadoresDelClub() {
       </Container>
 
       <Modal
-        show={showAddModal || showDetailModal}
+        show={showAddModal}
         onHide={() => {
           setShowAddModal(false);
-          setShowDetailModal(false);
+          setFormData({ nombre: "", dorsal: "", posicion: "", edad: "", imagen: null });
           setIsEditing(false);
-          setFormData({
-            nombre: "",
-            dorsal: "",
-            posicion: "",
-            edad: "",
-            imagen: null,
-          });
         }}
         centered
       >
         <Modal.Header closeButton>
-          <Modal.Title>
-            {isEditing
-              ? "Editar Jugador"
-              : showAddModal
-              ? "Nuevo Jugador"
-              : "Detalle del Jugador"}
-          </Modal.Title>
+          <Modal.Title>{isEditing ? "Editar Jugador" : "Nuevo Jugador"}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {showAddModal || isEditing ? (
-            <Form onSubmit={handleSubmit} encType="multipart/form-data">
-              <Form.Group className="mb-3">
-                <Form.Label>Nombre</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.nombre}
-                  onChange={(e) =>
-                    setFormData({ ...formData, nombre: e.target.value })
-                  }
-                  required
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Dorsal</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={formData.dorsal}
-                  onChange={(e) =>
-                    setFormData({ ...formData, dorsal: e.target.value })
-                  }
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Posición</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.posicion}
-                  onChange={(e) =>
-                    setFormData({ ...formData, posicion: e.target.value })
-                  }
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Edad</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={formData.edad}
-                  onChange={(e) =>
-                    setFormData({ ...formData, edad: e.target.value })
-                  }
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Imagen</Form.Label>
-                <Form.Control
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    setFormData({ ...formData, imagen: e.target.files[0] })
-                  }
-                />
-              </Form.Group>
-              <div className="d-flex justify-content-end">
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowAddModal(false)}
-                  className="me-2"
-                >
-                  Cancelar
-                </Button>
-                <Button variant="primary" type="submit">
-                  Guardar
-                </Button>
-              </div>
-            </Form>
-          ) : (
-            jugadorSeleccionado && (
-              <>
-                <p>
-                  <strong>Nombre:</strong> {jugadorSeleccionado.nombre}
-                </p>
-                <p>
-                  <strong>Dorsal:</strong> {jugadorSeleccionado.dorsal || "N/A"}
-                </p>
-                <p>
-                  <strong>Posición:</strong>{" "}
-                  {jugadorSeleccionado.posicion || "N/A"}
-                </p>
-                <p>
-                  <strong>Edad:</strong> {jugadorSeleccionado.edad || "N/A"}
-                </p>
-                {jugadorSeleccionado.imagen && (
-                  <img
-                    src={jugadorSeleccionado.imagen}
-                    alt="Imagen del jugador"
-                    style={{ width: "100%", borderRadius: "8px" }}
-                  />
-                )}
-                <div className="d-flex justify-content-end mt-3">
-                  <Button
-                    variant="primary"
-                    onClick={() => {
-                      setIsEditing(true);
-                      setShowDetailModal(false);
-                      setShowAddModal(true);
-                      setFormData({
-                        nombre: jugadorSeleccionado.nombre,
-                        dorsal: jugadorSeleccionado.dorsal,
-                        posicion: jugadorSeleccionado.posicion,
-                        edad: jugadorSeleccionado.edad,
-                        imagen: null,
-                      });
-                    }}
-                  >
-                    Editar
-                  </Button>
-                </div>
-              </>
-            )
-          )}
+          <Form onSubmit={handleSubmit} encType="multipart/form-data">
+            <Form.Group className="mb-3">
+              <Form.Label>Nombre</Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.nombre}
+                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Dorsal</Form.Label>
+              <Form.Control
+                type="number"
+                value={formData.dorsal}
+                onChange={(e) => setFormData({ ...formData, dorsal: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Posición</Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.posicion}
+                onChange={(e) => setFormData({ ...formData, posicion: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Edad</Form.Label>
+              <Form.Control
+                type="number"
+                value={formData.edad}
+                onChange={(e) => setFormData({ ...formData, edad: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Imagen</Form.Label>
+              <Form.Control
+                type="file"
+                accept="image/*"
+                onChange={(e) => setFormData({ ...formData, imagen: e.target.files[0] })}
+              />
+            </Form.Group>
+            <div className="d-flex justify-content-end">
+              <Button variant="secondary" onClick={() => setShowAddModal(false)} className="me-2">
+                Cancelar
+              </Button>
+              <Button variant="primary" type="submit">
+                Guardar
+              </Button>
+            </div>
+          </Form>
         </Modal.Body>
       </Modal>
+
       <Outlet />
     </>
   );
