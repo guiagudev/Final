@@ -10,8 +10,6 @@ export default function JugadorForm({
   onSuccess,
 }) {
   const [nombre, setNombre] = useState("");
-  const [p_apellido, setP_apellido] = useState("");
-  const [s_apellido, setS_apellido] = useState("");
   const [equipo, setEquipo] = useState("M");
   const [categoria, setCategoria] = useState("PREBEN");
   const [subcategoria, setSubcategoria] = useState("A");
@@ -50,8 +48,6 @@ export default function JugadorForm({
 
     if (mode === "editar" && initialData) {
       setNombre(initialData.nombre || "");
-      setP_apellido(initialData.p_apellido || "");
-      setS_apellido(initialData.s_apellido || "");
       setEquipo(initialData.equipo || "M");
       setCategoria(initialData.categoria || "PREBEN");
       setSubcategoria(initialData.subcategoria || "A");
@@ -62,8 +58,6 @@ export default function JugadorForm({
       setImagen(null);
     } else {
       setNombre("");
-      setP_apellido("");
-      setS_apellido("");
       setEquipo(equiposDisponibles[0] || "M");
       setCategoria(categoriasDisponibles[0] || "PREBEN");
       setSubcategoria(subcategoriasDisponibles[0] || "A");
@@ -81,8 +75,6 @@ export default function JugadorForm({
 
     const formData = new FormData();
     formData.append("nombre", nombre);
-    formData.append("p_apellido", p_apellido);
-    formData.append("s_apellido", s_apellido);
     formData.append("equipo", equipo);
     formData.append("categoria", categoria);
     formData.append("subcategoria", subcategoria);
@@ -132,19 +124,11 @@ export default function JugadorForm({
             <Form.Control value={nombre} onChange={(e) => setNombre(e.target.value)} required />
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label>Primer Apellido</Form.Label>
-            <Form.Control value={p_apellido} onChange={(e) => setP_apellido(e.target.value)} required />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Segundo Apellido</Form.Label>
-            <Form.Control value={s_apellido} onChange={(e) => setS_apellido(e.target.value)} />
-          </Form.Group>
-          <Form.Group className="mb-3">
             <Form.Label>Posición</Form.Label>
             <Form.Control value={posicion} onChange={(e) => setPosicion(e.target.value)} />
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label>Edad</Form.Label>
+            <Form.Label>Año</Form.Label>
             <Form.Control type="number" value={edad} onChange={(e) => setEdad(e.target.value)} />
           </Form.Group>
           <Form.Group className="mb-3">

@@ -41,7 +41,7 @@ class Jugador(models.Model):
         ('F', 'Femenino'),
     ]
     nombre = models.CharField(max_length=100)
-    p_apellido = models.CharField(max_length=100, null=True)
+    p_apellido = models.CharField(max_length=100, null=True, blank=True)
     s_apellido = models.CharField(max_length=100, blank = True)   
     categoria = models.CharField(max_length=20, choices = OPCIONES_CATEGORIA, default='CAD')
     subcategoria = models.CharField(max_length=6, choices =OPCIONES_SUBCATEGORIA, default='A')
@@ -69,8 +69,8 @@ class ComentarioJugador(models.Model):
     titulo = models.CharField(max_length=100)
     contenido = models.TextField()
     contenido = models.TextField()
-    fecha_emision = models.DateField(default=now)
-    fecha_creacion = models.DateField(default=now)
+    fecha_emision = models.DateTimeField(default=now)
+    fecha_creacion = models.DateTimeField(default=now)
     def __str__(self):
         return f"{self.titulo} ({self.jugador.nombre})"
 class Contrato(models.Model):

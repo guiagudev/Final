@@ -105,8 +105,8 @@ export default function Jugadores() {
 
       <h2>Listado de Jugadores</h2>
 
-      <Form className="mb-4">
-        <Row className="align-items-end">
+      <Form className="mb-4 d-flex justify-content-center">
+        <Row className="align-items-end w-95 mx-auto" style={{ width: "95%" }}>
           <Col md={3}>
             <Form.Label>Nombre</Form.Label>
             <Form.Control
@@ -117,7 +117,7 @@ export default function Jugadores() {
             />
           </Col>
           <Col md={2}>
-            <Form.Label>Edad mínima</Form.Label>
+            <Form.Label>Edad mínima(año de nacimiento)</Form.Label>
             <Form.Control
               type="number"
               name="edad_min"
@@ -135,7 +135,7 @@ export default function Jugadores() {
             />
           </Col>
           <Col md={2}>
-            <Form.Label>Edad máxima</Form.Label>
+            <Form.Label>Edad máxima(año de nacimiento)</Form.Label>
             <Form.Control
               type="number"
               name="edad_max"
@@ -150,16 +150,13 @@ export default function Jugadores() {
         Añadir Jugador
       </Button>
 
-      <Table striped bordered hover responsive>
+      <Table striped bordered hover responsive className="text-center" style={{ width: "98%", margin: "40px auto 0 auto", background: "white" }}>
         <thead>
           <tr>
-            <th>Nombre</th>
-            <th>Posición</th>
-            <th>Edad</th>
-            <th>Equipo</th>
-            <th>Categoría</th>
-            
-            <th>Acciones</th>
+            <th style={{ width: "30%" }}>Nombre</th>
+            <th style={{ width: "25%" }}>Posición</th>
+            <th style={{ width: "15%" }}>Año</th>
+            <th style={{ width: "20%" }}>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -170,20 +167,21 @@ export default function Jugadores() {
               </td>
               <td>{jugador.posicion}</td>
               <td>{jugador.edad}</td>
-              <td>{jugador.equipo}</td>
-              <td>{jugador.categoria}</td>
+              
              
               <td>
                 <Button
                   size="sm"
+                  style={{ padding: "0.15rem 0.4rem", fontSize: "0.8rem" }}
                   onClick={() => handleEdit(jugador)}
-                  className="me-2"
+                  className="me-1"
                 >
                   Editar
                 </Button>
                 <Button
                   size="sm"
                   variant="danger"
+                  style={{ padding: "0.15rem 0.4rem", fontSize: "0.8rem" }}
                   onClick={() => handleDelete(jugador.id)}
                 >
                   Eliminar

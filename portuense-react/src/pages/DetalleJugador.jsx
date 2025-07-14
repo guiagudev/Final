@@ -46,9 +46,7 @@ export default function DetalleJugador() {
   if (loading) return <p className="p-4">Cargando datos del jugador...</p>;
   if (!jugador) return <p className="p-4">Jugador no encontrado</p>;
 
-  const nombreCompleto = `${jugador.nombre} ${jugador.p_apellido || ""} ${
-    jugador.s_apellido || ""
-  }`;
+  const nombreCompleto = `${jugador.nombre}`;
   
 
   const eliminarComentario = async (comentarioId) => {
@@ -133,7 +131,7 @@ export default function DetalleJugador() {
               <strong>Posición:</strong> {jugador.posicion}
             </p>
             <p>
-              <strong>Edad:</strong> {jugador.edad} años
+              <strong>Año de nacimiento:</strong> {jugador.edad} 
             </p>
 
           

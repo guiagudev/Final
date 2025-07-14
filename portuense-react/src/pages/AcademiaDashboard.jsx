@@ -71,7 +71,7 @@ export default function AcademiaDashboard() {
   }, [categoria]);
 
   useEffect(() => {
-    const subcats = ["A", "B", "C"];
+    const subcats = categoria === "SEN" ? ["B"] : ["A", "B", "C"];
     setSubcategoriasDisponibles(subcats);
     if (!subcats.includes(subcategoria)) {
       setSubcategoria(subcats[0]);
@@ -134,7 +134,7 @@ export default function AcademiaDashboard() {
             >
               {subcategoriasDisponibles.map((s) => (
                 <option key={s} value={s}>
-                  Subcategoría {s}
+                  {s}
                 </option>
               ))}
             </Form.Select>
