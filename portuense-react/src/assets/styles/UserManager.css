@@ -16,3 +16,13 @@
 .dark-table .form-check-label {
   color: white;
 }
+
+.dark-accordion-btn, .accordion-button.dark-accordion-btn {
+  background-color: #232323 !important;
+  color: white !important;
+  border: none;
+}
+.accordion-button.dark-accordion-btn:not(.collapsed) {
+  background-color: #181818 !important;
+  color: #8b0000 !important;
+}

@@ -15,6 +15,7 @@
     "bootstrap": "^5.3.5",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "lucide-react": "^0.525.0",
     "portuense-mgr": "file:",
     "react": "^19.0.0",
     "react-big-calendar": "^1.18.0",

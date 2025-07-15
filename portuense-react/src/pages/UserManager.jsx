@@ -11,6 +11,7 @@ import "../assets/styles/UserManager.css";
 
 
 const vistasDisponibles = ["direccion-deportiva","calendario"];
+const vistaCondicional = "DD-comentarios";
 
 export default function UserManager({ show, onClose }) {
   const { user } = useAuth();
@@ -70,7 +71,7 @@ export default function UserManager({ show, onClose }) {
           },
           body: JSON.stringify({
             username: user.username,
-            grupo: user.groups,
+            groups: user.grupo ? [user.grupo] : [], // Enviar como array
             permisos: user.permisos,
             vistas: user.vistas,
             password: user.password || undefined,
@@ -163,6 +164,7 @@ export default function UserManager({ show, onClose }) {
                         value={user.grupo || ""}
                         onChange={(e) => {
                           user.groups = e.target.value;
+                          user.grupo = e.target.value; // Sincroniza el valor mostrado
                           setUsuarios([...usuarios]);
                         }}
                       >
@@ -194,6 +196,17 @@ export default function UserManager({ show, onClose }) {
                           className="small"
                         />
                       ))}
+                      {/* Checkbox condicional: solo si 'direccion-deportiva' está marcada */}
+                      {user.vistas?.includes("direccion-deportiva") && (
+                        <Form.Check
+                          key={vistaCondicional}
+                          type="checkbox"
+                          label={vistaCondicional.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                          checked={user.vistas?.includes(vistaCondicional) || false}
+                          onChange={() => toggleVista(user, vistaCondicional)}
+                          className="small"
+                        />
+                      )}
                     </td>
                     <td>
                       <Form.Control

@@ -53,9 +53,11 @@ export default function PrimerEquipoDashboard() {
     <>
       <AppHeader />
       <Container className="mt-4">
-        <h2 className="mb-4">Gestión del Primer Equipo</h2>
+        <h2 className="mb-4 text-center" style={{ fontSize: '2.5rem', fontWeight: 'bold', letterSpacing: '1px', color: '#ff3333' }}>
+          Gestión del Primer Equipo
+        </h2>
         <BackButton to="/dashboard" label="←" />
-        <Row>
+        <Row className="mt-4 align-items-stretch justify-content-center" style={{ minHeight: '400px' }}>
           {panelData
             .filter((panel) =>
               user.permisos?.some(
@@ -64,54 +66,21 @@ export default function PrimerEquipoDashboard() {
                   permiso.equipo === panel.equipo
               )
             )
-            .map((panel, index) => {
-              const panelKey = `${panel.categoria}-${panel.equipo}`;
-              const subcats = user.permisos
-                .filter(
-                  (p) =>
-                    p.categoria === panel.categoria &&
-                    p.equipo === panel.equipo
-                )
-                .map((p) => p.subcategoria);
-
-              const subcatsUnicas = [...new Set(subcats)];
-              const subcatActual =
-                subcatsPorPanel[panelKey] || subcatsUnicas[0] || 'A';
-
-              const handleChange = (e) => {
-                const nueva = e.target.value;
-                setSubcatsPorPanel((prev) => ({
-                  ...prev,
-                  [panelKey]: nueva,
-                }));
-              };
-
+            .map((panel, index, arr) => {
+              const isSingle = arr.length === 1;
+              const colSize = isSingle ? 8 : Math.floor(12 / arr.length);
               return (
-                <Col md={6} lg={4} className="mb-4" key={index}>
+                <Col key={index} xs={12} md={colSize} className={`mb-4 d-flex align-items-stretch justify-content-center ${isSingle ? 'mx-auto' : ''}`} style={isSingle ? { minHeight: '500px' } : {}}>
                   <Panel
-                    title={panel.title}
-                    text={
-                      <>
-                        {panel.text}
-                        <Form.Select
-                          size="sm"
-                          value={subcatActual}
-                          onChange={handleChange}
-                          className="mt-3"
-                        >
-                          {subcatsUnicas.map((s) => (
-                            <option key={s} value={s}>
-                              Subcategoría {s}
-                            </option>
-                          ))}
-                        </Form.Select>
-                      </>
-                    }
+                    title={<span style={{ fontSize: isSingle ? '2.8rem' : '2rem', fontWeight: 'bold', width: '100%', display: 'block', textAlign: 'center' }}>{panel.title}</span>}
+                    text={<span style={{ fontSize: isSingle ? '1.7rem' : '1.25rem', display: 'block', textAlign: 'center', marginBottom: isSingle ? '6rem' : '2rem', marginTop: isSingle ? '6rem' : 0, width: '100%' }}>{panel.text}</span>}
                     query={{
                       categoria: panel.categoria,
                       equipo: panel.equipo,
-                      subcategoria: subcatActual,
+                      subcategoria: 'A',
                     }}
+                    cardClassName={`h-100 flex-fill d-flex ${isSingle ? 'justify-content-center align-items-center' : ''}`}
+                    bodyClassName={`d-flex flex-column justify-content-center align-items-center text-center w-100 gap-5`}
                   />
                 </Col>
               );

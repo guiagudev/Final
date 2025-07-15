@@ -28,63 +28,60 @@ export default function Dashboard() {
   const tienePermisoSen = permisos.some((p) => p.categoria === "SEN" && p.subcategoria === "A");
   const tienePermisoAcademia = permisos.some((p) => p.categoria !== "SEN" || (p.categoria === "SEN" && p.subcategoria !== "A"));
 
+  // Calcula los paneles visibles
+  const paneles = [];
+  if (tienePermisoSen) {
+    paneles.push({
+      key: 'primer-equipo',
+      title: 'Primer Equipo',
+      text: 'Gestiona los datos del Primer Equipo',
+      button: (
+        <Button variant="primary" onClick={() => navigate("/primer-equipo")}>Ir a Primer Equipo</Button>
+      ),
+    });
+  }
+  if (tienePermisoAcademia) {
+    paneles.push({
+      key: 'academia',
+      title: 'Academia',
+      text: 'Accede a la gestión de la cantera',
+      button: (
+        <Button variant="primary" onClick={() => navigate("/academia")}>Ir a Academia</Button>
+      ),
+    });
+  }
+  if (vistas.includes("calendario")) {
+    paneles.push({
+      key: 'calendario',
+      title: 'Calendario',
+      text: 'Gestiona partidos y entrenamientos',
+      button: (
+        <Button variant="success" onClick={() => navigate("/calendario")}>Ir al Calendario</Button>
+      ),
+    });
+  }
+  const colSize = paneles.length > 0 ? Math.floor(12 / paneles.length) : 12;
+
   return (
     <>
       <AppHeader />
       <Container className="mt-4">
-        <h2 className="mb-4">Panel de gestión</h2>
+        <h2 className="mb-4 text-center" style={{ fontSize: '2.5rem', fontWeight: 'bold', letterSpacing: '1px', color: '#ff3333' }}>
+          Panel de gestión
+        </h2>
 
-        <Row className="mt-4">
-          {tienePermisoSen && (
-            <Col md={6} lg={4} className="mb-4">
-              <Card className="h-100">
-                <Card.Body>
-                  <Card.Title>Primer Equipo</Card.Title>
-                  <Card.Text>Gestiona los datos del Primer Equipo</Card.Text>
-                  <Button
-                    variant="primary"
-                    onClick={() => navigate("/primer-equipo")}
-                  >
-                    Ir a Primer Equipo
-                  </Button>
+        <Row className="mt-4 align-items-stretch" style={{ minHeight: '400px' }}>
+          {paneles.map((panel) => (
+            <Col key={panel.key} xs={12} md={colSize} className="mb-4 d-flex align-items-stretch">
+              <Card className="h-100 flex-fill d-flex">
+                <Card.Body className="d-flex flex-column justify-content-center align-items-center text-center">
+                  <Card.Title style={{ fontSize: '2rem', fontWeight: 'bold' }}>{panel.title}</Card.Title>
+                  <Card.Text style={{ fontSize: '1.25rem', marginBottom: '2rem' }}>{panel.text}</Card.Text>
+                  {panel.button}
                 </Card.Body>
               </Card>
             </Col>
-          )}
-
-          {tienePermisoAcademia && (
-            <Col md={6} lg={4} className="mb-4">
-              <Card className="h-100">
-                <Card.Body>
-                  <Card.Title>Academia</Card.Title>
-                  <Card.Text>Accede a la gestión de la cantera</Card.Text>
-                  <Button
-                    variant="primary"
-                    onClick={() => navigate("/academia")}
-                  >
-                    Ir a Academia
-                  </Button>
-                </Card.Body>
-              </Card>
-            </Col>
-          )}
-
-          {vistas.includes("calendario") && (
-            <Col md={6} lg={4} className="mb-4">
-              <Card className="h-100">
-                <Card.Body>
-                  <Card.Title>Calendario</Card.Title>
-                  <Card.Text>Gestiona partidos y entrenamientos</Card.Text>
-                  <Button
-                    variant="success"
-                    onClick={() => navigate("/calendario")}
-                  >
-                    Ir al Calendario
-                  </Button>
-                </Card.Body>
-              </Card>
-            </Col>
-          )}
+          ))}
         </Row>
 
         {isInGroup("admin") && (

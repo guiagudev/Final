@@ -15,7 +15,7 @@ export default function AcademiaDireccion() {
 
   const [categoriasDisponibles, setCategoriasDisponibles] = useState([]);
   const [equiposDisponibles, setEquiposDisponibles] = useState([]);
-  const subcategoriasDisponibles = ["A", "B", "C"];
+  const [subcategoriasDisponibles, setSubcategoriasDisponibles] = useState(["A"]);
 
   useEffect(() => {
     const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
@@ -64,11 +64,21 @@ export default function AcademiaDireccion() {
     }
   }, [categoria]);
 
+  // Actualiza subcategoriasDisponibles según permisos y categoría seleccionada
   useEffect(() => {
-    if (!subcategoriasDisponibles.includes(subcategoria)) {
-      setSubcategoria("A");
+    if (!user.permisos) return;
+    const subs = [
+      ...new Set(
+        user.permisos
+          .filter((p) => p.categoria === categoria)
+          .map((p) => p.subcategoria)
+      ),
+    ];
+    setSubcategoriasDisponibles(subs.length ? subs : ["A"]);
+    if (!subs.includes(subcategoria)) {
+      setSubcategoria(subs[0] || "A");
     }
-  }, [categoria, equipo]);
+  }, [categoria, user.permisos]);
 
   const panelSeleccionado = academiaPanels.find(
     (p) =>
