@@ -9,6 +9,8 @@ import {
   Row,
   Col,
 } from "react-bootstrap";
+import { toast } from "react-toastify";
+import { Folder, FileText, Paperclip, Upload, Plus, X, Edit, Trash2 } from "lucide-react";
 
 export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
   const token = sessionStorage.getItem("accessToken");
@@ -37,7 +39,10 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
   };
 
   const crearCarpeta = () => {
-    if (!nuevaCarpeta.trim()) return;
+    if (!nuevaCarpeta.trim()) {
+      toast.error("Debes escribir un nombre para la carpeta");
+      return;
+    }
     fetch(`${import.meta.env.VITE_API_URL}/carpetas/`, {
       method: "POST",
       headers: {
@@ -99,7 +104,7 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
   return (
     <Modal show={show} onHide={onHide} size="lg" centered>
       <Modal.Header closeButton>
-        <Modal.Title>📁 Gestión de Carpetas y PDFs</Modal.Title>
+        <Modal.Title><Folder size={20} className="me-2" /> Gestión de Carpetas y PDFs</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {carpetas.length === 0 ? (
@@ -125,7 +130,7 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
                         />
                       </Form>
                     ) : (
-                      <span>📁 {carpeta.nombre}</span>
+                      <span><Folder size={16} className="me-1" /> {carpeta.nombre}</span>
                     )}
                   </Col>
                   <Col xs="auto">
@@ -135,7 +140,7 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
                         variant="secondary"
                         onClick={() => setEditando(null)}
                       >
-                        ❌ Cancelar
+                        <X size={14} className="me-1" /> Cancelar
                       </Button>
                     ) : (
                       <>
@@ -147,14 +152,14 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
                             setNuevoNombre(carpeta.nombre);
                           }}
                         >
-                          📝
+                          <Edit size={14} />
                         </Button>{" "}
                         <Button
                           size="sm"
                           variant="outline-danger"
                           onClick={() => borrarCarpeta(carpeta.id)}
                         >
-                          🗑️
+                          <Trash2 size={14} />
                         </Button>
                       </>
                     )}
@@ -167,7 +172,7 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
                     variant="link"
                     onClick={() => fetchPDFs(carpeta.id)}
                   >
-                    📄 Ver PDFs
+                    <FileText size={16} className="me-1" /> Ver PDFs
                   </Button>{" "}
                   <Button
                     size="sm"
@@ -175,7 +180,7 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
                     onClick={() => inputRefs.current[carpeta.id]?.click()}
                     disabled={subiendo}
                   >
-                    {subiendo ? <Spinner size="sm" animation="border" /> : "📤 Subir PDF"}
+                    {subiendo ? <Spinner size="sm" animation="border" /> : <><Upload size={14} className="me-1" /> Subir PDF</>}
                   </Button>
                   <input
                     type="file"
@@ -192,7 +197,7 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
                   {(pdfs[carpeta.id] || []).map((pdf) => (
                     <li key={pdf.id}>
                       <a href={pdf.archivo} target="_blank" rel="noreferrer">
-                        📎 {pdf.nombre || "Documento"}
+                        <Paperclip size={14} className="me-1" /> {pdf.nombre || "Documento"}
                       </a>
                     </li>
                   ))}
@@ -210,7 +215,7 @@ export default function ModalCarpetasPDFs({ show, onHide, jugadorId }) {
             onChange={(e) => setNuevaCarpeta(e.target.value)}
           />
           <Button variant="success" onClick={crearCarpeta} className="ms-2">
-            ➕ Crear
+            <Plus size={16} className="me-1" /> Crear
           </Button>
         </Form.Group>
       </Modal.Body>
