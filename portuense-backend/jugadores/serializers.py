@@ -183,3 +183,11 @@ class ComentarioClubRivalSerializer(serializers.ModelSerializer):
         if obj.autor:
             return {"id": obj.autor.id, "username": obj.autor.username}
         return None
+
+class ComentarioDireccionDeportivaSerializer(serializers.ModelSerializer):
+    autor_nombre = serializers.CharField(source='autor.username', read_only=True)
+    
+    class Meta:
+        model = ComentarioDireccionDeportiva
+        fields = '__all__'
+        read_only_fields = ['autor', 'fecha_creacion', 'fecha_modificacion']

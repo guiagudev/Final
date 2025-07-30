@@ -406,3 +406,52 @@ class ComentarioClubRivalViewSet(viewsets.ModelViewSet):
         comentarios = ComentarioClubRival.objects.filter(club_id=club_id).select_related("autor")
         serializer = self.get_serializer(comentarios, many=True)
         return Response(serializer.data)
+
+class ComentarioDireccionDeportivaViewSet(viewsets.ModelViewSet):
+    queryset = ComentarioDireccionDeportiva.objects.all().order_by('-fecha_modificacion')
+    serializer_class = ComentarioDireccionDeportivaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(autor=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(autor=self.request.user)
+
+    @action(detail=False, methods=['get', 'put', 'delete'], url_path='(?P<categoria>[^/.]+)/(?P<subcategoria>[^/.]+)/(?P<equipo>[^/.]+)')
+    def por_categoria_equipo(self, request, categoria=None, subcategoria=None, equipo=None):
+        try:
+            comentario = ComentarioDireccionDeportiva.objects.get(
+                categoria=categoria,
+                subcategoria=subcategoria,
+                equipo=equipo
+            )
+        except ComentarioDireccionDeportiva.DoesNotExist:
+            comentario = None
+
+        if request.method == 'GET':
+            if comentario:
+                serializer = self.get_serializer(comentario)
+                return Response(serializer.data)
+            else:
+                return Response(None)
+
+        elif request.method == 'PUT':
+            if comentario:
+                serializer = self.get_serializer(comentario, data=request.data, partial=True)
+            else:
+                serializer = self.get_serializer(data=request.data)
+            
+            if serializer.is_valid():
+                if comentario:
+                    serializer.save(autor=self.request.user)
+                else:
+                    serializer.save(autor=self.request.user)
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        elif request.method == 'DELETE':
+            if comentario:
+                comentario.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(status=status.HTTP_404_NOT_FOUND)

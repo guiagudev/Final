@@ -279,3 +279,33 @@ class ComentarioClubRival(models.Model):
     
     def __str__(self):
         return f"{self.titulo} - {self.club.nombre}"
+
+class ComentarioDireccionDeportiva(models.Model):
+    categoria = models.CharField(
+        max_length=20,
+        choices=Jugador.OPCIONES_CATEGORIA,
+        help_text="Categoría del equipo (e.g., Infantil)"
+    )
+    subcategoria = models.CharField(
+        max_length=6,
+        choices=Jugador.OPCIONES_SUBCATEGORIA,
+        default='A',
+        help_text="Subcategoría del equipo (e.g., A, B)"
+    )
+    equipo = models.CharField(
+        max_length=1,
+        choices=Jugador.OPCIONES_EQUIPO,
+        help_text="Masculino o Femenino"
+    )
+    autor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    titulo = models.CharField(max_length=100)
+    contenido = models.TextField()
+    fecha_creacion = models.DateTimeField(default=now)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('categoria', 'subcategoria', 'equipo')
+        ordering = ['-fecha_modificacion']
+    
+    def __str__(self):
+        return f"{self.titulo} - {self.categoria}-{self.subcategoria} {self.equipo}"
