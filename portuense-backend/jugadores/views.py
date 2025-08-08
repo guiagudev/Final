@@ -449,8 +449,8 @@ class InformeJugadorViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Solo mostrar informes de jugadores de primera división (SEN)
-        return InformeJugador.objects.filter(jugador__categoria='SEN')
+        # Permitir informes para todas las categorías
+        return InformeJugador.objects.all()
 
     def perform_create(self, serializer):
         # Obtener el jugador_id del request
@@ -461,14 +461,14 @@ class InformeJugadorViewSet(viewsets.ModelViewSet):
         
         if jugador_id:
             try:
-                jugador = Jugador.objects.get(id=jugador_id, categoria='SEN')
+                jugador = Jugador.objects.get(id=jugador_id)
                 serializer.save(
                     jugador=jugador,
                     creado_por=self.request.user, 
                     modificado_por=self.request.user
                 )
             except Jugador.DoesNotExist:
-                raise serializers.ValidationError("Jugador no encontrado o no es de primera división")
+                raise serializers.ValidationError("Jugador no encontrado")
         else:
             raise serializers.ValidationError("Se requiere el ID del jugador")
 
@@ -483,3 +483,32 @@ class InformeJugadorViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         except InformeJugador.DoesNotExist:
             return Response({'error': 'Informe no encontrado'}, status=404)
+
+class SubcategoriaViewSet(viewsets.ModelViewSet):
+    queryset = Subcategoria.objects.all()
+    serializer_class = SubcategoriaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Subcategoria.objects.filter(activa=True)
+        
+        # Filtrar por categoría si se proporciona
+        categoria = self.request.query_params.get('categoria')
+        if categoria:
+            queryset = queryset.filter(categoria=categoria)
+        
+        # Filtrar por equipo si se proporciona
+        equipo = self.request.query_params.get('equipo')
+        if equipo:
+            queryset = queryset.filter(equipo=equipo)
+        
+        return queryset
+
+    @action(detail=False, methods=['get'], url_path='categoria/(?P<categoria>[^/.]+)/equipo/(?P<equipo>[^/.]+)')
+    def por_categoria_equipo(self, request, categoria=None, equipo=None):
+        subcategorias = self.get_queryset().filter(
+            categoria=categoria,
+            equipo=equipo
+        )
+        serializer = self.get_serializer(subcategorias, many=True)
+        return Response(serializer.data)

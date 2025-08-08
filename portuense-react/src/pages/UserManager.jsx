@@ -9,7 +9,6 @@ import "react-toastify/dist/ReactToastify.css";
 import React from "react";
 import "../assets/styles/UserManager.css";
 
-
 const vistasDisponibles = ["direccion-deportiva","calendario"];
 const vistaCondicional = "DD-comentarios";
 
@@ -20,8 +19,25 @@ export default function UserManager({ show, onClose }) {
   const [showCrearModal, setShowCrearModal] = useState(false);
   const [showPermisosModal, setShowPermisosModal] = useState(false);
   const [usuarioActivo, setUsuarioActivo] = useState(null);
+  const [subcategorias, setSubcategorias] = useState([]);
 
   const isAdmin = user?.groups?.includes("admin");
+
+  const fetchSubcategorias = useCallback(async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/subcategorias/`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSubcategorias(data);
+      }
+    } catch (error) {
+      console.error("Error al cargar subcategorías:", error);
+    }
+  }, []);
 
   const fetchUsuarios = useCallback(async () => {
     setLoading(true);
@@ -34,15 +50,14 @@ export default function UserManager({ show, onClose }) {
       if (res.ok) {
         const data = await res.json();
         setUsuarios(
-  data.map((u) => ({
-    ...u,
-    grupo: u.groups?.[0] || "",     // extrae el primer grupo para el select
-    vistas: u.vistas || [],         // asegura que no sea undefined
-    permisos: u.permisos || [],     // asegura que no sea undefined
-    password: ""                    // permite editar desde el frontend
-  }))
-);
-
+          data.map((u) => ({
+            ...u,
+            grupo: u.groups?.[0] || "",     // extrae el primer grupo para el select
+            vistas: u.vistas || [],         // asegura que no sea undefined
+            permisos: u.permisos || [],     // asegura que no sea undefined
+            password: ""                    // permite editar desde el frontend
+          }))
+        );
       } else {
         toast.error("Error al obtener usuarios");
       }
@@ -56,8 +71,9 @@ export default function UserManager({ show, onClose }) {
   useEffect(() => {
     if (show && isAdmin) {
       fetchUsuarios();
+      fetchSubcategorias();
     }
-  }, [show, isAdmin, fetchUsuarios]);
+  }, [show, isAdmin, fetchUsuarios, fetchSubcategorias]);
 
   const handleUpdate = async (user) => {
     try {
@@ -121,6 +137,13 @@ export default function UserManager({ show, onClose }) {
 
     user.vistas = updated;
     setUsuarios([...usuarios]);
+  };
+
+  // Función para obtener subcategorías disponibles para una categoría y equipo específicos
+  const getSubcategoriasDisponibles = (categoria, equipo) => {
+    return subcategorias.filter(
+      (sub) => sub.categoria === categoria && sub.equipo === equipo && sub.activa
+    ).map(sub => sub.codigo);
   };
 
   if (!isAdmin) return null;
@@ -264,6 +287,8 @@ export default function UserManager({ show, onClose }) {
             usuarioActivo.permisos = newPermisos;
             setUsuarios([...usuarios]);
           }}
+          subcategorias={subcategorias}
+          getSubcategoriasDisponibles={getSubcategoriasDisponibles}
         />
       )}
     </Modal>

@@ -24,6 +24,7 @@ router.register(r'comentarios-rivales',ComentarioRivalViewset)
 router.register(r'comentarios-club-rival', ComentarioClubRivalViewSet)
 router.register(r'comentarios-direccion-deportiva', ComentarioDireccionDeportivaViewSet, basename='comentario-direccion-deportiva')
 router.register(r'informes-jugador', InformeJugadorViewSet, basename='informe-jugador')
+router.register(r'subcategorias', SubcategoriaViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),

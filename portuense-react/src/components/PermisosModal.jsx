@@ -13,10 +13,10 @@ const categoriasLabels = {
   SEN: "Sénior",
   RIV: "Rivales",
 };
-const subcategorias = ["A", "B", "C"];
+const subcategoriasDefault = ["A", "B", "C"];
 const equipos = ["M", "F"];
 
-export default function PermisosModal({ show, onClose, user, onPermisosUpdate }) {
+export default function PermisosModal({ show, onClose, user, onPermisosUpdate, subcategorias = [], getSubcategoriasDisponibles }) {
   const [permisosSeleccionados, setPermisosSeleccionados] = useState([]);
   // Estado para controlar qué categoría y subcategoría están abiertas
   const [categoriaActiva, setCategoriaActiva] = useState(null);
@@ -62,6 +62,15 @@ export default function PermisosModal({ show, onClose, user, onPermisosUpdate })
     onClose();
   };
 
+  // Función para obtener subcategorías disponibles para una categoría y equipo específicos
+  const getSubcategoriasForCategoriaEquipo = (categoria, equipo) => {
+    if (getSubcategoriasDisponibles && subcategorias.length > 0) {
+      const subcategoriasDisponibles = getSubcategoriasDisponibles(categoria, equipo);
+      return subcategoriasDisponibles.length > 0 ? subcategoriasDisponibles : subcategoriasDefault;
+    }
+    return subcategoriasDefault;
+  };
+
   return (
     <Modal show={show} onHide={onClose} size="lg" centered backdrop="static">
       <Modal.Header closeButton style={{ backgroundColor: '#8b0000', color: 'white' }}>
@@ -76,35 +85,40 @@ export default function PermisosModal({ show, onClose, user, onPermisosUpdate })
               </Accordion.Header>
               <Accordion.Body style={{ backgroundColor: '#181818', color: '#fff' }}>
                 <Accordion activeKey={subcategoriaActiva[cat] || null} onSelect={(sub) => setSubcategoriaActiva((prev) => ({ ...prev, [cat]: sub }))} alwaysOpen>
-                  {subcategorias.map((sub) => (
-                    <Accordion.Item eventKey={sub} key={sub}>
-                      <Accordion.Header className="dark-accordion-btn" style={{ backgroundColor: '#222', color: '#8b0000' }}>
-                        <span style={{ color: '#8b0000', fontWeight: 'normal' }}>Subcategoría {sub}</span>
-                      </Accordion.Header>
-                      <Accordion.Body style={{ backgroundColor: '#181818', color: '#fff' }}>
-                        <div className="d-flex gap-3 mt-1 mb-2">
-                          {equipos.map((eq) => {
-                            const checked = permisosSeleccionados.some(
-                              (p) =>
-                                p.categoria === cat &&
-                                p.subcategoria === sub &&
-                                p.equipo === eq
-                            );
-                            return (
-                              <Form.Check
-                                key={`${cat}-${sub}-${eq}`}
-                                type="checkbox"
-                                label={<span style={{ color: '#fff' }}>{eq === "M" ? "Masculino" : "Femenino"}</span>}
-                                checked={checked}
-                                onChange={() => togglePermiso(cat, sub, eq)}
-                                style={{ color: '#fff' }}
-                              />
-                            );
-                          })}
-                        </div>
-                      </Accordion.Body>
-                    </Accordion.Item>
-                  ))}
+                  {equipos.map((eq) => {
+                    const subcategoriasDisponibles = getSubcategoriasForCategoriaEquipo(cat, eq);
+                    return (
+                      <Accordion.Item eventKey={`${cat}-${eq}`} key={`${cat}-${eq}`}>
+                        <Accordion.Header className="dark-accordion-btn" style={{ backgroundColor: '#222', color: '#8b0000' }}>
+                          <span style={{ color: '#8b0000', fontWeight: 'normal' }}>
+                            {eq === "M" ? "Masculino" : "Femenino"}
+                          </span>
+                        </Accordion.Header>
+                        <Accordion.Body style={{ backgroundColor: '#181818', color: '#fff' }}>
+                          <div className="d-flex flex-wrap gap-3 mt-1 mb-2">
+                            {subcategoriasDisponibles.map((sub) => {
+                              const checked = permisosSeleccionados.some(
+                                (p) =>
+                                  p.categoria === cat &&
+                                  p.subcategoria === sub &&
+                                  p.equipo === eq
+                              );
+                              return (
+                                <Form.Check
+                                  key={`${cat}-${sub}-${eq}`}
+                                  type="checkbox"
+                                  label={<span style={{ color: '#fff' }}>Subcategoría {sub}</span>}
+                                  checked={checked}
+                                  onChange={() => togglePermiso(cat, sub, eq)}
+                                  style={{ color: '#fff' }}
+                                />
+                              );
+                            })}
+                          </div>
+                        </Accordion.Body>
+                      </Accordion.Item>
+                    );
+                  })}
                 </Accordion>
               </Accordion.Body>
             </Accordion.Item>

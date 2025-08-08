@@ -323,3 +323,26 @@ class InformeJugador(models.Model):
     
     def __str__(self):
         return f"Informe de {self.jugador.nombre} {self.jugador.p_apellido}"
+
+class Subcategoria(models.Model):
+    codigo = models.CharField(max_length=10, unique=True)
+    nombre = models.CharField(max_length=50)
+    categoria = models.CharField(
+        max_length=20,
+        choices=Jugador.OPCIONES_CATEGORIA,
+        help_text="Categoría a la que pertenece esta subcategoría"
+    )
+    equipo = models.CharField(
+        max_length=1,
+        choices=Jugador.OPCIONES_EQUIPO,
+        help_text="Equipo (Masculino/Femenino) al que pertenece esta subcategoría"
+    )
+    activa = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(default=now)
+    
+    class Meta:
+        unique_together = ('codigo', 'categoria', 'equipo')
+        ordering = ['categoria', 'equipo', 'codigo']
+    
+    def __str__(self):
+        return f"{self.codigo} - {self.categoria} {self.equipo}"

@@ -88,6 +88,46 @@ export default function Jugadores() {
     setSearchParams(newParams);
   };
 
+  // Función para formatear la información de categoría, subcategoría y equipo
+  const getFormattedTitle = () => {
+    const categoria = searchParams.get("categoria");
+    const subcategoria = searchParams.get("subcategoria");
+    const equipo = searchParams.get("equipo");
+    
+    if (!categoria && !subcategoria && !equipo) {
+      return "Listado de Jugadores";
+    }
+    
+    const parts = [];
+    
+    if (categoria) {
+      const categoriaNames = {
+        'PREBEN': 'Prebenjamín',
+        'BEN': 'Benjamín',
+        'ALE': 'Alevín',
+        'INF': 'Infantil',
+        'CAD': 'Cadete',
+        'JUV': 'Juvenil',
+        'SEN': 'Sénior'
+      };
+      parts.push(categoriaNames[categoria] || categoria);
+    }
+    
+    if (subcategoria) {
+      parts.push(subcategoria);
+    }
+    
+    if (equipo) {
+      const equipoNames = {
+        'M': 'Masculino',
+        'F': 'Femenino'
+      };
+      parts.push(equipoNames[equipo] || equipo);
+    }
+    
+    return `Listado de Jugadores: ${parts.join(' ')}`;
+  };
+
   return (
     <Container className="mt-4">
       <Button
@@ -98,7 +138,7 @@ export default function Jugadores() {
         ← Volver al Dashboard
       </Button>
 
-      <h2>Listado de Jugadores</h2>
+      <h2>{getFormattedTitle()}</h2>
 
       <Form className="mb-4 d-flex justify-content-center">
         <Row className="align-items-end w-95 mx-auto" style={{ width: "95%" }}>

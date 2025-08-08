@@ -38,22 +38,20 @@ export default function DetalleJugador() {
         setJugador(data);
         setLoading(false);
         
-        // Cargar informe del jugador si es de primera división
-        if (data?.categoria === 'SEN') {
-          fetch(`${import.meta.env.VITE_API_URL}/informes-jugador/jugador/${id}/`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        // Cargar informe del jugador para todas las categorías
+        fetch(`${import.meta.env.VITE_API_URL}/informes-jugador/jugador/${id}/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then((res) => {
+            if (res.ok) {
+              return res.json();
+            }
+            return null;
           })
-            .then((res) => {
-              if (res.ok) {
-                return res.json();
-              }
-              return null;
-            })
-            .then((informeData) => setInforme(informeData))
-            .catch((err) => console.error("Error al obtener informe:", err));
-        }
+          .then((informeData) => setInforme(informeData))
+          .catch((err) => console.error("Error al obtener informe:", err));
       })
       .catch(() => setLoading(false));
 
@@ -245,8 +243,8 @@ export default function DetalleJugador() {
               <strong>Año de nacimiento:</strong> {jugador.edad} 
             </p>
 
-            {/* Sección de Informe PDF para jugadores de primera división */}
-            {jugador.categoria === 'SEN' && isAdmin && (
+            {/* Sección de Informe PDF para todas las categorías */}
+            {isAdmin && (
               <div className="mt-4 p-3" style={{ backgroundColor: '#1a1a1a', borderRadius: '8px', border: '1px solid #ff1e5630' }}>
                 <h6 className="mb-3" style={{ color: '#ff1e56' }}>
                   <i className="fas fa-file-pdf me-2"></i>
