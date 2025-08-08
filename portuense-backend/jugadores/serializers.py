@@ -235,11 +235,8 @@ class TipoEntrenamientoSerializer(serializers.ModelSerializer):
 class EntrenamientoSerializer(serializers.ModelSerializer):
     categoria_nombre = serializers.CharField(source='get_categoria_display', read_only=True)
     equipo_nombre = serializers.CharField(source='get_equipo_display', read_only=True)
-    tipo_nombre = serializers.CharField(source='tipo.nombre', read_only=True)
-    tipo_color = serializers.CharField(source='tipo.color', read_only=True)
-    tipo_codigo = serializers.CharField(source='tipo.codigo', read_only=True)
     creado_por_nombre = serializers.CharField(source='creado_por.username', read_only=True)
-    
+
     class Meta:
         model = Entrenamiento
         fields = '__all__'

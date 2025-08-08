@@ -375,10 +375,9 @@ class Entrenamiento(models.Model):
         help_text="Equipo (Masculino/Femenino)"
     )
     fecha = models.DateField()
-    tipo = models.ForeignKey(
-        TipoEntrenamiento,
-        on_delete=models.CASCADE,
-        related_name='entrenamientos'
+    tipo = models.CharField(
+        max_length=100,
+        help_text="Tipo de entrenamiento (ej: Balón parado, Recuperación, Físico, Táctico)"
     )
     descripcion = models.TextField(blank=True, null=True)
     creado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='entrenamientos_creados')
@@ -389,4 +388,4 @@ class Entrenamiento(models.Model):
         unique_together = ('categoria', 'equipo', 'fecha', 'tipo')
 
     def __str__(self):
-        return f"{self.tipo.nombre} - {self.categoria} {self.equipo} - {self.fecha}"
+        return f"{self.tipo} - {self.categoria} {self.equipo} - {self.fecha}"
