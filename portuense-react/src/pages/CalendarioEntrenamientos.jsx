@@ -27,21 +27,34 @@ export default function CalendarioEntrenamientos() {
 
   // Cargar tipos de entrenamiento desde el backend
   const fetchTiposEntrenamiento = useCallback(async () => {
+    console.log('=== fetchTiposEntrenamiento iniciado ===');
     try {
+      console.log('Fetching tipos entrenamiento...');
+      const token = getToken();
+      console.log('Token:', token ? 'Existe' : 'No existe');
+      console.log('URL:', `${import.meta.env.VITE_API_URL}/tipos-entrenamiento/`);
+      
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/tipos-entrenamiento/`,
         {
           headers: {
-            Authorization: `Bearer ${getToken()}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
+      console.log('Response status:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('Tipos entrenamiento recibidos:', data);
         setTiposEntrenamiento(data);
         if (data.length > 0) {
+          console.log('Primer tipo encontrado:', data[0]);
           setFormData(prev => ({ ...prev, tipo: data[0].id }));
         }
+      } else {
+        console.error('Error response:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('Error text:', errorText);
       }
     } catch (error) {
       console.error('Error fetching tipos entrenamiento:', error);
@@ -69,6 +82,11 @@ export default function CalendarioEntrenamientos() {
   }, [categoria, equipo]);
 
   useEffect(() => {
+    console.log('CalendarioEntrenamientos mounted');
+    console.log('Categoria:', categoria);
+    console.log('Equipo:', equipo);
+    console.log('TiposEntrenamiento actual:', tiposEntrenamiento);
+    
     // Solo permitir acceso para categoría SEN
     if (categoria !== 'SEN') {
       navigate('/jugadores');
@@ -76,6 +94,7 @@ export default function CalendarioEntrenamientos() {
     }
     
     // Cargar tipos de entrenamiento y entrenamientos
+    console.log('Iniciando carga de tipos y entrenamientos...');
     fetchTiposEntrenamiento();
     fetchEntrenamientos();
   }, [categoria, navigate, fetchTiposEntrenamiento, fetchEntrenamientos]);
@@ -334,12 +353,19 @@ export default function CalendarioEntrenamientos() {
                 required
               >
                 <option value="">Selecciona un tipo</option>
-                {tiposEntrenamiento.map(tipo => (
-                  <option key={tipo.id} value={tipo.id}>{tipo.nombre}</option>
-                ))}
+                {tiposEntrenamiento.length > 0 ? (
+                  tiposEntrenamiento.map(tipo => {
+                    console.log('Renderizando tipo:', tipo);
+                    return (
+                      <option key={tipo.id} value={tipo.id}>{tipo.nombre}</option>
+                    );
+                  })
+                ) : (
+                  <option value="" disabled>Cargando tipos... ({tiposEntrenamiento.length} tipos)</option>
+                )}
               </Form.Select>
               <Form.Text className="text-muted">
-                Elige el tipo de entrenamiento a realizar
+                Elige el tipo de entrenamiento a realizar ({tiposEntrenamiento.length} tipos disponibles)
               </Form.Text>
             </Form.Group>
             
