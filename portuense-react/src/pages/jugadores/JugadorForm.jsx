@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { getToken } from "../../utils/auth";
+import { useSearchParams } from "react-router-dom";
 
 export default function JugadorForm({
   show,
@@ -9,6 +10,7 @@ export default function JugadorForm({
   initialData = {},
   onSuccess,
 }) {
+  const [searchParams] = useSearchParams();
   const [nombre, setNombre] = useState("");
   const [equipo, setEquipo] = useState("M");
   const [categoria, setCategoria] = useState("PREBEN");
@@ -24,6 +26,11 @@ export default function JugadorForm({
     const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
     setPermisos(storedUser.permisos || []);
   }, []);
+
+  // Leer parámetros de la URL
+  const urlEquipo = searchParams.get('equipo');
+  const urlCategoria = searchParams.get('categoria');
+  const urlSubcategoria = searchParams.get('subcategoria');
 
   const equiposDisponibles = useMemo(() => {
     return [...new Set(permisos.map(p => p.equipo))];
@@ -57,17 +64,18 @@ export default function JugadorForm({
       setHaPagadoCuota(initialData.ha_pagado_cuota || false);
       setImagen(null);
     } else {
+      // Modo crear - usar parámetros de URL si están disponibles
       setNombre("");
-      setEquipo(equiposDisponibles[0] || "M");
-      setCategoria(categoriasDisponibles[0] || "PREBEN");
-      setSubcategoria(subcategoriasDisponibles[0] || "A");
+      setEquipo(urlEquipo || equiposDisponibles[0] || "M");
+      setCategoria(urlCategoria || categoriasDisponibles[0] || "PREBEN");
+      setSubcategoria(urlSubcategoria || subcategoriasDisponibles[0] || "A");
       setPosicion("");
       setEdad("");
       setDescripcion("");
       setHaPagadoCuota(false);
       setImagen(null);
     }
-  }, [show]); // ← Solo se ejecuta al abrir el modal
+  }, [show, urlEquipo, urlCategoria, urlSubcategoria, equiposDisponibles, categoriasDisponibles, subcategoriasDisponibles]); // ← Se ejecuta al abrir el modal y cuando cambian los parámetros de URL
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -112,6 +120,9 @@ export default function JugadorForm({
     }
   };
 
+  // Determinar si los campos deben estar deshabilitados (modo crear con parámetros de URL)
+  const shouldDisableFields = mode === "crear" && (urlEquipo || urlCategoria || urlSubcategoria);
+
   return (
     <Modal show={show} onHide={onHide}>
       <Modal.Header closeButton>
@@ -131,47 +142,53 @@ export default function JugadorForm({
             <Form.Label>Año</Form.Label>
             <Form.Control type="number" value={edad} onChange={(e) => setEdad(e.target.value)} />
           </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Equipo</Form.Label>
-            <Form.Select
-              value={equipo}
-              onChange={(e) => setEquipo(e.target.value)}
-              disabled={equiposDisponibles.length === 1}
-              required
-            >
-              {equiposDisponibles.map(eq => (
-                <option key={eq} value={eq}>
-                  {eq === "M" ? "Masculino" : "Femenino"}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Categoría</Form.Label>
-            <Form.Select
-              value={categoria}
-              onChange={(e) => setCategoria(e.target.value)}
-              disabled={categoriasDisponibles.length === 1}
-              required
-            >
-              {categoriasDisponibles.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Subcategoría</Form.Label>
-            <Form.Select
-              value={subcategoria}
-              onChange={(e) => setSubcategoria(e.target.value)}
-              disabled={subcategoriasDisponibles.length === 1}
-              required
-            >
-              {subcategoriasDisponibles.map(sub => (
-                <option key={sub} value={sub}>{sub}</option>
-              ))}
-            </Form.Select>
-          </Form.Group>
+          
+          {/* Solo mostrar campos de equipo, categoría y subcategoría si no hay parámetros de URL */}
+          {!shouldDisableFields && (
+            <>
+              <Form.Group className="mb-3">
+                <Form.Label>Equipo</Form.Label>
+                <Form.Select
+                  value={equipo}
+                  onChange={(e) => setEquipo(e.target.value)}
+                  disabled={equiposDisponibles.length === 1}
+                  required
+                >
+                  {equiposDisponibles.map(eq => (
+                    <option key={eq} value={eq}>
+                      {eq === "M" ? "Masculino" : "Femenino"}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Categoría</Form.Label>
+                <Form.Select
+                  value={categoria}
+                  onChange={(e) => setCategoria(e.target.value)}
+                  disabled={categoriasDisponibles.length === 1}
+                  required
+                >
+                  {categoriasDisponibles.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Subcategoría</Form.Label>
+                <Form.Select
+                  value={subcategoria}
+                  onChange={(e) => setSubcategoria(e.target.value)}
+                  disabled={subcategoriasDisponibles.length === 1}
+                  required
+                >
+                  {subcategoriasDisponibles.map(sub => (
+                    <option key={sub} value={sub}>{sub}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </>
+          )}
 
           {mode === "editar" && categoria !== "SEN" && (
             <Form.Group className="mb-3">

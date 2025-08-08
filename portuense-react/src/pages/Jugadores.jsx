@@ -11,7 +11,6 @@ export default function Jugadores() {
   const [jugadores, setJugadores] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingJugador, setEditingJugador] = useState(null);
-  const [user, setUser] = useState({});
   const navigate = useNavigate();
 
   const fetchJugadores = useCallback(async () => {
@@ -42,8 +41,6 @@ export default function Jugadores() {
 
   useEffect(() => {
     fetchJugadores();
-    const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
-    setUser(storedUser);
   }, [fetchJugadores]);
 
   const handleCreate = () => {
@@ -90,8 +87,6 @@ export default function Jugadores() {
     }
     setSearchParams(newParams);
   };
-
-  
 
   return (
     <Container className="mt-4">
