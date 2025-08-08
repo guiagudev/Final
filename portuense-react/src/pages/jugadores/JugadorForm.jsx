@@ -75,7 +75,7 @@ export default function JugadorForm({
       setHaPagadoCuota(false);
       setImagen(null);
     }
-  }, [show, urlEquipo, urlCategoria, urlSubcategoria, equiposDisponibles, categoriasDisponibles, subcategoriasDisponibles]); // ← Se ejecuta al abrir el modal y cuando cambian los parámetros de URL
+  }, [show, mode, initialData, urlEquipo, urlCategoria, urlSubcategoria, equiposDisponibles, categoriasDisponibles, subcategoriasDisponibles]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

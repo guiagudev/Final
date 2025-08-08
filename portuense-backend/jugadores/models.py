@@ -346,3 +346,47 @@ class Subcategoria(models.Model):
     
     def __str__(self):
         return f"{self.codigo} - {self.categoria} {self.equipo}"
+
+
+class TipoEntrenamiento(models.Model):
+    codigo = models.CharField(max_length=20, unique=True)
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True, null=True)
+    color = models.CharField(max_length=7, default='#007bff', help_text="Color en formato hexadecimal (ej: #007bff)")
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(default=now)
+
+    class Meta:
+        ordering = ['nombre']
+
+    def __str__(self):
+        return f"{self.codigo} - {self.nombre}"
+
+
+class Entrenamiento(models.Model):
+    categoria = models.CharField(
+        max_length=20,
+        choices=Jugador.OPCIONES_CATEGORIA,
+        help_text="Categoría del equipo"
+    )
+    equipo = models.CharField(
+        max_length=1,
+        choices=Jugador.OPCIONES_EQUIPO,
+        help_text="Equipo (Masculino/Femenino)"
+    )
+    fecha = models.DateField()
+    tipo = models.ForeignKey(
+        TipoEntrenamiento,
+        on_delete=models.CASCADE,
+        related_name='entrenamientos'
+    )
+    descripcion = models.TextField(blank=True, null=True)
+    creado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='entrenamientos_creados')
+    fecha_creacion = models.DateTimeField(default=now)
+
+    class Meta:
+        ordering = ['-fecha', 'categoria', 'equipo']
+        unique_together = ('categoria', 'equipo', 'fecha', 'tipo')
+
+    def __str__(self):
+        return f"{self.tipo.nombre} - {self.categoria} {self.equipo} - {self.fecha}"

@@ -4,6 +4,7 @@ import { Table, Container, Button, Form, Row, Col } from "react-bootstrap";
 import JugadorForm from "./jugadores/JugadorForm";
 import { toast } from "react-toastify";
 import { getToken } from "../utils/auth";
+import { Calendar } from "lucide-react";
 import React from "react";
 
 export default function Jugadores() {
@@ -184,6 +185,18 @@ export default function Jugadores() {
       <Button variant="danger" className="mb-3" onClick={handleCreate}>
         Añadir Jugador
       </Button>
+
+      {/* Botón para calendario de entrenamientos solo para primer equipo */}
+      {searchParams.get("categoria") === "SEN" && (
+        <Button 
+          variant="warning" 
+          className="mb-3 ms-2"
+          onClick={() => navigate(`/calendario-entrenamientos?categoria=${searchParams.get("categoria")}&equipo=${searchParams.get("equipo")}`)}
+        >
+          <Calendar className="me-1" size={16} />
+          Calendario de Entrenamientos
+        </Button>
+      )}
 
       <Table striped bordered hover responsive className="text-center" style={{ width: "98%", margin: "40px auto 0 auto", background: "white" }}>
         <thead>

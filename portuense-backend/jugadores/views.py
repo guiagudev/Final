@@ -512,3 +512,41 @@ class SubcategoriaViewSet(viewsets.ModelViewSet):
         )
         serializer = self.get_serializer(subcategorias, many=True)
         return Response(serializer.data)
+
+
+class TipoEntrenamientoViewSet(viewsets.ModelViewSet):
+    queryset = TipoEntrenamiento.objects.filter(activo=True)
+    serializer_class = TipoEntrenamientoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return TipoEntrenamiento.objects.filter(activo=True)
+
+
+class EntrenamientoViewSet(viewsets.ModelViewSet):
+    queryset = Entrenamiento.objects.all()
+    serializer_class = EntrenamientoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Entrenamiento.objects.all()
+        
+        # Filtrar por categoría si se proporciona
+        categoria = self.request.query_params.get('categoria')
+        if categoria:
+            queryset = queryset.filter(categoria=categoria)
+        
+        # Filtrar por equipo si se proporciona
+        equipo = self.request.query_params.get('equipo')
+        if equipo:
+            queryset = queryset.filter(equipo=equipo)
+        
+        # Filtrar por fecha si se proporciona
+        fecha = self.request.query_params.get('fecha')
+        if fecha:
+            queryset = queryset.filter(fecha=fecha)
+        
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(creado_por=self.request.user)

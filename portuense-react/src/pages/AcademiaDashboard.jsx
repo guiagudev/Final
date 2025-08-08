@@ -71,7 +71,7 @@ export default function AcademiaDashboard() {
     if (!equipos.includes(equipo)) {
       setEquipo(equipos[0] || "");
     }
-  }, [categoria]);
+  }, [categoria, user.permisos]);
 
   useEffect(() => {
     const subcats = categoria === "SEN" ? ["B"] : ["A", "B", "C"];
@@ -79,7 +79,7 @@ export default function AcademiaDashboard() {
     if (!subcats.includes(subcategoria)) {
       setSubcategoria(subcats[0]);
     }
-  }, [categoria, equipo]);
+  }, [categoria, subcategoria]);
 
   const handleCuotasClick = () => {
     navigate("/cuotas");

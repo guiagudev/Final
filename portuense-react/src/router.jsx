@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Jugadores from "./pages/Jugadores";
 import PrimerEquipoDashboard from "./pages/PrimerEquipoDashboard";
 import Calendario from "./pages/Calendario";
+import CalendarioEntrenamientos from "./pages/CalendarioEntrenamientos";
 import DetalleJugador from "./pages/DetalleJugador";
 import ContratoJugador from "./pages/ContratoJugador";
 import AcademiaDashboard from "./pages/AcademiaDashboard";
@@ -33,6 +34,7 @@ export default function Router() {
         <Route path="/welcome" element={<Welcome />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/calendario" element={<Calendario />} />
+        <Route path="/calendario-entrenamientos" element={<CalendarioEntrenamientos />} />
         <Route path="/primer-equipo" element={<PrimerEquipoDashboard />} />
         {/* <Route path="/academia" element={<AcademiaDashboard />}/> */}
         <Route path="/jugadores" element={<Jugadores />} />
