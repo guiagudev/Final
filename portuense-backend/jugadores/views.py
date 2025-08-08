@@ -6,6 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.models import User, Group
 from django.shortcuts import get_object_or_404
 from datetime import date
+from rest_framework import serializers
 
 from .models import *
 from .serializers import *
@@ -427,31 +428,58 @@ class ComentarioDireccionDeportivaViewSet(viewsets.ModelViewSet):
                 equipo=equipo
             )
         except ComentarioDireccionDeportiva.DoesNotExist:
-            comentario = None
+            return Response({'error': 'Comentario no encontrado'}, status=404)
 
         if request.method == 'GET':
-            if comentario:
-                serializer = self.get_serializer(comentario)
-                return Response(serializer.data)
-            else:
-                return Response(None)
-
+            serializer = self.get_serializer(comentario)
+            return Response(serializer.data)
         elif request.method == 'PUT':
-            if comentario:
-                serializer = self.get_serializer(comentario, data=request.data, partial=True)
-            else:
-                serializer = self.get_serializer(data=request.data)
-            
+            serializer = self.get_serializer(comentario, data=request.data, partial=True)
             if serializer.is_valid():
-                if comentario:
-                    serializer.save(autor=self.request.user)
-                else:
-                    serializer.save(autor=self.request.user)
+                serializer.save(autor=request.user)
                 return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(serializer.errors, status=400)
         elif request.method == 'DELETE':
-            if comentario:
-                comentario.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            comentario.delete()
+            return Response(status=204)
+
+class InformeJugadorViewSet(viewsets.ModelViewSet):
+    queryset = InformeJugador.objects.all()
+    serializer_class = InformeJugadorSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Solo mostrar informes de jugadores de primera división (SEN)
+        return InformeJugador.objects.filter(jugador__categoria='SEN')
+
+    def perform_create(self, serializer):
+        # Obtener el jugador_id del request
+        jugador_id = self.request.data.get('jugador')
+        if not jugador_id:
+            # Si no se proporciona jugador_id, intentar obtenerlo de la URL
+            jugador_id = self.request.query_params.get('jugador_id')
+        
+        if jugador_id:
+            try:
+                jugador = Jugador.objects.get(id=jugador_id, categoria='SEN')
+                serializer.save(
+                    jugador=jugador,
+                    creado_por=self.request.user, 
+                    modificado_por=self.request.user
+                )
+            except Jugador.DoesNotExist:
+                raise serializers.ValidationError("Jugador no encontrado o no es de primera división")
+        else:
+            raise serializers.ValidationError("Se requiere el ID del jugador")
+
+    def perform_update(self, serializer):
+        serializer.save(modificado_por=self.request.user)
+
+    @action(detail=False, methods=['get'], url_path='jugador/(?P<jugador_id>[^/.]+)')
+    def por_jugador(self, request, jugador_id=None):
+        try:
+            informe = InformeJugador.objects.get(jugador_id=jugador_id)
+            serializer = self.get_serializer(informe)
+            return Response(serializer.data)
+        except InformeJugador.DoesNotExist:
+            return Response({'error': 'Informe no encontrado'}, status=404)

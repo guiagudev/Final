@@ -191,3 +191,30 @@ class ComentarioDireccionDeportivaSerializer(serializers.ModelSerializer):
         model = ComentarioDireccionDeportiva
         fields = '__all__'
         read_only_fields = ['autor', 'fecha_creacion', 'fecha_modificacion']
+
+class InformeJugadorSerializer(serializers.ModelSerializer):
+    jugador_nombre = serializers.CharField(source='jugador.nombre', read_only=True)
+    jugador_apellido = serializers.CharField(source='jugador.p_apellido', read_only=True)
+    creado_por_nombre = serializers.CharField(source='creado_por.username', read_only=True)
+    modificado_por_nombre = serializers.CharField(source='modificado_por.username', read_only=True)
+    
+    class Meta:
+        model = InformeJugador
+        fields = '__all__'
+        read_only_fields = ['fecha_creacion', 'fecha_modificacion', 'creado_por', 'modificado_por']
+
+    def create(self, validated_data):
+        # Asegurar que el jugador existe y es de primera división
+        jugador = validated_data.get('jugador')
+        if not jugador or jugador.categoria != 'SEN':
+            raise serializers.ValidationError("Solo se pueden crear informes para jugadores de primera división")
+        
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        # Asegurar que el jugador es de primera división
+        jugador = validated_data.get('jugador', instance.jugador)
+        if jugador.categoria != 'SEN':
+            raise serializers.ValidationError("Solo se pueden actualizar informes para jugadores de primera división")
+        
+        return super().update(instance, validated_data)

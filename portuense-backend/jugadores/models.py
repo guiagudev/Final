@@ -309,3 +309,17 @@ class ComentarioDireccionDeportiva(models.Model):
     
     def __str__(self):
         return f"{self.titulo} - {self.categoria}-{self.subcategoria} {self.equipo}"
+
+class InformeJugador(models.Model):
+    jugador = models.OneToOneField(Jugador, on_delete=models.CASCADE, related_name='informe')
+    archivo_pdf = models.FileField(upload_to='informes_jugadores/', blank=True, null=True)
+    fecha_creacion = models.DateTimeField(default=now)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+    creado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='informes_creados')
+    modificado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='informes_modificados')
+    
+    class Meta:
+        ordering = ['-fecha_modificacion']
+    
+    def __str__(self):
+        return f"Informe de {self.jugador.nombre} {self.jugador.p_apellido}"
