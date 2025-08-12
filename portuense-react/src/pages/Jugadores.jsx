@@ -16,6 +16,26 @@ export default function Jugadores() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  // Verificar que haya parámetros de categoría
+  useEffect(() => {
+    const categoria = searchParams.get("categoria");
+    const subcategoria = searchParams.get("subcategoria");
+    const equipo = searchParams.get("equipo");
+    
+    console.log("🔒 VERIFICACIÓN: Parámetros recibidos:", { categoria, subcategoria, equipo });
+    
+    // Si no hay categoría, redirigir a 404 y cerrar sesión
+    if (!categoria) {
+      console.log("🚨 ACCESO DENEGADO: No hay categoría, redirigiendo a 404");
+      localStorage.removeItem("token"); // Cerrar sesión
+      sessionStorage.clear(); // Limpiar permisos
+      navigate("/404", { replace: true });
+      return;
+    }
+    
+    console.log("✅ ACCESO PERMITIDO: Categoría presente");
+  }, [searchParams, navigate]);
+
   const fetchJugadores = useCallback(async () => {
     try {
       setLoading(true);

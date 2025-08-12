@@ -27,6 +27,8 @@ import ClubDetalle from "./pages/Rivales/ClubDetalle";
 import ExcelPorCategoria from "./pages/DireccionDeportiva/ExcelPorCategoria";
 import JugadorDocumentos from "./pages/DireccionDeportiva/JugadorDocumentos";
 import InformeJornada from './pages/InformeJornada';
+import NotFound from './pages/NotFound';
+
 export default function Router() {
   return (
     <BrowserRouter>
@@ -105,6 +107,10 @@ export default function Router() {
         />
         <Route path="/rivales/:genero" element={<RivalesPorGenero />} />
         <Route path="/informe-jornada" element={<InformeJornada />} />
+        
+        {/* Ruta 404 - debe ir al final */}
+        <Route path="/404" element={<NotFound />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

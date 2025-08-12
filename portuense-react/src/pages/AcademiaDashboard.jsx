@@ -71,6 +71,7 @@ export default function AcademiaDashboard() {
     if (!equipos.includes(equipo)) {
       setEquipo(equipos[0] || "");
     }
+    
   }, [categoria, user.permisos]);
 
   useEffect(() => {
