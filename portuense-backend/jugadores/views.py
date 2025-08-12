@@ -431,8 +431,8 @@ class ComentarioDireccionDeportivaViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Comentario no encontrado'}, status=404)
 
         if request.method == 'GET':
-            serializer = self.get_serializer(comentario)
-            return Response(serializer.data)
+                serializer = self.get_serializer(comentario)
+                return Response(serializer.data)
         elif request.method == 'PUT':
             serializer = self.get_serializer(comentario, data=request.data, partial=True)
             if serializer.is_valid():
@@ -443,46 +443,32 @@ class ComentarioDireccionDeportivaViewSet(viewsets.ModelViewSet):
             comentario.delete()
             return Response(status=204)
 
-class InformeJugadorViewSet(viewsets.ModelViewSet):
-    queryset = InformeJugador.objects.all()
-    serializer_class = InformeJugadorSerializer
+class InformeJornadaViewSet(viewsets.ModelViewSet):
+    serializer_class = InformeJornadaSerializer
     permission_classes = [IsAuthenticated]
-
+    
     def get_queryset(self):
-        # Permitir informes para todas las categorías
-        return InformeJugador.objects.all()
+        queryset = InformeJornada.objects.all()
+        
+        # Filtrar por categoría, subcategoría y equipo si se proporcionan
+        categoria = self.request.query_params.get('categoria', None)
+        subcategoria = self.request.query_params.get('subcategoria', None)
+        equipo = self.request.query_params.get('equipo', None)
+        
+        if categoria:
+            queryset = queryset.filter(categoria=categoria)
+        if subcategoria:
+            queryset = queryset.filter(subcategoria=subcategoria)
+        if equipo:
+            queryset = queryset.filter(equipo=equipo)
+            
+        return queryset
 
     def perform_create(self, serializer):
-        # Obtener el jugador_id del request
-        jugador_id = self.request.data.get('jugador')
-        if not jugador_id:
-            # Si no se proporciona jugador_id, intentar obtenerlo de la URL
-            jugador_id = self.request.query_params.get('jugador_id')
-        
-        if jugador_id:
-            try:
-                jugador = Jugador.objects.get(id=jugador_id)
-                serializer.save(
-                    jugador=jugador,
-                    creado_por=self.request.user, 
-                    modificado_por=self.request.user
-                )
-            except Jugador.DoesNotExist:
-                raise serializers.ValidationError("Jugador no encontrado")
-        else:
-            raise serializers.ValidationError("Se requiere el ID del jugador")
+        serializer.save(creado_por=self.request.user)
 
     def perform_update(self, serializer):
-        serializer.save(modificado_por=self.request.user)
-
-    @action(detail=False, methods=['get'], url_path='jugador/(?P<jugador_id>[^/.]+)')
-    def por_jugador(self, request, jugador_id=None):
-        try:
-            informe = InformeJugador.objects.get(jugador_id=jugador_id)
-            serializer = self.get_serializer(informe)
-            return Response(serializer.data)
-        except InformeJugador.DoesNotExist:
-            return Response({'error': 'Informe no encontrado'}, status=404)
+        serializer.save(creado_por=self.request.user)
 
 class SubcategoriaViewSet(viewsets.ModelViewSet):
     queryset = Subcategoria.objects.all()

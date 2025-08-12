@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
-import { Table, Container, Button, Form, Row, Col } from "react-bootstrap";
+import { Table, Container, Button, Form, Row, Col, Alert } from "react-bootstrap";
 import JugadorForm from "./jugadores/JugadorForm";
 import { toast } from "react-toastify";
 import { getToken } from "../utils/auth";
-import { Calendar } from "lucide-react";
+import { Calendar, FileText } from "lucide-react";
 import React from "react";
 
 export default function Jugadores() {
@@ -12,17 +12,24 @@ export default function Jugadores() {
   const [jugadores, setJugadores] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingJugador, setEditingJugador] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const fetchJugadores = useCallback(async () => {
     try {
+      setLoading(true);
+      setError(null);
+      
       const queryString = searchParams.toString();
       const categoria = searchParams.get("categoria");
       const subcategoria = searchParams.get("subcategoria");
       const equipo = searchParams.get("equipo");
-      console.log(
-      `🔎 Fetching jugadores de: ${categoria || "todas las categorías"} | ${subcategoria || "todas las subcategorías"} | ${equipo || "todos los equipos"}`
-    );
+      
+      console.log("🔍 URL de búsqueda:", queryString);
+      console.log("🔍 Parámetros:", { categoria, subcategoria, equipo });
+      console.log("🔍 API URL:", `${import.meta.env.VITE_API_URL}/jugadores/?${queryString}`);
+      
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/jugadores/?${queryString}`,
         {
@@ -31,18 +38,31 @@ export default function Jugadores() {
           },
         }
       );
-      if (!response.ok) throw new Error("Error al obtener jugadores");
+      
+      console.log("🔍 Response status:", response.status);
+      console.log("🔍 Response ok:", response.ok);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("🔍 Error response:", errorText);
+        throw new Error(`Error al obtener jugadores: ${response.status} ${errorText}`);
+      }
+      
       const data = await response.json();
+      console.log("🔍 Jugadores recibidos:", data);
       setJugadores(data);
     } catch (error) {
-      console.error("Error fetching jugadores:", error);
+      console.error("❌ Error fetching jugadores:", error);
+      setError(error.message);
       toast.error("Error al cargar jugadores.");
+    } finally {
+      setLoading(false);
     }
-  }, [searchParams]);
+  }, []);
 
   useEffect(() => {
     fetchJugadores();
-  }, [fetchJugadores]);
+  }, [searchParams.toString()]);
 
   const handleCreate = () => {
     setEditingJugador(null);
@@ -141,6 +161,21 @@ export default function Jugadores() {
 
       <h2>{getFormattedTitle()}</h2>
 
+      {loading && (
+        <div className="text-center my-4">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <p className="mt-2">Cargando jugadores...</p>
+        </div>
+      )}
+
+      {error && (
+        <Alert variant="danger" className="mb-3">
+          <strong>Error al cargar jugadores:</strong> {error}
+        </Alert>
+      )}
+
       <Form className="mb-4 d-flex justify-content-center">
         <Row className="align-items-end w-95 mx-auto" style={{ width: "95%" }}>
           <Col md={3}>
@@ -198,7 +233,18 @@ export default function Jugadores() {
         </Button>
       )}
 
-      <Table striped bordered hover responsive className="text-center" style={{ width: "98%", margin: "40px auto 0 auto", background: "white" }}>
+      {/* Botón para Informe de Jornada */}
+      <Button 
+        variant="info" 
+        className="mb-3 ms-2"
+        onClick={() => navigate(`/informe-jornada?categoria=${searchParams.get("categoria")}&subcategoria=${searchParams.get("subcategoria")}&equipo=${searchParams.get("equipo")}`)}
+      >
+        <FileText className="me-1" size={16} />
+        Informe de Jornada
+      </Button>
+
+      {!loading && (
+        <Table striped bordered hover responsive className="text-center" style={{ width: "98%", margin: "40px auto 0 auto", background: "white" }}>
         <thead>
           <tr>
             <th style={{ width: "30%" }}>Nombre</th>
@@ -239,6 +285,7 @@ export default function Jugadores() {
           ))}
         </tbody>
       </Table>
+      )}
 
       <JugadorForm
         show={showForm}

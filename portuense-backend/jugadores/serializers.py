@@ -192,27 +192,23 @@ class ComentarioDireccionDeportivaSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['autor', 'fecha_creacion', 'fecha_modificacion']
 
-class InformeJugadorSerializer(serializers.ModelSerializer):
-    jugador_nombre = serializers.CharField(source='jugador.nombre', read_only=True)
-    jugador_apellido = serializers.CharField(source='jugador.p_apellido', read_only=True)
+class InformeJornadaSerializer(serializers.ModelSerializer):
+    categoria_nombre = serializers.CharField(source='get_categoria_display', read_only=True)
+    subcategoria_nombre = serializers.CharField(source='get_subcategoria_display', read_only=True)
+    equipo_nombre = serializers.CharField(source='get_equipo_display', read_only=True)
     creado_por_nombre = serializers.CharField(source='creado_por.username', read_only=True)
-    modificado_por_nombre = serializers.CharField(source='modificado_por.username', read_only=True)
-    
+
     class Meta:
-        model = InformeJugador
+        model = InformeJornada
         fields = '__all__'
-        read_only_fields = ['fecha_creacion', 'fecha_modificacion', 'creado_por', 'modificado_por']
+        read_only_fields = ['fecha_creacion', 'fecha_actualizacion', 'creado_por']
 
     def create(self, validated_data):
-        # Permitir informes para todas las categorías
-        jugador = validated_data.get('jugador')
-        if not jugador:
-            raise serializers.ValidationError("Se requiere un jugador válido")
-        
+        validated_data['creado_por'] = self.context['request'].user
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        # Permitir actualizaciones para todas las categorías
+        validated_data['creado_por'] = self.context['request'].user
         return super().update(instance, validated_data)
 
 class SubcategoriaSerializer(serializers.ModelSerializer):

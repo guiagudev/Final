@@ -203,7 +203,10 @@ export default function CalendarioEntrenamientos() {
     <>
       <AppHeader />
       <Container className="mt-4">
-        <BackButton to="/jugadores" label="←" />
+        <BackButton 
+          to={`/jugadores?categoria=${categoria}&subcategoria=A&equipo=${equipo}`} 
+          label="←" 
+        />
         <h2 className="mb-4 text-center">
           Calendario de Entrenamientos - {equipo === 'M' ? 'Masculino' : 'Femenino'}
         </h2>

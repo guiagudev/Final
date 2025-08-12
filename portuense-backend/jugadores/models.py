@@ -98,13 +98,10 @@ class FolderGroup(models.Model):
 class ExcelFile(models.Model):
     folder = models.ForeignKey(FolderGroup, on_delete=models.CASCADE, related_name="excels")
     file = models.FileField(upload_to="excels/")
-    name = models.CharField(max_length=255, blank=True, null=True)  # Nuevo campo opcional
+    uploaded_at = models.DateTimeField(default=now)
 
     def __str__(self):
-        return self.name if self.name else self.file.name.split("/")[-1]
-
-    def __str__(self):
-        return self.file.name
+        return f"{self.file.name} - {self.uploaded_at}"
 
     
             
@@ -310,49 +307,35 @@ class ComentarioDireccionDeportiva(models.Model):
     def __str__(self):
         return f"{self.titulo} - {self.categoria}-{self.subcategoria} {self.equipo}"
 
-class InformeJugador(models.Model):
-    jugador = models.OneToOneField(Jugador, on_delete=models.CASCADE, related_name='informe')
-    archivo_pdf = models.FileField(upload_to='informes_jugadores/', blank=True, null=True)
-    fecha_creacion = models.DateTimeField(default=now)
-    fecha_modificacion = models.DateTimeField(auto_now=True)
-    creado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='informes_creados')
-    modificado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='informes_modificados')
-    
-    class Meta:
-        ordering = ['-fecha_modificacion']
-    
-    def __str__(self):
-        return f"Informe de {self.jugador.nombre} {self.jugador.p_apellido}"
-
 class Subcategoria(models.Model):
-    codigo = models.CharField(max_length=10, unique=True)
-    nombre = models.CharField(max_length=50)
+    codigo = models.CharField(max_length=20, unique=True)
+    nombre = models.CharField(max_length=100)
     categoria = models.CharField(
         max_length=20,
         choices=Jugador.OPCIONES_CATEGORIA,
-        help_text="Categoría a la que pertenece esta subcategoría"
+        help_text="Categoría del equipo"
     )
     equipo = models.CharField(
         max_length=1,
         choices=Jugador.OPCIONES_EQUIPO,
-        help_text="Equipo (Masculino/Femenino) al que pertenece esta subcategoría"
+        help_text="Equipo (Masculino/Femenino)"
     )
     activa = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(default=now)
-    
+
     class Meta:
-        unique_together = ('codigo', 'categoria', 'equipo')
+        unique_together = ('categoria', 'equipo', 'codigo')
         ordering = ['categoria', 'equipo', 'codigo']
-    
+
     def __str__(self):
-        return f"{self.codigo} - {self.categoria} {self.equipo}"
+        return f"{self.nombre} - {self.categoria} {self.equipo}"
 
 
 class TipoEntrenamiento(models.Model):
     codigo = models.CharField(max_length=20, unique=True)
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField(blank=True, null=True)
-    color = models.CharField(max_length=7, default='#007bff', help_text="Color en formato hexadecimal (ej: #007bff)")
+    color = models.CharField(max_length=7, default='#007bff')  # Color en formato HEX
     activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(default=now)
 
@@ -360,8 +343,7 @@ class TipoEntrenamiento(models.Model):
         ordering = ['nombre']
 
     def __str__(self):
-        return f"{self.codigo} - {self.nombre}"
-
+        return self.nombre
 
 class Entrenamiento(models.Model):
     categoria = models.CharField(
@@ -389,3 +371,34 @@ class Entrenamiento(models.Model):
 
     def __str__(self):
         return f"{self.tipo} - {self.categoria} {self.equipo} - {self.fecha}"
+
+class InformeJornada(models.Model):
+    categoria = models.CharField(
+        max_length=20,
+        choices=Jugador.OPCIONES_CATEGORIA,
+        help_text="Categoría del equipo"
+    )
+    subcategoria = models.CharField(
+        max_length=6,
+        choices=Jugador.OPCIONES_SUBCATEGORIA,
+        help_text="Subcategoría del equipo"
+    )
+    equipo = models.CharField(
+        max_length=1,
+        choices=Jugador.OPCIONES_EQUIPO,
+        help_text="Equipo (Masculino/Femenino)"
+    )
+    jornada = models.IntegerField(help_text="Número de jornada")
+    fecha_partido = models.DateField(help_text="Fecha del partido")
+    equipo_rival = models.CharField(max_length=100, help_text="Nombre del equipo rival")
+    contenido = models.TextField(help_text="Contenido del informe de la jornada")
+    creado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='informes_jornada_creados')
+    fecha_creacion = models.DateTimeField(default=now)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('categoria', 'subcategoria', 'equipo', 'jornada')
+        ordering = ['-jornada', 'categoria', 'subcategoria', 'equipo']
+
+    def __str__(self):
+        return f"Jornada {self.jornada} - {self.categoria} {self.subcategoria} {self.equipo} vs {self.equipo_rival}"

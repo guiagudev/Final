@@ -1,403 +1,213 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, Button, Modal, Form } from "react-bootstrap";
+import { Card, Button, Modal, Form, Container, Row, Col, Image } from "react-bootstrap";
 
 import AppHeader from "../components/AppHeader";
-import React from "react";
-import ModalCarpetasPDFs from "../components/ModalCarpetasPDFs";
 import { toast } from "react-toastify";
+import { getToken } from "../utils/auth";
 import "react-toastify/dist/ReactToastify.css";
-import { hasGroup } from "../utils/roles";
+import ComentarioModal from "../components/ComentarioModal";
+import { useUser } from "../context/UserContext";
 
 export default function DetalleJugador() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [jugador, setJugador] = useState(null);
   const [comentarios, setComentarios] = useState([]);
+  const [showComentarioModal, setShowComentarioModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [hoveredComentarioId, setHoveredComentarioId] = useState(null);
-  
-  // Estados para el manejo de informes PDF
-  const [informe, setInforme] = useState(null);
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const isAdmin = hasGroup('admin');
+  const { user } = useUser();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = sessionStorage.getItem("accessToken");
-
-    fetch(`${import.meta.env.VITE_API_URL}/jugadores/${id}/`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
+  const fetchJugador = useCallback(async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/jugadores/${id}/`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
         setJugador(data);
-        setLoading(false);
-        
-        // Cargar informe del jugador para todas las categorías
-        fetch(`${import.meta.env.VITE_API_URL}/informes-jugador/jugador/${id}/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-          .then((res) => {
-            if (res.ok) {
-              return res.json();
-            }
-            return null;
-          })
-          .then((informeData) => setInforme(informeData))
-          .catch((err) => console.error("Error al obtener informe:", err));
-      })
-      .catch(() => setLoading(false));
-
-    fetch(`${import.meta.env.VITE_API_URL}/comentarios-jugador/jugador/${id}/`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => setComentarios(data))
-      .catch((err) => console.error("Error al obtener comentarios:", err));
+      }
+    } catch (error) {
+      console.error("Error fetching jugador:", error);
+    }
   }, [id]);
 
-  if (loading) return <p className="p-4">Cargando datos del jugador...</p>;
-  if (!jugador) return <p className="p-4">Jugador no encontrado</p>;
-
-  const nombreCompleto = `${jugador.nombre}`;
-  
-
-  const eliminarComentario = async (comentarioId) => {
-    const token = sessionStorage.getItem("accessToken");
-
+  const fetchComentarios = useCallback(async () => {
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/comentarios-jugador/${comentarioId}/`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (res.ok) {
-        setComentarios((prev) =>
-          prev.filter((comentario) => comentario.id !== comentarioId)
-        );
-        toast.success("Comentario eliminado");
-      } else {
-        toast.error("Error al eliminar el comentario.");
-      }
-    } catch {
-      toast.error("Error al conectar con el servidor.");
-    }
-  };
-
-  // Funciones para manejar informes PDF
-  const handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (file && file.type === 'application/pdf') {
-      setSelectedFile(file);
-    } else {
-      toast.error("Por favor, selecciona un archivo PDF válido.");
-      setSelectedFile(null);
-    }
-  };
-
-  const handleUploadInforme = async () => {
-    if (!selectedFile) {
-      toast.error("Por favor, selecciona un archivo PDF.");
-      return;
-    }
-
-    setUploading(true);
-    const token = sessionStorage.getItem("accessToken");
-    const formData = new FormData();
-    formData.append('archivo_pdf', selectedFile);
-    formData.append('jugador', jugador.id); // Agregar el ID del jugador
-
-    try {
-      const url = informe 
-        ? `${import.meta.env.VITE_API_URL}/informes-jugador/${informe.id}/`
-        : `${import.meta.env.VITE_API_URL}/informes-jugador/`;
-      
-      const method = informe ? 'PUT' : 'POST';
-      
-      const res = await fetch(url, {
-        method: method,
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/comentarios-jugador/?jugador=${id}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${getToken()}`,
         },
-        body: formData,
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        setInforme(data);
-        setShowUploadModal(false);
-        setSelectedFile(null);
-        toast.success(informe ? "Informe actualizado correctamente" : "Informe subido correctamente");
-      } else {
-        const errorData = await res.json();
-        toast.error(errorData.error || "Error al subir el informe.");
+      if (response.ok) {
+        const data = await response.json();
+        setComentarios(data);
       }
-    } catch {
-      toast.error("Error al conectar con el servidor.");
-    } finally {
-      setUploading(false);
+    } catch (error) {
+      console.error("Error fetching comentarios:", error);
     }
-  };
+  }, [id]);
 
-  const handleDeleteInforme = async () => {
-    if (!informe) return;
+  useEffect(() => {
+    fetchJugador();
+    fetchComentarios();
+    setLoading(false);
+  }, [fetchJugador, fetchComentarios]);
 
-    const token = sessionStorage.getItem("accessToken");
+  const handleDeleteComentario = async (comentarioId) => {
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/informes-jugador/${informe.id}/`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (res.ok) {
-        setInforme(null);
-        toast.success("Informe eliminado correctamente");
-      } else {
-        toast.error("Error al eliminar el informe.");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/comentarios-jugador/${comentarioId}/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      });
+      if (response.ok) {
+        toast.success("Comentario eliminado correctamente");
+        fetchComentarios();
       }
-    } catch {
-      toast.error("Error al conectar con el servidor.");
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Error al eliminar comentario");
     }
   };
 
-  const handleViewInforme = () => {
-    if (informe?.archivo_pdf) {
-      window.open(informe.archivo_pdf, '_blank');
-    }
-  };
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
+
+  if (!jugador) {
+    return <div>Jugador no encontrado</div>;
+  }
 
   return (
-    <>
-      <AppHeader />
-      <div className="p-4">
-        <Button
-          variant="outline-secondary"
-          size="sm"
-          className="mb-3"
-          onClick={() => navigate(-1)}
-        >
-          ← Volver
-        </Button>
+    <Container className="mt-4">
+      <Button
+        variant="secondary"
+        onClick={() => navigate("/jugadores")}
+        className="mb-3"
+      >
+        ← Volver a Jugadores
+      </Button>
 
-        <Card
-          className="shadow mx-auto"
-          style={{ width: "700px", height: "auto" }}
-        >
-          <Card.Body>
-            <div className="d-flex align-items-center mb-4">
+      <Row>
+        <Col md={4}>
+          <Card>
+            <Card.Body className="text-center">
               {jugador.imagen ? (
-                <img
-                  src={jugador.imagen}
-                  alt={nombreCompleto}
-                  style={{
-                    width: "150px",
-                    height: "150px",
-                    objectFit: "cover",
-                    borderRadius: "50%",
-                    marginRight: "1rem",
-                  }}
+                <Image
+                  src={`${import.meta.env.VITE_API_URL}${jugador.imagen}`}
+                  alt={jugador.nombre}
+                  fluid
+                  className="mb-3"
+                  style={{ maxHeight: "200px" }}
                 />
               ) : (
                 <div
+                  className="mb-3 mx-auto"
                   style={{
-                    width: "120px",
-                    height: "120px",
-                    backgroundColor: "#eee",
-                    borderRadius: "50%",
-                    marginRight: "1rem",
-                  }}
-                />
-              )}
-
-              <div>
-                <h3 className="mb-1">{nombreCompleto}</h3>
-                <p className="mb-0 text-muted">
-                  {jugador.categoria} {jugador.subcategoria} - {jugador.equipo}
-                </p>
-              </div>
-            </div>
-
-            <p>
-              <strong>Posición:</strong> {jugador.posicion}
-            </p>
-            <p>
-              <strong>Año de nacimiento:</strong> {jugador.edad} 
-            </p>
-
-            {/* Sección de Informe PDF para todas las categorías */}
-            {isAdmin && (
-              <div className="mt-4 p-3" style={{ backgroundColor: '#1a1a1a', borderRadius: '8px', border: '1px solid #ff1e5630' }}>
-                <h6 className="mb-3" style={{ color: '#ff1e56' }}>
-                  <i className="fas fa-file-pdf me-2"></i>
-                  Informe del Jugador
-                </h6>
-                
-                {informe ? (
-                  <div className="d-flex gap-2 align-items-center">
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={handleViewInforme}
-                    >
-                      <i className="fas fa-eye me-1"></i>
-                      Ver Informe
-                    </Button>
-                    <Button
-                      variant="outline-warning"
-                      size="sm"
-                      onClick={() => setShowUploadModal(true)}
-                    >
-                      <i className="fas fa-edit me-1"></i>
-                      Modificar
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      onClick={handleDeleteInforme}
-                    >
-                      <i className="fas fa-trash me-1"></i>
-                      Eliminar
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="outline-success"
-                    size="sm"
-                    onClick={() => setShowUploadModal(true)}
-                  >
-                    <i className="fas fa-upload me-1"></i>
-                    Subir Informe PDF
-                  </Button>
-                )}
-              </div>
-            )}
-
-            <hr className="my-4" />
-
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="mb-0">Comentarios</h5>
-              <Button
-                variant="outline-primary"
-                size="sm"
-                onClick={() =>
-                  navigate(`/jugadores/${jugador.id}/comentario-nuevo`)
-                }
-              >
-                Añadir Comentario
-              </Button>
-            </div>
-
-            {comentarios.length === 0 ? (
-              <p className="text-muted">No hay comentarios todavía.</p>
-            ) : (
-              comentarios.map((comentario) => (
-                <div
-                  key={comentario.id}
-                  className="mb-3 p-3 position-relative"
-                  style={{
-                    backgroundColor: "#1a1a1a",
-                    border: "1px solid #ff1e5630",
+                    width: "200px",
+                    height: "200px",
+                    backgroundColor: "#f8f9fa",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     borderRadius: "8px",
                   }}
-                  onMouseEnter={() => setHoveredComentarioId(comentario.id)}
-                  onMouseLeave={() => setHoveredComentarioId(null)}
                 >
-                  <h6 className="mb-1" style={{ color: "#ff1e56" }}>
-                    {comentario.titulo}
-                  </h6>
-                  <p style={{ whiteSpace: "pre-wrap" }}>
-                    {comentario.contenido}
-                  </p>
-                  <div className="d-flex justify-content-between mt-2">
-                    <small style={{ color: "#ff1e56" }}>
-                      {new Date(comentario.fecha_creacion).toLocaleString()}
-                    </small>
-                    <small>
-                      <strong>{comentario.autor.username}</strong>
-                    </small>
-                  </div>
-
-                  {hoveredComentarioId === comentario.id && (
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      style={{
-                        position: "absolute",
-                        top: "8px",
-                        right: "8px",
-                        zIndex: 2,
-                      }}
-                      onClick={() => eliminarComentario(comentario.id)}
-                    >
-                      Eliminar
-                    </Button>
-                  )}
+                  <span className="text-muted">Sin imagen</span>
                 </div>
-              ))
-            )}
-          </Card.Body>
-        </Card>
-      </div>
-      <ModalCarpetasPDFs
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        jugadorId={jugador.id}
-      />
+              )}
+              <h3>{jugador.nombre} {jugador.p_apellido} {jugador.s_apellido}</h3>
+              <p className="text-muted">
+                {jugador.categoria_display} {jugador.subcategoria_display} - {jugador.equipo_display}
+              </p>
+            </Card.Body>
+          </Card>
+        </Col>
 
-      {/* Modal para subir/modificar informe PDF */}
-      <Modal show={showUploadModal} onHide={() => setShowUploadModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            {informe ? 'Modificar Informe PDF' : 'Subir Informe PDF'}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group controlId="formFile" className="mb-3">
-              <Form.Label>Seleccionar archivo PDF</Form.Label>
-              <Form.Control
-                type="file"
-                accept=".pdf"
-                onChange={handleFileSelect}
-              />
-              <Form.Text className="text-muted">
-                Solo se permiten archivos PDF.
-              </Form.Text>
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowUploadModal(false)}>
-            Cancelar
-          </Button>
-          <Button 
-            variant="primary" 
-            onClick={handleUploadInforme}
-            disabled={!selectedFile || uploading}
-          >
-            {uploading ? 'Subiendo...' : (informe ? 'Actualizar' : 'Subir')}
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </>
+        <Col md={8}>
+          <Card>
+            <Card.Header>
+              <h4>Información del Jugador</h4>
+            </Card.Header>
+            <Card.Body>
+              <Row>
+                <Col md={6}>
+                  <p><strong>Posición:</strong> {jugador.posicion}</p>
+                  <p><strong>Edad:</strong> {jugador.edad} años</p>
+                </Col>
+                <Col md={6}>
+                  <p><strong>Categoría:</strong> {jugador.categoria_display}</p>
+                  <p><strong>Subcategoría:</strong> {jugador.subcategoria_display}</p>
+                  <p><strong>Equipo:</strong> {jugador.equipo_display}</p>
+                </Col>
+              </Row>
+              {jugador.descripcion && (
+                <div className="mt-3">
+                  <strong>Descripción:</strong>
+                  <p className="mt-1">{jugador.descripcion}</p>
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+
+          {/* Sección de Comentarios */}
+          <Card className="mt-4">
+            <Card.Header className="d-flex justify-content-between align-items-center">
+              <h4>Comentarios</h4>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowComentarioModal(true)}
+              >
+                Nuevo Comentario
+              </Button>
+            </Card.Header>
+            <Card.Body>
+              {comentarios.length === 0 ? (
+                <p className="text-muted">No hay comentarios aún.</p>
+              ) : (
+                comentarios.map((comentario) => (
+                  <div key={comentario.id} className="border-bottom pb-3 mb-3">
+                    <div className="d-flex justify-content-between align-items-start">
+                      <div>
+                        <h6>{comentario.titulo}</h6>
+                        <p className="mb-1">{comentario.contenido}</p>
+                        <small className="text-muted">
+                          Por {comentario.autor_nombre} el {new Date(comentario.fecha_emision).toLocaleDateString('es-ES')}
+                        </small>
+                      </div>
+                      {(user?.permisos?.some(p => p.categoria === jugador.categoria && p.subcategoria === jugador.subcategoria && p.equipo === jugador.equipo) || 
+                        user?.groups?.includes('admin')) && (
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => handleDeleteComentario(comentario.id)}
+                        >
+                          Eliminar
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      <ComentarioModal
+        show={showComentarioModal}
+        onHide={() => setShowComentarioModal(false)}
+        jugadorId={id}
+        onSuccess={() => {
+          setShowComentarioModal(false);
+          fetchComentarios();
+        }}
+      />
+    </Container>
   );
 }

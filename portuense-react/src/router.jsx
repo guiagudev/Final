@@ -26,6 +26,7 @@ import DetalleJugadorRival from "./pages/Rivales/DetalleJugadorRival";
 import ClubDetalle from "./pages/Rivales/ClubDetalle";
 import ExcelPorCategoria from "./pages/DireccionDeportiva/ExcelPorCategoria";
 import JugadorDocumentos from "./pages/DireccionDeportiva/JugadorDocumentos";
+import InformeJornada from './pages/InformeJornada';
 export default function Router() {
   return (
     <BrowserRouter>
@@ -103,6 +104,7 @@ export default function Router() {
           element={<JugadorDocumentos />}
         />
         <Route path="/rivales/:genero" element={<RivalesPorGenero />} />
+        <Route path="/informe-jornada" element={<InformeJornada />} />
       </Routes>
     </BrowserRouter>
   );
