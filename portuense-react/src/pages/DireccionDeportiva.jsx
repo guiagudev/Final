@@ -7,7 +7,7 @@ import React from "react";
 
 export default function DireccionDeportiva() {
   const navigate = useNavigate();
-  const { isInGroup } = useAuth();
+  const { isInGroup: _isInGroup } = useAuth();
   const [permisos, setPermisos] = useState([]);
 
   useEffect(() => {

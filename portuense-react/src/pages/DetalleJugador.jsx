@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, Button, Modal, Form, Container, Row, Col, Image } from "react-bootstrap";
 
@@ -7,53 +7,73 @@ import { toast } from "react-toastify";
 import { getToken } from "../utils/auth";
 import "react-toastify/dist/ReactToastify.css";
 import ComentarioModal from "../components/ComentarioModal";
-import { useUser } from "../context/UserContext";
 
 export default function DetalleJugador() {
+  console.log("🚀 DETALLEJUGADOR: Componente iniciando");
+  
   const { id } = useParams();
+  console.log("🚀 DETALLEJUGADOR: ID del jugador:", id);
+  
   const [jugador, setJugador] = useState(null);
   const [comentarios, setComentarios] = useState([]);
   const [showComentarioModal, setShowComentarioModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { user } = useUser();
+  const user = null; // TEMPORAL: arreglar después
   const navigate = useNavigate();
+  
+  console.log("🚀 DETALLEJUGADOR: Estados inicializados");
 
   const fetchJugador = useCallback(async () => {
+    console.log("🚀 DETALLEJUGADOR: fetchJugador iniciando");
     try {
+      console.log("🚀 DETALLEJUGADOR: Haciendo fetch a:", `${import.meta.env.VITE_API_URL}/jugadores/${id}/`);
       const response = await fetch(`${import.meta.env.VITE_API_URL}/jugadores/${id}/`, {
         headers: {
           Authorization: `Bearer ${getToken()}`,
         },
       });
+      console.log("🚀 DETALLEJUGADOR: Response status:", response.status);
+      console.log("🚀 DETALLEJUGADOR: Response ok:", response.ok);
       if (response.ok) {
         const data = await response.json();
+        console.log("🚀 DETALLEJUGADOR: Jugador recibido:", data);
         setJugador(data);
+      } else {
+        console.error("🚀 DETALLEJUGADOR: Response no ok:", response.status);
       }
     } catch (error) {
-      console.error("Error fetching jugador:", error);
+      console.error("🚀 DETALLEJUGADOR: Error en fetchJugador:", error);
     }
   }, [id]);
 
   const fetchComentarios = useCallback(async () => {
+    console.log("🚀 DETALLEJUGADOR: fetchComentarios iniciando");
     try {
+      console.log("🚀 DETALLEJUGADOR: Haciendo fetch comentarios a:", `${import.meta.env.VITE_API_URL}/comentarios-jugador/?jugador=${id}`);
       const response = await fetch(`${import.meta.env.VITE_API_URL}/comentarios-jugador/?jugador=${id}`, {
         headers: {
           Authorization: `Bearer ${getToken()}`,
         },
       });
+      console.log("🚀 DETALLEJUGADOR: Comentarios response status:", response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log("🚀 DETALLEJUGADOR: Comentarios recibidos:", data);
         setComentarios(data);
+      } else {
+        console.error("🚀 DETALLEJUGADOR: Comentarios response no ok:", response.status);
       }
     } catch (error) {
-      console.error("Error fetching comentarios:", error);
+      console.error("🚀 DETALLEJUGADOR: Error en fetchComentarios:", error);
     }
   }, [id]);
 
   useEffect(() => {
+    console.log("🚀 DETALLEJUGADOR: useEffect ejecutándose");
     fetchJugador();
     fetchComentarios();
     setLoading(false);
+    console.log("🚀 DETALLEJUGADOR: useEffect completado");
   }, [fetchJugador, fetchComentarios]);
 
   const handleDeleteComentario = async (comentarioId) => {
@@ -74,13 +94,19 @@ export default function DetalleJugador() {
     }
   };
 
+  console.log("🚀 DETALLEJUGADOR: Render - loading:", loading, "jugador:", jugador);
+  
   if (loading) {
+    console.log("🚀 DETALLEJUGADOR: Mostrando loading");
     return <div>Cargando...</div>;
   }
 
   if (!jugador) {
+    console.log("🚀 DETALLEJUGADOR: No hay jugador, mostrando error");
     return <div>Jugador no encontrado</div>;
   }
+  
+  console.log("🚀 DETALLEJUGADOR: Renderizando componente completo");
 
   return (
     <Container className="mt-4">
@@ -180,8 +206,8 @@ export default function DetalleJugador() {
                           Por {comentario.autor_nombre} el {new Date(comentario.fecha_emision).toLocaleDateString('es-ES')}
                         </small>
                       </div>
-                      {(user?.permisos?.some(p => p.categoria === jugador.categoria && p.subcategoria === jugador.subcategoria && p.equipo === jugador.equipo) || 
-                        user?.groups?.includes('admin')) && (
+                      {(user && (user.permisos?.some(p => p.categoria === jugador.categoria && p.subcategoria === jugador.subcategoria && p.equipo === jugador.equipo) || 
+                        user.groups?.includes('admin'))) && (
                         <Button
                           variant="danger"
                           size="sm"
