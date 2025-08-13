@@ -18,6 +18,18 @@ export default function CrearSubcategoriaModal({ show, onHide, categoria, equipo
 
     setLoading(true);
     const token = getToken();
+    
+    // Debug: mostrar qué se va a enviar
+    const payload = {
+      codigo: `${categoria}_${equipo}_${codigo.trim().toUpperCase()}`,
+      nombre: nombre.trim(),
+      categoria: categoria,
+      equipo: equipo,
+      activa: true
+    };
+    
+    console.log('🚀 CrearSubcategoriaModal: Enviando payload:', payload);
+    console.log('🚀 CrearSubcategoriaModal: Token:', token ? 'Presente' : 'Ausente');
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/subcategorias/`, {
@@ -27,7 +39,7 @@ export default function CrearSubcategoriaModal({ show, onHide, categoria, equipo
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          codigo: codigo.trim().toUpperCase(),
+          codigo: `${categoria}_${equipo}_${codigo.trim().toUpperCase()}`,
           nombre: nombre.trim(),
           categoria: categoria,
           equipo: equipo,
@@ -37,6 +49,7 @@ export default function CrearSubcategoriaModal({ show, onHide, categoria, equipo
 
       if (response.ok) {
         const data = await response.json();
+        console.log('🚀 CrearSubcategoriaModal: Subcategoría creada exitosamente:', data);
         toast.success('Subcategoría creada correctamente');
         setCodigo('');
         setNombre('');
@@ -44,10 +57,11 @@ export default function CrearSubcategoriaModal({ show, onHide, categoria, equipo
         onHide();
       } else {
         const errorData = await response.json();
+        console.error('🚀 CrearSubcategoriaModal: Error del servidor:', response.status, errorData);
         toast.error(errorData.error || 'Error al crear la subcategoría');
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('🚀 CrearSubcategoriaModal: Error de conexión:', error);
       toast.error('Error de conexión al crear la subcategoría');
     } finally {
       setLoading(false);
@@ -78,7 +92,7 @@ export default function CrearSubcategoriaModal({ show, onHide, categoria, equipo
               required
             />
             <Form.Text className="text-muted">
-              Código único para la subcategoría (máximo 10 caracteres)
+              Código de la subcategoría (ej: D, E, F). Se generará automáticamente como {categoria}_{equipo === 'M' ? 'M' : 'F'}_[TU_CODIGO]
             </Form.Text>
           </Form.Group>
 

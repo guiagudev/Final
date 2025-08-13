@@ -498,6 +498,32 @@ class SubcategoriaViewSet(viewsets.ModelViewSet):
         )
         serializer = self.get_serializer(subcategorias, many=True)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'], url_path='dropdown/(?P<categoria>[^/.]+)/(?P<equipo>[^/.]+)')
+    def dropdown_options(self, request, categoria=None, equipo=None):
+        """
+        Endpoint específico para el dropdown del frontend
+        Retorna solo el código y nombre de las subcategorías activas
+        """
+        subcategorias = self.get_queryset().filter(
+            categoria=categoria,
+            equipo=equipo,
+            activa=True
+        ).order_by('codigo')
+        
+        # Crear una lista simple con código y nombre
+        # Extraer solo la parte de la subcategoría (A, B, C) del código completo
+        options = []
+        for sub in subcategorias:
+            # El código tiene formato "CATEGORIA_EQUIPO_SUBCAT" (ej: "PREBEN_M_A")
+            # Extraemos solo la última parte (A, B, C)
+            codigo_simple = sub.codigo.split('_')[-1]
+            options.append({
+                'codigo': codigo_simple,
+                'nombre': f"Subcategoría {codigo_simple}"
+            })
+        
+        return Response(options)
 
 
 class TipoEntrenamientoViewSet(viewsets.ModelViewSet):

@@ -9,6 +9,7 @@ import CrearSubcategoriaModal from "../components/CrearSubcategoriaModal";
 import React from "react";
 import "../assets/styles/paneles.css";
 import { toast } from "react-toastify";
+import { getToken } from "../utils/auth";
 
 export default function AcademiaDashboard() {
   const navigate = useNavigate();
@@ -20,7 +21,8 @@ export default function AcademiaDashboard() {
 
   const [categoriasDisponibles, setCategoriasDisponibles] = useState([]);
   const [equiposDisponibles, setEquiposDisponibles] = useState([]);
-  const [subcategoriasDisponibles, setSubcategoriasDisponibles] = useState(["A", "B", "C"]);
+  const [subcategoriasDisponibles, setSubcategoriasDisponibles] = useState([]);
+  const [loadingSubcategorias, setLoadingSubcategorias] = useState(false);
 
   useEffect(() => {
     const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
@@ -75,12 +77,10 @@ export default function AcademiaDashboard() {
   }, [categoria, user.permisos]);
 
   useEffect(() => {
-    const subcats = categoria === "SEN" ? ["B"] : ["A", "B", "C"];
-    setSubcategoriasDisponibles(subcats);
-    if (!subcats.includes(subcategoria)) {
-      setSubcategoria(subcats[0]);
+    if (categoria && equipo) {
+      fetchSubcategorias(categoria, equipo);
     }
-  }, [categoria, subcategoria]);
+  }, [categoria, equipo]);
 
   const handleCuotasClick = () => {
     navigate("/cuotas");
@@ -90,19 +90,88 @@ export default function AcademiaDashboard() {
     setShowCrearSubcategoria(true);
   };
 
+  const fetchSubcategorias = async (categoria, equipo) => {
+    if (!categoria || !equipo) return;
+    
+    setLoadingSubcategorias(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/subcategorias/dropdown/${categoria}/${equipo}/`,
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log("🔍 Subcategorías obtenidas:", data);
+        
+        // Mapear las subcategorías del backend al formato esperado
+        const subcats = data.map(sub => sub.codigo);
+        setSubcategoriasDisponibles(subcats);
+        
+        // Si la subcategoría actual no está en las disponibles, seleccionar la primera
+        if (subcats.length > 0 && !subcats.includes(subcategoria)) {
+          setSubcategoria(subcats[0]);
+        }
+      } else {
+        console.error("❌ Error al obtener subcategorías:", response.status);
+        // Fallback a las subcategorías hardcodeadas
+        const fallbackSubcats = categoria === "SEN" ? ["B"] : ["A", "B", "C"];
+        setSubcategoriasDisponibles(fallbackSubcats);
+      }
+    } catch (error) {
+      console.error("❌ Error al fetchear subcategorías:", error);
+      // Fallback a las subcategorías hardcodeadas
+      const fallbackSubcats = categoria === "SEN" ? ["B"] : ["A", "B", "C"];
+      setSubcategoriasDisponibles(fallbackSubcats);
+    } finally {
+      setLoadingSubcategorias(false);
+    }
+  };
+
   const handleSubcategoriaCreada = () => {
-    // Actualizar la lista de subcategorías si es necesario
+    // Actualizar la lista de subcategorías después de crear una nueva
+    fetchSubcategorias(categoria, equipo);
     toast.success('Subcategoría creada correctamente');
   };
 
   const isAdmin = user.groups?.includes("admin");
 
-  const panelSeleccionado = panelData.find(
+  // Buscar panel en el JSON estático
+  const panelEstatico = panelData.find(
     (p) =>
       p.categoria === categoria &&
       p.equipo === equipo &&
       p.subcategoria === subcategoria
   );
+  
+  // Si no hay panel estático, generar uno dinámico
+  const panelSeleccionado = panelEstatico || {
+    title: `${categoria === 'PREBEN' ? 'Prebenjamín' : 
+            categoria === 'BEN' ? 'Benjamín' : 
+            categoria === 'ALE' ? 'Alevín' : 
+            categoria === 'INF' ? 'Infantil' : 
+            categoria === 'CAD' ? 'Cadete' : 
+            categoria === 'JUV' ? 'Juvenil' : 
+            categoria === 'SEN' ? 'Sénior' : categoria} ${equipo === 'M' ? 'Masculino' : 'Femenino'} ${subcategoria}`,
+    text: `Jugadores ${categoria === 'PREBEN' ? 'Prebenjamín' : 
+            categoria === 'BEN' ? 'Benjamín' : 
+            categoria === 'ALE' ? 'Alevín' : 
+            categoria === 'INF' ? 'Infantil' : 
+            categoria === 'CAD' ? 'Cadete' : 
+            categoria === 'JUV' ? 'Juvenil' : 
+            categoria === 'SEN' ? 'Sénior' : categoria} ${equipo === 'M' ? 'Masculino' : 'Femenino'} ${subcategoria}`,
+    categoria: categoria,
+    equipo: equipo,
+    subcategoria: subcategoria
+  };
+  
+  // Debug: mostrar qué panel se está usando
+  console.log('🔍 AcademiaDashboard: Panel seleccionado:', panelSeleccionado);
+  console.log('🔍 AcademiaDashboard: Panel estático encontrado:', !!panelEstatico);
 
   return (
     <>
@@ -151,14 +220,20 @@ export default function AcademiaDashboard() {
                 <Form.Select
                   value={subcategoria}
                   onChange={(e) => setSubcategoria(e.target.value)}
-                  disabled={subcategoriasDisponibles.length <= 1}
+                  disabled={subcategoriasDisponibles.length <= 1 || loadingSubcategorias}
                   className="form-select-lg"
                 >
-                  {subcategoriasDisponibles.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
+                  {loadingSubcategorias ? (
+                    <option>Cargando...</option>
+                  ) : subcategoriasDisponibles.length === 0 ? (
+                    <option>No hay subcategorías</option>
+                  ) : (
+                    subcategoriasDisponibles.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))
+                  )}
                 </Form.Select>
               </Col>
             </Row>
