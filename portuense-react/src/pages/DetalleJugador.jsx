@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { getToken } from "../utils/auth";
 import "react-toastify/dist/ReactToastify.css";
 import ComentarioModal from "../components/ComentarioModal";
+import { useUndoDelete } from "../hooks/useUndoDelete.jsx";
 
 export default function DetalleJugador() {
   console.log("🚀 DETALLEJUGADOR: Componente iniciando");
@@ -25,6 +26,7 @@ export default function DetalleJugador() {
   const [loading, setLoading] = useState(true);
   const user = null; // TEMPORAL: arreglar después
   const navigate = useNavigate();
+  const { deleteItem } = useUndoDelete();
   
   console.log("🚀 DETALLEJUGADOR: Estados inicializados");
 
@@ -82,21 +84,49 @@ export default function DetalleJugador() {
   }, [fetchJugador, fetchComentarios]);
 
   const handleDeleteComentario = async (comentarioId) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/comentarios-jugador/${comentarioId}/`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      });
-      if (response.ok) {
-        toast.success("Comentario eliminado correctamente");
+    // Guardar el comentario antes de eliminarlo para poder restaurarlo
+    const comentarioAEliminar = comentarios.find(c => c.id === comentarioId);
+    
+    if (!comentarioAEliminar) return;
+
+    await deleteItem(
+      comentarioId,
+      // Función de eliminación
+      async () => {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/comentarios-jugador/${comentarioId}/`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Error al eliminar comentario: ${response.status}`);
+        }
+
+        // Actualizar la lista después de eliminar
         fetchComentarios();
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al eliminar comentario");
-    }
+      },
+      // Función de restauración
+      async () => {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/comentarios-jugador/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`,
+          },
+          body: JSON.stringify(comentarioAEliminar),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error al restaurar comentario: ${response.status}`);
+        }
+
+        // Actualizar la lista después de restaurar
+        fetchComentarios();
+      },
+      "comentario"
+    );
   };
 
   console.log("🚀 DETALLEJUGADOR: Render - loading:", loading, "jugador:", jugador);

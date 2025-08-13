@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { getToken } from "../utils/auth";
 import { Calendar, FileText } from "lucide-react";
 import React from "react";
+import { useUndoDelete } from "../hooks/useUndoDelete.jsx";
 
 export default function Jugadores() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -15,6 +16,7 @@ export default function Jugadores() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { deleteItem } = useUndoDelete();
 
   // Verificar que haya parámetros de categoría
   useEffect(() => {
@@ -95,27 +97,55 @@ export default function Jugadores() {
   };
 
   const handleDelete = async (id) => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/jugadores/${id}/`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-          },
-        }
-      );
+    // Guardar el jugador antes de eliminarlo para poder restaurarlo
+    const jugadorAEliminar = jugadores.find(j => j.id === id);
+    
+    if (!jugadorAEliminar) return;
 
-      if (res.ok) {
-        toast.success("Jugador eliminado");
+    await deleteItem(
+      id,
+      // Función de eliminación
+      async () => {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/jugadores/${id}/`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+            },
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error(`Error al eliminar jugador: ${res.status}`);
+        }
+
+        // Actualizar la lista después de eliminar
         fetchJugadores();
-      } else {
-        toast.error("Error al eliminar jugador");
-      }
-    } catch (error) {
-      console.error("Error al eliminar jugador:", error);
-      toast.error("Error de red al eliminar jugador");
-    }
+      },
+      // Función de restauración
+      async () => {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/jugadores/`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${getToken()}`,
+            },
+            body: JSON.stringify(jugadorAEliminar),
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error(`Error al restaurar jugador: ${res.status}`);
+        }
+
+        // Actualizar la lista después de restaurar
+        fetchJugadores();
+      },
+      "jugador"
+    );
   };
 
   const handleFilterChange = (e) => {
