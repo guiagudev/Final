@@ -24,8 +24,8 @@ export default function Jugadores() {
     
     console.log("🔒 VERIFICACIÓN: Parámetros recibidos:", { categoria, subcategoria, equipo });
     
-    // Si no hay categoría, redirigir a 404 y cerrar sesión
-    if (!categoria) {
+    // Solo verificar si searchParams ya tiene contenido (no en el primer render)
+    if (searchParams.toString() && !categoria) {
       console.log("🚨 ACCESO DENEGADO: No hay categoría, redirigiendo a 404");
       localStorage.removeItem("token"); // Cerrar sesión
       sessionStorage.clear(); // Limpiar permisos
@@ -33,7 +33,7 @@ export default function Jugadores() {
       return;
     }
     
-    console.log("✅ ACCESO PERMITIDO: Categoría presente");
+    console.log("✅ ACCESO PERMITIDO: Categoría presente o parámetros aún no cargados");
   }, [searchParams, navigate]);
 
   const fetchJugadores = useCallback(async () => {
@@ -277,7 +277,17 @@ export default function Jugadores() {
           {jugadores.map((jugador) => (
             <tr key={jugador.id}>
               <td>
-                <Link to={`/jugadores/${jugador.id}`}>{jugador.nombre}</Link>
+                <Button
+                  variant="link"
+                  className="p-0 text-decoration-none"
+                  onClick={() => {
+                    const currentParams = searchParams.toString();
+                    const url = currentParams ? `/jugadores/${jugador.id}?${currentParams}` : `/jugadores/${jugador.id}`;
+                    navigate(url);
+                  }}
+                >
+                  {jugador.nombre}
+                </Button>
               </td>
               <td>{jugador.posicion}</td>
               <td>{jugador.edad}</td>

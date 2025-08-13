@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Card, Button, Modal, Form, Container, Row, Col, Image } from "react-bootstrap";
 
 import AppHeader from "../components/AppHeader";
@@ -12,7 +12,12 @@ export default function DetalleJugador() {
   console.log("🚀 DETALLEJUGADOR: Componente iniciando");
   
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   console.log("🚀 DETALLEJUGADOR: ID del jugador:", id);
+  console.log("🚀 DETALLEJUGADOR: Search params:", searchParams.toString());
+  console.log("🚀 DETALLEJUGADOR: Categoria:", searchParams.get("categoria"));
+  console.log("🚀 DETALLEJUGADOR: Subcategoria:", searchParams.get("subcategoria"));
+  console.log("🚀 DETALLEJUGADOR: Equipo:", searchParams.get("equipo"));
   
   const [jugador, setJugador] = useState(null);
   const [comentarios, setComentarios] = useState([]);
@@ -112,7 +117,26 @@ export default function DetalleJugador() {
     <Container className="mt-4">
       <Button
         variant="secondary"
-        onClick={() => navigate("/jugadores")}
+        onClick={() => {
+          const categoria = searchParams.get("categoria");
+          const subcategoria = searchParams.get("subcategoria");
+          const equipo = searchParams.get("equipo");
+          
+          console.log("🚀 DETALLEJUGADOR: Botón volver - Parámetros encontrados:", { categoria, subcategoria, equipo });
+          
+          // Construir la URL de retorno a la lista de jugadores con los parámetros originales
+          let returnUrl = "/jugadores";
+          if (categoria || subcategoria || equipo) {
+            const params = new URLSearchParams();
+            if (categoria) params.append("categoria", categoria);
+            if (subcategoria) params.append("subcategoria", subcategoria);
+            if (equipo) params.append("equipo", equipo);
+            returnUrl += `?${params.toString()}`;
+          }
+          
+          console.log("🚀 DETALLEJUGADOR: Botón volver - URL de retorno:", returnUrl);
+          navigate(returnUrl);
+        }}
         className="mb-3"
       >
         ← Volver a Jugadores

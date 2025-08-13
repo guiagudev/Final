@@ -4,7 +4,8 @@ export const saveToken = (token, remember) => {
   };
   
   export const getToken = () => {
-    return sessionStorage.getItem('accessToken');
+    // Buscar primero en sessionStorage, luego en localStorage
+    return sessionStorage.getItem('accessToken') || localStorage.getItem('accessToken');
   };
   
   export const clearToken = () => {
